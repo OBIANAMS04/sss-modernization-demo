@@ -1,0 +1,6 @@
+Inspect the current project directory. The main site is `index.html`, and the five PDFs are separate files under `pdfs/`.
+
+Task: preserve the existing proposal library, search, tabs, document reader, PDF links, and Ask Cory demo; fix any browser errors; make the project ready for static hosting; and provide exact GitHub Pages deployment steps. Do not inline the PDFs, do not convert them to Base64, and do not quote PDF binary contents.
+
+Final Technical Volume text:
+Live Demonstration Site: [INSERT_DEPLOYED_URL]
