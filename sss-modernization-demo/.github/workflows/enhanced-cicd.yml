@@ -1,0 +1,301 @@
+name: Enhanced CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPOSITORY: sss-modernization
+
+jobs:
+  # ===== LINT & TYPE CHECK =====
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint backend
+        run: npm run lint --workspace=backend
+
+      - name: Lint frontend
+        run: npm run lint --workspace=frontend
+
+      - name: TypeScript check
+        run: npm run typecheck --workspace=backend && npm run typecheck --workspace=frontend
+
+  # ===== SECURITY SCANNING =====
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run npm audit
+        run: |
+          npm audit --workspace=backend || true
+          npm audit --workspace=frontend || true
+
+      - name: Run OWASP dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          path: '.'
+          format: 'JSON'
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-scan
+          path: reports/
+
+  # ===== UNIT & INTEGRATION TESTS =====
+  test:
+    runs-on: ubuntu-latest
+    needs: [lint, security]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: sssdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup database
+        run: npm run db:migrate --workspace=backend
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/sssdb
+
+      - name: Run backend tests
+        run: npm run test:coverage --workspace=backend
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/sssdb
+          REDIS_URL: redis://localhost:6379/0
+
+      - name: Run frontend tests
+        run: npm run test:coverage --workspace=frontend
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/coverage/lcov.info,./frontend/coverage/lcov.info
+
+  # ===== BUILD DOCKER IMAGES =====
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' || github.ref == 'refs/heads/main'
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        run: aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+
+      - name: Build backend image
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-backend:${{ github.sha }} backend/
+          docker tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-backend:${{ github.sha }} ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-backend:latest
+
+      - name: Build frontend image
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-frontend:${{ github.sha }} frontend/
+          docker tag ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-frontend:${{ github.sha }} ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-frontend:latest
+
+      - name: Scan backend image
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-backend:${{ github.sha }}
+
+      - name: Scan frontend image
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-frontend:${{ github.sha }}
+
+      - name: Push backend image
+        run: docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-backend:${{ github.sha }}
+
+      - name: Push frontend image
+        run: docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}-frontend:${{ github.sha }}
+
+  # ===== DEPLOY TO STAGING =====
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to ECS (Staging)
+        run: |
+          aws ecs update-service \
+            --cluster sss-modernization-staging \
+            --service sss-modernization-backend-staging \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Wait for deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster sss-modernization-staging \
+            --services sss-modernization-backend-staging \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Run smoke tests
+        run: npm run test:smoke -- --url https://staging-api.sss-modernization.example.com
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+          payload: |
+            {
+              "text": "Staging deployment: ${{ job.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Staging Deployment*\nStatus: ${{ job.status }}\nCommit: ${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+
+  # ===== DEPLOY TO PRODUCTION =====
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create deployment
+        run: |
+          gh deployment create \
+            --ref ${{ github.sha }} \
+            --environment production \
+            --description "Production deployment"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to ECS (Production)
+        run: |
+          aws ecs update-service \
+            --cluster sss-modernization \
+            --service sss-modernization-backend \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Wait for deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster sss-modernization \
+            --services sss-modernization-backend \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Health check
+        run: |
+          for i in {1..30}; do
+            if curl -f https://api.sss-modernization.example.com/api/health; then
+              echo "✅ Health check passed"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "❌ Health check failed"
+          exit 1
+
+      - name: Run smoke tests
+        run: npm run test:smoke -- --url https://api.sss-modernization.example.com
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+          payload: |
+            {
+              "text": "Production deployment: ${{ job.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment* 🚀\nStatus: ${{ job.status }}\nCommit: ${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+
+      - name: Create release
+        if: success()
+        run: |
+          gh release create v${{ github.run_number }} \
+            --title "Release ${{ github.run_number }}" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

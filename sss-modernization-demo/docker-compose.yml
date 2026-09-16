@@ -1,0 +1,65 @@
+﻿version: '3.9'
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    container_name: sss-postgres
+    environment:
+      POSTGRES_USER: sss_user
+      POSTGRES_PASSWORD: sss_dev_password
+      POSTGRES_DB: sss_modernization
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sss_user -d sss_modernization']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sss-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sss-backend
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://sss_user:sss_dev_password@postgres:5432/sss_modernization
+      JWT_SECRET: your_jwt_secret_key_change_in_prod
+      JWT_EXPIRY: 3600
+      CORS_ORIGIN: http://localhost:5173,http://localhost:3000
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sss-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sss-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:3001/api
+      VITE_APP_NAME: SSS Modernization Platform
+    ports:
+      - '5173:5173'
+    depends_on:
+      - backend
+    networks:
+      - sss-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  sss-network:
+    driver: bridge

@@ -1,0 +1,25 @@
+/* App-specific styles */
+body {
+  background-color: #f9fafb;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

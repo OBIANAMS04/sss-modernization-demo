@@ -1,0 +1,704 @@
+openapi: 3.0.0
+info:
+  title: SSS Modernization Platform API
+  description: Enterprise exemption management and case processing API
+  version: 1.0.0
+  contact:
+    name: SSS Platform Team
+    email: platform@sss-modernization.gov
+  license:
+    name: Government Use Only
+servers:
+  - url: https://api.sss-modernization.example.com/api
+    description: Production API
+  - url: https://staging-api.sss-modernization.example.com/api
+    description: Staging API
+  - url: http://localhost:5000/api
+    description: Local Development
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token with 1-hour TTL
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [citizen, case_manager, admin, leadership]
+        fullName:
+          type: string
+        mfaEnabled:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, email, role, fullName, mfaEnabled]
+
+    Exemption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        eligible:
+          type: boolean
+        exemptions:
+          type: array
+          items:
+            type: string
+            enum:
+              - "Type A: Age-based"
+              - "Type B: Income-based"
+              - "Type C: Hardship"
+        determinedAt:
+          type: string
+          format: date-time
+      required: [id, userId, eligible, exemptions, determinedAt]
+
+    Case:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [Draft, Submitted, "In Review", Approved, Denied, Appealed]
+        type:
+          type: string
+          example: "Exemption Request"
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, userId, status, type, reason, createdAt, updatedAt]
+
+    CaseNote:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, caseId, userId, content, createdAt]
+
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          example: "USER_LOGIN"
+        actor:
+          type: string
+          format: uuid
+        resource:
+          type: string
+          example: "cases"
+        resourceId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [SUCCESS, DENIED, FAILED]
+        details:
+          type: object
+          description: Action-specific details (sensitive fields redacted)
+        ipAddress:
+          type: string
+          format: ipv4
+        userAgent:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required: [id, action, actor, status, timestamp]
+
+    ComplianceCheck:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        requirement:
+          type: string
+          example: "FAR 52.209-2"
+        status:
+          type: string
+          enum: [PASS, FAIL, PENDING]
+        timestamp:
+          type: string
+          format: date-time
+      required: [id, caseId, requirement, status, timestamp]
+
+    LatencyMetric:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+          example: "cases"
+        operation:
+          type: string
+          example: "read"
+        latencyMs:
+          type: number
+          minimum: 0
+        timestamp:
+          type: string
+          format: date-time
+      required: [id, entityType, operation, latencyMs, timestamp]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        statusCode:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+      required: [error, message, statusCode]
+
+paths:
+  /auth/register:
+    post:
+      summary: Register new user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 12
+                fullName:
+                  type: string
+              required: [email, password, fullName]
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  fullName:
+                    type: string
+        '400':
+          description: Invalid input
+        '409':
+          description: Email already registered
+
+  /auth/login:
+    post:
+      summary: Authenticate user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+              required: [email, password]
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT bearer token
+                  expiresIn:
+                    type: integer
+                    description: Token TTL in seconds
+                  mfaRequired:
+                    type: boolean
+        '401':
+          description: Invalid credentials
+
+  /auth/mfa/verify:
+    post:
+      summary: Verify MFA token
+      tags: [Authentication]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: 6-digit TOTP token
+              required: [token]
+      responses:
+        '200':
+          description: MFA verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verified:
+                    type: boolean
+        '401':
+          description: Invalid MFA token
+
+  /exemptions/check:
+    post:
+      summary: Check exemption eligibility
+      tags: [Exemptions]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                age:
+                  type: integer
+                  minimum: 18
+                  maximum: 150
+                income:
+                  type: number
+                  minimum: 0
+                hasHardship:
+                  type: boolean
+              required: [age, income, hasHardship]
+      responses:
+        '200':
+          description: Eligibility determination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exemption'
+        '401':
+          description: Unauthorized
+        '422':
+          description: Invalid input parameters
+
+  /cases:
+    get:
+      summary: List cases
+      tags: [Cases]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+          description: Filter by case status
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+          description: Page number (default 1)
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Results per page (default 20)
+      responses:
+        '200':
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Case'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create new case
+      tags: [Cases]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Draft, Submitted]
+                type:
+                  type: string
+                reason:
+                  type: string
+              required: [status, type, reason]
+      responses:
+        '201':
+          description: Case created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+
+  /cases/{caseId}:
+    get:
+      summary: Get case details
+      tags: [Cases]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+        '404':
+          description: Case not found
+
+    patch:
+      summary: Update case
+      tags: [Cases]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Draft, Submitted, "In Review", Approved, Denied, Appealed]
+              required: [status]
+      responses:
+        '200':
+          description: Case updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+        '403':
+          description: Insufficient permissions
+        '404':
+          description: Case not found
+
+  /cases/{caseId}/notes:
+    get:
+      summary: Get case notes
+      tags: [Cases]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseNote'
+
+    post:
+      summary: Add note to case
+      tags: [Cases]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+              required: [content]
+      responses:
+        '201':
+          description: Note created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseNote'
+
+  /audit:
+    get:
+      summary: Get audit logs
+      tags: [Audit]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+          description: Filter by action type
+        - name: resource
+          in: query
+          schema:
+            type: string
+          description: Filter by resource
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Start timestamp
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: End timestamp
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLog'
+        '401':
+          description: Unauthorized (admin required)
+
+  /compliance/matrix:
+    get:
+      summary: Get compliance matrix
+      tags: [Compliance]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Compliance requirements matrix
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requirements:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        status:
+                          type: string
+
+  /latency/stats:
+    get:
+      summary: Get latency statistics
+      tags: [Monitoring]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: entity
+          in: query
+          schema:
+            type: string
+          description: Entity type (cases, exemptions, etc)
+        - name: operation
+          in: query
+          schema:
+            type: string
+          description: Operation (read, write, etc)
+      responses:
+        '200':
+          description: Latency statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  p50:
+                    type: number
+                  p95:
+                    type: number
+                  p99:
+                    type: number
+                  mean:
+                    type: number
+                  max:
+                    type: number
+
+  /health:
+    get:
+      summary: Health check
+      tags: [Monitoring]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                  dependencies:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                      cache:
+                        type: string
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Authentication
+    description: User registration and login
+  - name: Exemptions
+    description: Exemption eligibility checking
+  - name: Cases
+    description: Case management and workflow
+  - name: Audit
+    description: Audit logging and compliance
+  - name: Compliance
+    description: Compliance matrix and verification
+  - name: Monitoring
+    description: Health checks and metrics

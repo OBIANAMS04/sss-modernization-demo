@@ -1,0 +1,47 @@
+# Example Terraform Variables - COPY TO terraform.tfvars and fill in actual values
+
+aws_region  = "us-east-1"
+environment = "prod"
+app_name    = "sss-modernization"
+
+# Network Configuration
+vpc_cidr                = "10.0.0.0/16"
+public_subnet_cidrs     = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs    = ["10.0.10.0/24", "10.0.11.0/24"]
+
+# RDS Configuration
+rds_db_name           = "sssdb"
+rds_username          = "postgres"  # CHANGE THIS - Set via environment variable
+rds_password          = "change-me" # CHANGE THIS - Set via environment variable
+rds_instance_class    = "db.t3.micro"
+rds_storage_gb        = 20
+rds_backup_retention  = 30
+
+# ECS Configuration
+ecs_task_cpu            = 512
+ecs_task_memory         = 1024
+ecs_desired_count       = 2
+container_port_backend  = 5000
+container_port_frontend = 3000
+
+# ElastiCache Configuration
+elasticache_node_type        = "cache.t3.micro"
+elasticache_num_cache_nodes  = 1
+
+# Security Configuration
+enable_encryption = true
+enable_waf        = true
+
+# SSL Certificate (optional - for HTTPS)
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+# domain_name     = "sss-modernization.example.com"
+
+# Logging & Monitoring
+log_retention_days = 30
+
+# Tags
+tags = {
+  Project = "SSS-Modernization"
+  Team    = "Engineering"
+  CostCenter = "Technology"
+}
