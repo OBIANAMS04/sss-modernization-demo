@@ -9,6 +9,7 @@ const pool = new Pool({
   database: process.env.DATABASE_NAME || 'sss_demo',
   user: process.env.DATABASE_USER || 'admin',
   password: process.env.DATABASE_PASSWORD || 'dev_password',
+  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
 });
 
 pool.on('error', (err) => {
