@@ -5,7 +5,6 @@ export interface UserProfile {
   id: string;
   email: string;
   fullName: string;
-  ssn: string;
   dob: string;
   phone?: string;
   address?: string;
@@ -20,7 +19,7 @@ export interface UpdateProfileInput {
 
 export async function getUserById(userId: string): Promise<UserProfile> {
   const result = await pool.query(
-    `SELECT id, email, full_name, ssn, dob, phone, address, mfa_enabled, compliance_status
+    `SELECT id, email, full_name, dob, phone, address, mfa_enabled, compliance_status
      FROM users WHERE id = $1`,
     [userId]
   );
@@ -34,7 +33,6 @@ export async function getUserById(userId: string): Promise<UserProfile> {
     id: user.id,
     email: user.email,
     fullName: user.full_name,
-    ssn: user.ssn,
     dob: user.dob,
     phone: user.phone,
     address: user.address,

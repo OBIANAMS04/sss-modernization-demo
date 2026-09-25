@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUser, clearAuth } from '../../utils/tokenManager';
 import UserProfile from './UserProfile';
+import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -50,6 +51,8 @@ export default function Dashboard() {
       </nav>
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <DemoEnvironmentBanner />
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">

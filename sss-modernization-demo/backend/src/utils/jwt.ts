@@ -11,13 +11,18 @@ export interface JWTPayload {
 }
 
 export function generateToken(userId: string, email: string): string {
+  // A bare numeric string (e.g. "3600") is parsed by jsonwebtoken as
+  // milliseconds, not seconds — convert explicitly so JWT_EXPIRY=3600
+  // means a 1-hour token, not a ~3.6-second one.
+  const expiresIn = /^\d+$/.test(JWT_EXPIRY) ? parseInt(JWT_EXPIRY, 10) : JWT_EXPIRY;
+
   return jwt.sign(
     {
       sub: userId,
       email,
     },
     JWT_SECRET as string,
-    { expiresIn: JWT_EXPIRY } as any
+    { expiresIn } as any
   );
 }
 

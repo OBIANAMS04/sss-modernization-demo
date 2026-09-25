@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { setToken, setUser } from '../../utils/tokenManager';
 import { validateEmail, validatePassword, validateFullName, validateSSN, formatSSN, validateDateOfBirth } from '../../utils/validators';
+import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -85,6 +86,8 @@ export default function Register() {
         <div className="bg-white rounded-lg shadow-xl p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">SSS Platform</h1>
           <p className="text-gray-600 text-center mb-6">Create your account</p>
+
+          <DemoEnvironmentBanner />
 
           {errors.submit && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">

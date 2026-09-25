@@ -33,15 +33,16 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
       throw new ConflictError('Email already registered');
     }
 
-    // Hash password
+    // Hash password and SSN — the raw SSN is never persisted or logged
     const passwordHash = await bcrypt.hash(input.password, 12);
+    const ssnHash = await bcrypt.hash(input.ssn, 12);
 
     // Insert user
     const result = await client.query(
-      `INSERT INTO users (email, password_hash, full_name, ssn, dob, created_at, updated_at)
+      `INSERT INTO users (email, password_hash, full_name, ssn_hash, dob, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
        RETURNING id, email, full_name`,
-      [input.email, passwordHash, input.fullName, input.ssn, input.dob]
+      [input.email, passwordHash, input.fullName, ssnHash, input.dob]
     );
 
     await client.query('COMMIT');
