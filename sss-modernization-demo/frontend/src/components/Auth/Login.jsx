@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { setToken, setUser } from '../../utils/tokenManager';
 import { validateEmail, validatePassword } from '../../utils/validators';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -45,7 +46,7 @@ export default function Login() {
       setUser(response.user);
       navigate('/dashboard');
     } catch (err) {
-      setErrors({ submit: err.response?.data?.message || 'Login failed' });
+      setErrors({ submit: getApiErrorMessage(err, 'Login failed') });
     } finally {
       setLoading(false);
     }

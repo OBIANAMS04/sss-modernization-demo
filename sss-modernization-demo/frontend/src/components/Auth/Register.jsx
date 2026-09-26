@@ -4,6 +4,7 @@ import { authService } from '../../services/authService';
 import { setToken, setUser } from '../../utils/tokenManager';
 import { validateEmail, validatePassword, validateFullName, validateSSN, formatSSN, validateDateOfBirth } from '../../utils/validators';
 import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showSSN, setShowSSN] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -74,7 +76,7 @@ export default function Register() {
       setUser(response.user);
       navigate('/dashboard');
     } catch (err) {
-      setErrors({ submit: err.response?.data?.message || 'Registration failed' });
+      setErrors({ submit: getApiErrorMessage(err, 'Registration failed') });
     } finally {
       setLoading(false);
     }
@@ -128,17 +130,27 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Social Security Number</label>
-              <input
-                type="text"
-                name="ssn"
-                value={formData.ssn}
-                onChange={handleChange}
-                placeholder="123-45-6789"
-                maxLength={11}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition ${
-                  errors.ssn ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
+              <div className="relative">
+                <input
+                  type={showSSN ? 'text' : 'password'}
+                  name="ssn"
+                  value={formData.ssn}
+                  onChange={handleChange}
+                  placeholder="123-45-6789"
+                  maxLength={11}
+                  autoComplete="off"
+                  className={`w-full px-4 py-2 pr-16 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition ${
+                    errors.ssn ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSSN((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 hover:text-gray-700"
+                >
+                  {showSSN ? 'Hide' : 'Show'}
+                </button>
+              </div>
               {errors.ssn && <p className="text-red-500 text-xs mt-1">{errors.ssn}</p>}
             </div>
 
