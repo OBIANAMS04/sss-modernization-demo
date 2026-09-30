@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getUser, clearAuth } from '../../utils/tokenManager';
 import UserProfile from './UserProfile';
 import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
@@ -40,12 +40,20 @@ export default function Dashboard() {
               <h1 className="text-2xl font-bold text-gray-900">SSS Modernization</h1>
               <p className="text-sm text-gray-600">Platform Dashboard</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition duration-200"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-4">
+              <Link
+                to="/profile"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition duration-200"
+              >
+                Profile &amp; Exemptions
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition duration-200"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -170,8 +178,12 @@ export default function Dashboard() {
                     R0: Live deployment with managed database
                   </li>
                   <li className="flex items-center">
+                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    R1: Profile update with compliance check, and exemption eligibility with reasons
+                  </li>
+                  <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-blue-600 mr-2">→</span>
-                    R1 (next): Exemption eligibility, case management, compliance validation, role-based dashboards
+                    R1 (next): Case management, compliance validation, role-based dashboards
                   </li>
                 </ul>
               </div>

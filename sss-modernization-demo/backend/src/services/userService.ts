@@ -1,5 +1,6 @@
 import pool from '../database/connection';
 import { NotFoundError, ValidationError } from '../utils/errors';
+import { calculateAge } from '../utils/age';
 
 export interface UserProfile {
   id: string;
@@ -8,18 +9,27 @@ export interface UserProfile {
   dob: string;
   phone?: string;
   address?: string;
+  annualIncome: number | null;
+  hasDocumentedHardship: boolean;
   mfaEnabled: boolean;
   complianceStatus: string;
+  complianceCheckedAt: string | null;
+  createdAt: string;
 }
 
 export interface UpdateProfileInput {
   phone?: string;
   address?: string;
+  annualIncome?: number | null;
+  hasDocumentedHardship?: boolean;
 }
+
+const MAX_ANNUAL_INCOME = 100_000_000;
 
 export async function getUserById(userId: string): Promise<UserProfile> {
   const result = await pool.query(
-    `SELECT id, email, full_name, dob, phone, address, mfa_enabled, compliance_status
+    `SELECT id, email, full_name, dob, phone, address, annual_income, has_documented_hardship,
+            mfa_enabled, compliance_status, compliance_checked_at, created_at
      FROM users WHERE id = $1`,
     [userId]
   );
@@ -36,8 +46,12 @@ export async function getUserById(userId: string): Promise<UserProfile> {
     dob: user.dob,
     phone: user.phone,
     address: user.address,
+    annualIncome: user.annual_income,
+    hasDocumentedHardship: user.has_documented_hardship,
     mfaEnabled: user.mfa_enabled,
     complianceStatus: user.compliance_status,
+    complianceCheckedAt: user.compliance_checked_at,
+    createdAt: user.created_at,
   };
 }
 
@@ -52,6 +66,18 @@ export async function updateUserProfile(
 
   if (input.address && input.address.length > 500) {
     throw new ValidationError('Address must be 500 characters or less');
+  }
+
+  if (
+    input.annualIncome !== undefined &&
+    input.annualIncome !== null &&
+    (!Number.isInteger(input.annualIncome) || input.annualIncome < 0 || input.annualIncome > MAX_ANNUAL_INCOME)
+  ) {
+    throw new ValidationError('Annual income must be a whole number of dollars, 0 or more');
+  }
+
+  if (input.hasDocumentedHardship !== undefined && typeof input.hasDocumentedHardship !== 'boolean') {
+    throw new ValidationError('Documented hardship must be true or false');
   }
 
   const client = await pool.connect();
@@ -76,10 +102,23 @@ export async function updateUserProfile(
       paramCount++;
     }
 
+    if (input.annualIncome !== undefined) {
+      updateFields.push(`annual_income = $${paramCount}`);
+      updateValues.push(input.annualIncome);
+      paramCount++;
+    }
+
+    if (input.hasDocumentedHardship !== undefined) {
+      updateFields.push(`has_documented_hardship = $${paramCount}`);
+      updateValues.push(input.hasDocumentedHardship);
+      paramCount++;
+    }
+
     updateFields.push(`updated_at = NOW()`);
 
     if (updateFields.length === 1) {
       // No actual updates, just return current user
+      await client.query('ROLLBACK');
       return await getUserById(userId);
     }
 
@@ -129,15 +168,7 @@ export function determineCompliance(user: any): string {
   // 2. User must have valid phone on file (non-empty)
   // 3. User must have address on file (non-empty)
 
-  const dob = new Date(user.dob);
-  const today = new Date();
-  const age = today.getFullYear() - dob.getFullYear();
-  const monthDiff = today.getMonth() - dob.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-    // Birthday hasn't happened yet this year
-    if (age < 18) return 'Ineligible';
-  } else if (age < 18) {
+  if (calculateAge(user.dob) < 18) {
     return 'Ineligible';
   }
 

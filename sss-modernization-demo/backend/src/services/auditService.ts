@@ -54,6 +54,7 @@ export enum AuditAction {
   EXEMPTION_CREATE = 'EXEMPTION_CREATE',
   EXEMPTION_UPDATE = 'EXEMPTION_UPDATE',
   EXEMPTION_DELETE = 'EXEMPTION_DELETE',
+  EXEMPTION_CHECK = 'EXEMPTION_CHECK',
 
   // Authorization
   ACCESS_DENIED = 'ACCESS_DENIED',
@@ -253,7 +254,8 @@ function mapRowToAuditLog(row: any): AuditLog {
     resource: row.resource,
     resourceId: row.resource_id,
     status: row.status,
-    details: row.details ? JSON.parse(row.details) : undefined,
+    // node-pg already parses JSONB columns into objects
+    details: row.details ?? undefined,
     ipAddress: row.ip_address,
     userAgent: row.user_agent,
     timestamp: row.timestamp,

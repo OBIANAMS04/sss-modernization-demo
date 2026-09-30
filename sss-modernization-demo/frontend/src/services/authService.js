@@ -18,17 +18,5 @@ export const authService = {
       password
     });
     return response.data;
-  },
-
-  getProfile: async () => {
-    const response = await api.get('/users/me');
-    return response.data;
-  },
-
-  updateProfile: async (full_name) => {
-    const response = await api.put('/users/me', {
-      full_name
-    });
-    return response.data;
   }
 };

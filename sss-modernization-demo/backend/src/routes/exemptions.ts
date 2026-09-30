@@ -3,10 +3,9 @@ import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
 import {
   getExemptionsByUserId,
-  checkAndCreateExemptions,
+  runEligibilityCheck,
   getExemptionStats,
 } from '../services/exemptionService';
-import { getUserById } from '../services/userService';
 
 const router = Router();
 
@@ -50,6 +49,8 @@ router.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
     res.json({
       exemptions,
       total: exemptions.length,
+      eligible: exemptions.some((e) => e.status !== 'Not Eligible'),
+      determinedAt: exemptions[0]?.determinedAt ?? null,
     });
   } catch (error) {
     next(error);
@@ -64,26 +65,9 @@ router.post('/check', async (req: AuthRequest, res: Response, next: NextFunction
       throw new AppError(401, 'User not found in token', 'UNAUTHORIZED');
     }
 
-    const user = await getUserById(userId);
+    const eligibility = await runEligibilityCheck(userId, 'manual', req.user?.email);
 
-    // Prepare user data for eligibility check
-    const userInfo = {
-      id: user.id,
-      dob: user.dob,
-      phone: user.phone,
-      address: user.address,
-      // In production, would load income and hardship status from database
-      income: undefined,
-      hasDocumentedHardship: false,
-    };
-
-    const eligibility = await checkAndCreateExemptions(userId, userInfo);
-
-    res.json({
-      eligible: eligibility.eligible,
-      exemptions: eligibility.exemptions,
-      determinedAt: eligibility.determinedAt,
-    });
+    res.json(eligibility);
   } catch (error) {
     next(error);
   }

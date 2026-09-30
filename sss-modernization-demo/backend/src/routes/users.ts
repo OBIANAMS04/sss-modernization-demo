@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { getUserById, updateUserProfile } from '../services/userService';
+import { runEligibilityCheck } from '../services/exemptionService';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
 
@@ -53,15 +54,19 @@ router.get('/:id', async (req: AuthRequest, res: Response, next: NextFunction) =
 router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const { phone, address } = req.body;
+    const { phone, address, annualIncome, hasDocumentedHardship } = req.body;
 
     // Verify user is updating their own profile
     if (req.user?.sub !== id) {
       throw new AppError(403, 'Access denied', 'FORBIDDEN');
     }
 
-    const updatedUser = await updateUserProfile(id, { phone, address });
-    res.json(updatedUser);
+    const updatedUser = await updateUserProfile(id, { phone, address, annualIncome, hasDocumentedHardship });
+
+    // STORY-006: exemption eligibility is re-determined whenever the profile changes
+    const eligibility = await runEligibilityCheck(id, 'profile_update', req.user?.email);
+
+    res.json({ ...updatedUser, eligibility });
   } catch (error) {
     next(error);
   }

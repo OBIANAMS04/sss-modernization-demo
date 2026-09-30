@@ -4,6 +4,7 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Dashboard from './components/Dashboard/Dashboard';
+import Profile from './components/Profile/Profile';
 import './App.css';
 
 function App() {
@@ -40,6 +41,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />
