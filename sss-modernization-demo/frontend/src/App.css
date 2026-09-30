@@ -1,25 +1,16 @@
-/* App-specific styles */
-body {
-  background-color: #f9fafb;
-}
-
-#root {
-  min-height: 100vh;
-  width: 100%;
-}
-
-/* Smooth transitions */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-/* Loading spinner animation */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+/* App-specific styles. Kept in the base layer so Tailwind utilities can override them (see index.css). */
+@layer base {
+  body {
+    background-color: #f9fafb;
   }
-}
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+  #root {
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  /* Smooth transitions */
+  * {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
 }
