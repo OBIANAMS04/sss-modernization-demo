@@ -16,6 +16,7 @@ export interface RegisterResponse {
     id: string;
     email: string;
     fullName: string;
+    createdAt: string;
   };
   token: string;
 }
@@ -41,7 +42,7 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
     const result = await client.query(
       `INSERT INTO users (email, password_hash, full_name, ssn_hash, dob, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-       RETURNING id, email, full_name`,
+       RETURNING id, email, full_name, created_at`,
       [input.email, passwordHash, input.fullName, ssnHash, input.dob]
     );
 
@@ -55,6 +56,7 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
         id: user.id,
         email: user.email,
         fullName: user.full_name,
+        createdAt: user.created_at,
       },
       token,
     };
@@ -67,9 +69,10 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
 }
 
 export async function loginUser(email: string, password: string) {
-  const result = await pool.query('SELECT id, email, password_hash, full_name FROM users WHERE email = $1', [
-    email,
-  ]);
+  const result = await pool.query(
+    'SELECT id, email, password_hash, full_name, created_at FROM users WHERE email = $1',
+    [email]
+  );
 
   if (result.rows.length === 0) {
     throw new ValidationError('Invalid email or password');
@@ -89,6 +92,7 @@ export async function loginUser(email: string, password: string) {
       id: user.id,
       email: user.email,
       fullName: user.full_name,
+      createdAt: user.created_at,
     },
     token,
   };

@@ -63,7 +63,7 @@ export default function Dashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-gray-600 text-sm">Welcome</p>
-                <p className="text-lg font-semibold text-gray-900">{user?.full_name}</p>
+                <p className="text-lg font-semibold text-gray-900">{user?.fullName}</p>
               </div>
             </div>
           </div>
@@ -92,7 +92,7 @@ export default function Dashboard() {
               <div className="ml-4">
                 <p className="text-gray-600 text-sm">Member Since</p>
                 <p className="text-lg font-semibold text-gray-900">
-                  {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                 </p>
               </div>
             </div>
@@ -136,8 +136,8 @@ export default function Dashboard() {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Stats</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                    <p className="text-gray-600 text-sm">Phases Completed</p>
-                    <p className="text-3xl font-bold text-blue-600">3/7</p>
+                    <p className="text-gray-600 text-sm">Release Zero</p>
+                    <p className="text-3xl font-bold text-blue-600">Complete</p>
                   </div>
                   <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
                     <p className="text-gray-600 text-sm">API Status</p>
@@ -155,23 +155,23 @@ export default function Dashboard() {
               </div>
 
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Next Steps</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Release Progress</h2>
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
-                    Phase 1: Pre-Development Setup
+                    R0: Secure registration and sign-in (hashed passwords and SSNs)
                   </li>
                   <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
-                    Phase 2: Database Implementation
+                    R0: Compliance guards (demo-data banner, masked SSN entry)
                   </li>
                   <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
-                    Phase 3: Backend API Development
+                    R0: Live deployment with managed database
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
-                    Phase 4: Frontend Development (Current)
+                    <span className="flex-shrink-0 h-5 w-5 text-blue-600 mr-2">→</span>
+                    R1 (next): Exemption eligibility, case management, compliance validation, role-based dashboards
                   </li>
                 </ul>
               </div>
