@@ -1,0 +1,3 @@
+
+# Claude Code runtime lock (rewritten every session)
+.claude/scheduled_tasks.lock
