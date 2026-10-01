@@ -1,0 +1,381 @@
+<title>SSS Modernization Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a federal program status report — sticky section index, then stacked sections; tables scroll inside their own containers. */
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --ink: #142235;
+  --muted: #56647a;
+  --rule: #d9e0ea;
+  --accent: #1a4480;
+  --accent-soft: #e5edf8;
+  --ok: #1d6b45;      --ok-bg: #e2f2e9;
+  --warn: #8a5300;    --warn-bg: #fdf0d8;
+  --bad: #a3242c;     --bad-bg: #fbe4e5;
+  --idle: #5a6577;    --idle-bg: #edf0f4;
+  --info: #1a4480;    --info-bg: #e5edf8;
+  --font-body: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1520; --surface: #152031; --ink: #e6ecf5; --muted: #9aa8bc; --rule: #26354b;
+    --accent: #8fb6ec; --accent-soft: #1b2c45;
+    --ok: #7fd3a5; --ok-bg: #143224; --warn: #f0c070; --warn-bg: #3a2a10;
+    --bad: #f39aa0; --bad-bg: #3d1a1d; --idle: #aab4c3; --idle-bg: #222e40;
+    --info: #8fb6ec; --info-bg: #1b2c45;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1520; --surface: #152031; --ink: #e6ecf5; --muted: #9aa8bc; --rule: #26354b;
+  --accent: #8fb6ec; --accent-soft: #1b2c45;
+  --ok: #7fd3a5; --ok-bg: #143224; --warn: #f0c070; --warn-bg: #3a2a10;
+  --bad: #f39aa0; --bad-bg: #3d1a1d; --idle: #aab4c3; --idle-bg: #222e40;
+  --info: #8fb6ec; --info-bg: #1b2c45;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  padding-inline: 16px;
+  padding-block: 0 48px;
+}
+.wrap { max-width: 1080px; margin-inline: auto; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); font-size: 0.86em; }
+
+/* Masthead */
+.masthead { padding-block: 32px 20px; display: grid; gap: 10px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: clamp(28px, 4vw, 38px); font-weight: 800; letter-spacing: -0.01em; }
+.lede { color: var(--muted); max-width: 68ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
+.meta strong { color: var(--ink); font-weight: 600; }
+
+/* Section index */
+.index {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); border-bottom: 1px solid var(--rule);
+  display: flex; gap: 4px; overflow-x: auto; padding-block: 8px; margin-bottom: 8px;
+}
+.index a {
+  white-space: nowrap; text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 600;
+  padding: 6px 10px; border-radius: 6px;
+}
+.index a:hover { color: var(--accent); background: var(--accent-soft); }
+
+/* Summary strip */
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-block: 16px 8px; }
+.summary .cell { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.summary .label { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.summary .value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.summary .note { font-size: 13px; color: var(--muted); }
+
+section { padding-top: 36px; display: grid; gap: 14px; scroll-margin-top: 56px; }
+section > header { display: grid; gap: 4px; }
+h2 { font-size: 22px; font-weight: 700; }
+.sub { color: var(--muted); font-size: 14px; max-width: 72ch; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--rule); }
+th { font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-family: var(--font-mono); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+td .what { font-weight: 600; }
+td .detail { color: var(--muted); font-size: 13px; }
+
+/* Status pills: semantic, separate from the accent */
+.pill { display: inline-block; white-space: nowrap; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
+.pill.ok { color: var(--ok); background: var(--ok-bg); }
+.pill.warn { color: var(--warn); background: var(--warn-bg); }
+.pill.bad { color: var(--bad); background: var(--bad-bg); }
+.pill.idle { color: var(--idle); background: var(--idle-bg); }
+.pill.info { color: var(--info); background: var(--info-bg); }
+
+/* Releases */
+.releases { display: grid; gap: 12px; }
+.release { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.release-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
+.release-head h3 { font-size: 17px; font-weight: 700; }
+.release-head .range { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.bar { height: 6px; border-radius: 999px; background: var(--idle-bg); overflow: hidden; display: flex; }
+.bar span { display: block; height: 100%; }
+.bar .done { background: var(--ok); }
+.bar .partial { background: var(--warn); }
+.stories { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.stories li { display: grid; grid-template-columns: 88px 1fr auto; gap: 4px 12px; align-items: baseline; padding-block: 6px; border-top: 1px solid var(--rule); }
+.stories li:first-child { border-top: 0; }
+.stories .id { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.stories .name { min-width: 0; }
+.stories .name small { display: block; color: var(--muted); font-size: 13px; }
+@media (max-width: 560px) {
+  .stories li { grid-template-columns: 1fr auto; }
+  .stories .id { grid-column: 1 / -1; }
+}
+
+/* Capabilities list */
+.caps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 24px; margin: 0; padding: 0; list-style: none; }
+.caps li { padding-left: 14px; border-left: 2px solid var(--accent); font-size: 14px; }
+.caps li strong { display: block; }
+
+/* Platform flow */
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.node { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
+.node .k { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.node .v { font-weight: 600; font-size: 14px; }
+.node .m { font-family: var(--font-mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.arrow { color: var(--muted); font-size: 18px; }
+
+/* Timeline (a real sequence, so it is ordered) */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.timeline li { display: grid; grid-template-columns: 112px 1fr; gap: 16px; padding-block: 10px; border-top: 1px solid var(--rule); }
+.timeline li:first-child { border-top: 0; }
+.timeline time { font-family: var(--font-mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline .big { font-weight: 700; }
+@media (max-width: 480px) { .timeline li { grid-template-columns: 1fr; gap: 2px; } }
+
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.links li { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; display: grid; gap: 2px; min-width: 0; }
+.links .k { font-size: 12px; color: var(--muted); font-weight: 600; }
+.links a { overflow-wrap: anywhere; font-weight: 600; }
+
+footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Colaberry · RFP response and demo build</p>
+    <h1>SSS Modernization Framework</h1>
+    <p class="lede">Modernizing the U.S. Selective Service System's business systems: online registration, registrant records, compliance verification, exemption and appeal case management, and reporting. Two tracks, the proposal and the working demo, meet at submission.</p>
+    <div class="meta">
+      <span>Last updated <strong>October 1, 2026</strong></span>
+      <span>Owner <strong>Obi Anamelechi Kingsley</strong></span>
+      <span>Decision makers <strong>Ali Muwwakkil, Ram Katamaraja</strong></span>
+    </div>
+  </header>
+
+  <nav class="index" aria-label="Sections">
+    <a href="#glance">At a glance</a>
+    <a href="#proposal">Proposal</a>
+    <a href="#build">BUILD</a>
+    <a href="#demo">Live demo</a>
+    <a href="#platform">Platform</a>
+    <a href="#decisions">Decisions</a>
+    <a href="#timeline">Timeline</a>
+    <a href="#risks">Risks</a>
+    <a href="#links">Links</a>
+  </nav>
+
+  <section id="glance" aria-labelledby="glance-h">
+    <header><h2 id="glance-h">At a glance</h2></header>
+    <div class="summary">
+      <div class="cell">
+        <span class="label">Proposal</span>
+        <span class="value">3 of 11 complete</span>
+        <span class="note">5 tasks wait on Ali; Task 5 is ready for the demo link</span>
+      </div>
+      <div class="cell">
+        <span class="label">BUILD · R0</span>
+        <span class="value">2 of 5 live</span>
+        <span class="note">MFA and pipeline are backend only; AWS waits on Ram</span>
+      </div>
+      <div class="cell">
+        <span class="label">BUILD · R1</span>
+        <span class="value">2 of 11 live</span>
+        <span class="note">Exemptions and case management shipped Oct 1</span>
+      </div>
+      <div class="cell">
+        <span class="label">Next</span>
+        <span class="value">STORY-008</span>
+        <span class="note">Compliance matrix validation</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="proposal" aria-labelledby="proposal-h">
+    <header>
+      <h2 id="proposal-h">Proposal track</h2>
+      <p class="sub">Eleven tasks from scope to submission. Task 10 is a quality gate that needs every earlier task plus sign-off from Ali and Ram. Submission deadline: not yet recorded.</p>
+    </header>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Task</th><th>Status</th><th>Next action</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td class="num">01</td><td><span class="what">Scope Summary</span><div class="detail">INPACT baseline 33/100, mapped to the Trust Before Intelligence framework</div></td><td><span class="pill ok">Complete</span></td><td>—</td><td>Obi</td></tr>
+          <tr><td class="num">02</td><td><span class="what">Bid/No-Bid Analysis</span><div class="detail">BID, high confidence; Echo Health benchmark</div></td><td><span class="pill ok">Complete</span></td><td>—</td><td>Obi</td></tr>
+          <tr><td class="num">03</td><td><span class="what">Compliance Matrix</span><div class="detail">Accessibility, security and privacy, AI governance, performance, FAR</div></td><td><span class="pill ok">Complete</span></td><td>—</td><td>Obi</td></tr>
+          <tr><td class="num">04</td><td><span class="what">SAM.gov Checklist</span><div class="detail">UEI, CAGE, NAICS 541519, reps and certs, EFT</div></td><td><span class="pill bad">Blocked</span></td><td>Verify in SAM.gov and post screenshots</td><td>Ali</td></tr>
+          <tr><td class="num">05</td><td><span class="what">Technical Volume</span><div class="detail">7-Layer architecture with the live demo</div></td><td><span class="pill info">Unblocked</span></td><td>Insert the live demo URL (live since Sep 17)</td><td>Obi</td></tr>
+          <tr><td class="num">06</td><td><span class="what">Management Volume</span></td><td><span class="pill bad">Blocked</span></td><td>Confirm key personnel, experience and schedule</td><td>Ali</td></tr>
+          <tr><td class="num">07</td><td><span class="what">Past Performance</span><div class="detail">Echo Health plus references 2 and 3</div></td><td><span class="pill bad">Blocked</span></td><td>Reference data; send and collect PPQs</td><td>Ali</td></tr>
+          <tr><td class="num">08</td><td><span class="what">Cost/Price Volume</span></td><td><span class="pill bad">Blocked</span></td><td>Finalize CLINs and rates</td><td>Ali</td></tr>
+          <tr><td class="num">09</td><td><span class="what">Federal Forms &amp; Certifications</span></td><td><span class="pill bad">Blocked</span></td><td>Verify forms</td><td>Ali</td></tr>
+          <tr><td class="num">10</td><td><span class="what">Internal Review Gate</span><div class="detail">Created Jul 28; a process, not a document</div></td><td><span class="pill warn">Active</span></td><td>Tasks 1–9 done, then Ali and Ram sign off</td><td>Ali, Ram</td></tr>
+          <tr><td class="num">11</td><td><span class="what">Submission Guide</span></td><td><span class="pill idle">Waiting</span></td><td>Runs after the gate passes</td><td>Obi</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="build" aria-labelledby="build-h">
+    <header>
+      <h2 id="build-h">BUILD track</h2>
+      <p class="sub">46 stories in four releases. Each shipped story is posted once to the Basecamp BUILD ticket, per Ali's rule.</p>
+    </header>
+    <div class="releases">
+      <article class="release">
+        <div class="release-head"><h3>R0 · Walking Skeleton</h3><span class="range">STORY-001 – 005</span></div>
+        <div class="bar" role="img" aria-label="2 of 5 live, 2 partial"><span class="done" style="width:40%"></span><span class="partial" style="width:40%"></span></div>
+        <ul class="stories">
+          <li><span class="id">STORY-001</span><span class="name">Registration and login<small>Plus Ali's guards: SSN hashed and never logged, demo-data banner, masked SSN entry</small></span><span class="pill ok">Live</span></li>
+          <li><span class="id">STORY-002</span><span class="name">Profile update and compliance check<small>Shipped with STORY-006</small></span><span class="pill ok">Live</span></li>
+          <li><span class="id">STORY-003</span><span class="name">Multi-factor authentication<small>Backend endpoints exist; no screens yet</small></span><span class="pill warn">Partial</span></li>
+          <li><span class="id">STORY-004</span><span class="name">Cloud infrastructure and security controls (L5)<small>Waits on Ram's AWS approval; the demo runs on Render</small></span><span class="pill bad">Blocked</span></li>
+          <li><span class="id">STORY-005</span><span class="name">Real-time data pipeline (L2)<small>Backend code exists; not yet verified</small></span><span class="pill warn">Partial</span></li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h3>R1 · Core</h3><span class="range">STORY-006 – 016</span></div>
+        <div class="bar" role="img" aria-label="2 of 11 live"><span class="done" style="width:18%"></span></div>
+        <ul class="stories">
+          <li><span class="id">STORY-006</span><span class="name">Exemption eligibility<small>Types A, B and C, each with a status and a reason; audit-logged</small></span><span class="pill ok">Live</span></li>
+          <li><span class="id">STORY-007</span><span class="name">Case management<small>Apply, review, deny with reason, appeal; timeline, notifications, CSV export</small></span><span class="pill ok">Live</span></li>
+          <li><span class="id">STORY-008</span><span class="name">Compliance matrix validation (L3)</span><span class="pill info">Next</span></li>
+          <li><span class="id">STORY-009</span><span class="name">Data freshness monitoring (under 30 s)</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-010</span><span class="name">Security audit logging, 100% coverage<small>Exemption checks and case changes already logged</small></span><span class="pill warn">Partial</span></li>
+          <li><span class="id">STORY-011</span><span class="name">Accessibility testing (Section 508)</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-012–015</span><span class="name">Role-based dashboards<small>Citizen, case manager and admin roles are in place</small></span><span class="pill warn">Partial</span></li>
+          <li><span class="id">STORY-016</span><span class="name">API governance layer (OPA/ABAC)<small>Draft code exists but is not built or deployed</small></span><span class="pill idle">Not started</span></li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h3>R2 · AI and Governance</h3><span class="range">STORY-017 – 029</span></div>
+        <div class="bar" role="img" aria-label="Not started"></div>
+        <ul class="stories">
+          <li><span class="id">STORY-017–020</span><span class="name">RAG question answering on policy</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-021–022</span><span class="name">Drift detection and hallucination monitoring (under 2%)</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-023–025</span><span class="name">Human-in-the-loop ladder, override tracking (under 20%), bias testing</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-026–029</span><span class="name">Observability dashboard</span><span class="pill idle">Not started</span></li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h3>R3 · Scale and Launch</h3><span class="range">STORY-030 – 046</span></div>
+        <div class="bar" role="img" aria-label="Not started"></div>
+        <ul class="stories">
+          <li><span class="id">STORY-030–034</span><span class="name">Load testing (10K users), p95 under 2 s, multi-region failover</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-035–040</span><span class="name">Training portal, monitoring, incident playbook, runbooks</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-041–046</span><span class="name">Penetration test, accessibility audit, go-live review</span><span class="pill idle">Not started</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section id="demo" aria-labelledby="demo-h">
+    <header>
+      <h2 id="demo-h">What the live demo does today</h2>
+      <p class="sub"><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a> · synthetic data only. The first visit after idle takes about 50 seconds while the free server wakes.</p>
+    </header>
+    <ul class="caps">
+      <li><strong>Secure sign-up</strong>Passwords and SSNs stored as bcrypt hashes; 1-hour sessions; masked SSN entry</li>
+      <li><strong>Profile and compliance</strong>Phone, address, income and hardship; checks 18+, phone and address</li>
+      <li><strong>Exemption eligibility</strong>Senior (65+), income (under $20,000), hardship (caseworker review), each with a reason</li>
+      <li><strong>Case management</strong>Submitted → In Review → Approved or Denied, appeals, timeline and internal notes</li>
+      <li><strong>Notifications</strong>Applicants are notified of every status change, with the reason</li>
+      <li><strong>Roles and audit</strong>Citizen, case manager and admin; staff actions and eligibility checks are audit-logged</li>
+    </ul>
+  </section>
+
+  <section id="platform" aria-labelledby="platform-h">
+    <header>
+      <h2 id="platform-h">Platform</h2>
+      <p class="sub">Claude commits each completed phase, Obi pushes, and Render deploys automatically. Database changes apply on startup through tracked migrations (001–012).</p>
+    </header>
+    <div class="flow">
+      <div class="node"><span class="k">Source</span><span class="v">GitHub</span><span class="m">OBIANAMS04/sss-modernization-demo</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node"><span class="k">Frontend</span><span class="v">React + Vite + Tailwind</span><span class="m">Render static · sss-demo-frontend</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node"><span class="k">API</span><span class="v">Node + Express + TypeScript</span><span class="m">Render web · sss-demo-backend</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node"><span class="k">Database</span><span class="v">PostgreSQL</span><span class="m">Render · sss-demo-db (Oregon)</span></div>
+    </div>
+  </section>
+
+  <section id="decisions" aria-labelledby="decisions-h">
+    <header><h2 id="decisions-h">Decisions</h2></header>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Decision</th><th>By</th></tr></thead>
+        <tbody>
+          <tr><td class="num">2026-07-28</td><td>Validate each proposal task against its ticket's acceptance criteria; Task 10 is a gate, not a document</td><td>Ali</td></tr>
+          <tr><td class="num">2026-08-31</td><td>Host the demo on Render with the Node runtime instead of local Docker</td><td>Obi</td></tr>
+          <tr><td class="num">2026-09-17</td><td>"Do both now": demo-data banner, and SSN hashed and never logged. One post per milestone on the BUILD list</td><td>Ali</td></tr>
+          <tr><td class="num">2026-09-30</td><td>Ship profile update (STORY-002) together with exemption eligibility</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-01</td><td>Case managers granted by email list; documents attached as links until object storage arrives with AWS</td><td>Obi</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="timeline" aria-labelledby="timeline-h">
+    <header><h2 id="timeline-h">Timeline</h2></header>
+    <ol class="timeline">
+      <li><time datetime="2026-07-28">Jul 28, 2026</time><span>Proposal tasks realigned to acceptance criteria; review gate created</span></li>
+      <li><time datetime="2026-08-03">Aug 3, 2026</time><span>Registration (STORY-001) built locally</span></li>
+      <li><time datetime="2026-09-16">Sep 16, 2026</time><span>Real source code reaches GitHub; first Render deploy</span></li>
+      <li><time datetime="2026-09-17">Sep 17, 2026</time><span class="big">R0 live demo verified and posted; Ali's guards decision</span></li>
+      <li><time datetime="2026-09-26">Sep 26, 2026</time><span>Guards live: SSN hashed, demo banner, masked SSN, real error messages</span></li>
+      <li><time datetime="2026-09-30">Sep 30, 2026</time><span>Guards confirmation posted; automatic migrations; site-wide styling fix</span></li>
+      <li><time datetime="2026-10-01">Oct 1, 2026</time><span class="big">Exemption eligibility and case management live; access-control fix</span></li>
+    </ol>
+  </section>
+
+  <section id="risks" aria-labelledby="risks-h">
+    <header><h2 id="risks-h">Risks and follow-ups</h2></header>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Severity</th><th>Risk</th><th>Action</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill bad">High</span></td><td>Five proposal tasks wait on Ali and the deadline is not recorded</td><td>Confirm the deadline; work through the task checklist</td><td>Ali</td></tr>
+          <tr><td><span class="pill bad">High</span></td><td>AWS approval pending</td><td>Unblocks STORY-004 and real document upload</td><td>Ram</td></tr>
+          <tr><td><span class="pill warn">Medium</span></td><td>Database password and session secret were shared in chat on Sep 17</td><td>Rotate both before any real data</td><td>Obi</td></tr>
+          <tr><td><span class="pill warn">Medium</span></td><td>8 dependency vulnerabilities reported on Oct 1, mostly in build tooling</td><td>Upgrade pass before go-live</td><td>Obi</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>Free hosting sleeps when idle</td><td>Open the site a minute before a demo</td><td>Obi</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>No automated frontend tests; older backend route tests are stale</td><td>Add tests as R1 continues</td><td>Obi</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="links" aria-labelledby="links-h">
+    <header><h2 id="links-h">Links</h2></header>
+    <ul class="links">
+      <li><span class="k">Live demo</span><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></li>
+      <li><span class="k">Basecamp BUILD ticket</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172">Selective Service Modernization – BUILD</a></li>
+      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10363503258">STORY-007 Case Management</a></li>
+      <li><span class="k">Source code</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo">github.com/OBIANAMS04/sss-modernization-demo</a></li>
+      <li><span class="k">Hosting</span><a href="https://dashboard.render.com">dashboard.render.com</a></li>
+      <li><span class="k">API health</span><a href="https://sss-demo-backend.onrender.com/health">sss-demo-backend.onrender.com/health</a></li>
+    </ul>
+  </section>
+
+  <footer>Updated after every milestone. The text version lives in the repository at <span class="mono">docs/PROJECT-FRAMEWORK.md</span>.</footer>
+</div>
