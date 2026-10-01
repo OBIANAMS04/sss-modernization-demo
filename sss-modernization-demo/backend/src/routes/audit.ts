@@ -1,6 +1,8 @@
 import { Router, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
+import { requireStaff } from '../middleware/requireStaff';
+import { getUserRole, isStaff } from '../services/roleService';
 import {
   getAuditLogs,
   getAuditLogsByUser,
@@ -40,7 +42,7 @@ function authMiddleware(req: any, _res: Response, next: NextFunction) {
 router.use(authMiddleware);
 
 // GET /audit - Query audit logs with filters
-router.get('/', async (req: any, res: Response, next: NextFunction) => {
+router.get('/', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const {
       action,
@@ -89,10 +91,9 @@ router.get('/user/:userId', async (req: any, res: Response, next: NextFunction) 
     const { userId } = req.params;
     const { limit = 50 } = req.query;
 
-    // Users can only view their own logs (unless admin)
+    // Users can only view their own logs (staff can view anyone's)
     const requestingUserId = req.user?.sub;
-    if (requestingUserId !== userId) {
-      // In production, would check for admin role
+    if (requestingUserId !== userId && !isStaff(await getUserRole(requestingUserId))) {
       throw new AppError(403, 'Access denied', 'FORBIDDEN');
     }
 
@@ -109,7 +110,7 @@ router.get('/user/:userId', async (req: any, res: Response, next: NextFunction) 
 });
 
 // GET /audit/resource/:resource/:resourceId - Get audit trail for resource
-router.get('/resource/:resource/:resourceId', async (req: any, res: Response, next: NextFunction) => {
+router.get('/resource/:resource/:resourceId', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { resource, resourceId } = req.params;
     const { limit = 100 } = req.query;
@@ -128,9 +129,8 @@ router.get('/resource/:resource/:resourceId', async (req: any, res: Response, ne
 });
 
 // GET /audit/stats - Get audit statistics (admin only)
-router.get('/stats', async (_req: any, res: Response, next: NextFunction) => {
+router.get('/stats', requireStaff, async (_req: any, res: Response, next: NextFunction) => {
   try {
-    // In production, would check for admin role
     const stats = await getAuditStats();
 
     res.json({

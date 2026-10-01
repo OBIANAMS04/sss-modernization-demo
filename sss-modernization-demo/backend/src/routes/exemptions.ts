@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
+import { requireStaff } from '../middleware/requireStaff';
 import {
   getExemptionsByUserId,
   runEligibilityCheck,
@@ -73,10 +74,9 @@ router.post('/check', async (req: AuthRequest, res: Response, next: NextFunction
   }
 });
 
-// GET /exemptions/stats - Get aggregated exemption stats (admin only)
-router.get('/stats', async (_req: AuthRequest, res: Response, next: NextFunction) => {
+// GET /exemptions/stats - Get aggregated exemption stats (staff only)
+router.get('/stats', requireStaff, async (_req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    // In production, would check for admin role
     const stats = await getExemptionStats();
 
     res.json({

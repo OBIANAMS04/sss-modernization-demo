@@ -1,6 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
+import { requireStaff } from '../middleware/requireStaff';
 import {
   getLatencyStats,
   getAggregatedMetrics,
@@ -39,7 +40,7 @@ function authMiddleware(req: any, _res: Response, next: NextFunction) {
 router.use(authMiddleware);
 
 // GET /latency/stats - Get latency statistics for entity/operation
-router.get('/stats', async (req: any, res: Response, next: NextFunction) => {
+router.get('/stats', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { entityType, operation, hours = 1 } = req.query;
 
@@ -56,7 +57,7 @@ router.get('/stats', async (req: any, res: Response, next: NextFunction) => {
 });
 
 // GET /latency/metrics - Get aggregated latency metrics
-router.get('/metrics', async (req: any, res: Response, next: NextFunction) => {
+router.get('/metrics', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { hours = 1 } = req.query;
 
@@ -69,7 +70,7 @@ router.get('/metrics', async (req: any, res: Response, next: NextFunction) => {
 });
 
 // GET /latency/slo-violations - Check for SLO violations
-router.get('/slo-violations', async (req: any, res: Response, next: NextFunction) => {
+router.get('/slo-violations', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { hours = 1 } = req.query;
 
@@ -88,7 +89,7 @@ router.get('/slo-violations', async (req: any, res: Response, next: NextFunction
 });
 
 // POST /latency/cleanup - Manually cleanup old metrics (admin only)
-router.post('/cleanup', async (req: any, res: Response, next: NextFunction) => {
+router.post('/cleanup', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { daysToKeep = 7 } = req.body;
 

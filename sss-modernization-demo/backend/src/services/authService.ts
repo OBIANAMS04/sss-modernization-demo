@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import pool from '../database/connection';
 import { generateToken } from '../utils/jwt';
 import { ConflictError, ValidationError } from '../utils/errors';
+import { roleForNewUser, Role } from './roleService';
 
 export interface RegisterInput {
   email: string;
@@ -17,6 +18,7 @@ export interface RegisterResponse {
     email: string;
     fullName: string;
     createdAt: string;
+    role: Role;
   };
   token: string;
 }
@@ -40,10 +42,10 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
 
     // Insert user
     const result = await client.query(
-      `INSERT INTO users (email, password_hash, full_name, ssn_hash, dob, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-       RETURNING id, email, full_name, created_at`,
-      [input.email, passwordHash, input.fullName, ssnHash, input.dob]
+      `INSERT INTO users (email, password_hash, full_name, ssn_hash, dob, role, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+       RETURNING id, email, full_name, role, created_at`,
+      [input.email, passwordHash, input.fullName, ssnHash, input.dob, roleForNewUser(input.email)]
     );
 
     await client.query('COMMIT');
@@ -57,6 +59,7 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
         email: user.email,
         fullName: user.full_name,
         createdAt: user.created_at,
+        role: user.role,
       },
       token,
     };
@@ -70,7 +73,7 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
 
 export async function loginUser(email: string, password: string) {
   const result = await pool.query(
-    'SELECT id, email, password_hash, full_name, created_at FROM users WHERE email = $1',
+    'SELECT id, email, password_hash, full_name, role, created_at FROM users WHERE email = $1',
     [email]
   );
 
@@ -93,6 +96,7 @@ export async function loginUser(email: string, password: string) {
       email: user.email,
       fullName: user.full_name,
       createdAt: user.created_at,
+      role: user.role,
     },
     token,
   };

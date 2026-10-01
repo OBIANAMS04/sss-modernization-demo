@@ -197,6 +197,7 @@ export async function updateCase(caseId: string, input: UpdateCaseInput): Promis
 
     if (updates.length === 1) {
       // No actual updates
+      await client.query('ROLLBACK');
       return await getCaseById(caseId);
     }
 

@@ -1,6 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
+import { requireStaff } from '../middleware/requireStaff';
 import {
   COMPLIANCE_MATRIX,
   getComplianceChecksByRequirement,
@@ -54,7 +55,7 @@ router.get('/matrix', async (_req: any, res: Response, next: NextFunction) => {
 });
 
 // POST /compliance/check/case/:caseId - Perform compliance checks for case
-router.post('/check/case/:caseId', async (req: any, res: Response, next: NextFunction) => {
+router.post('/check/case/:caseId', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { caseId } = req.params;
     const userId = req.user?.sub;
@@ -78,7 +79,7 @@ router.post('/check/case/:caseId', async (req: any, res: Response, next: NextFun
 });
 
 // GET /compliance/checks/requirement/:requirementId - Get checks for requirement
-router.get('/checks/requirement/:requirementId', async (req: any, res: Response, next: NextFunction) => {
+router.get('/checks/requirement/:requirementId', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { requirementId } = req.params;
     const { limit = 50 } = req.query;
@@ -96,7 +97,7 @@ router.get('/checks/requirement/:requirementId', async (req: any, res: Response,
 });
 
 // GET /compliance/checks/case/:caseId - Get checks for case
-router.get('/checks/case/:caseId', async (req: any, res: Response, next: NextFunction) => {
+router.get('/checks/case/:caseId', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { caseId } = req.params;
 
@@ -115,7 +116,7 @@ router.get('/checks/case/:caseId', async (req: any, res: Response, next: NextFun
 });
 
 // GET /compliance/audit - Get audit log with date range filtering
-router.get('/audit', async (req: any, res: Response, next: NextFunction) => {
+router.get('/audit', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { startDate, endDate, limit = 100 } = req.query;
 
@@ -138,7 +139,7 @@ router.get('/audit', async (req: any, res: Response, next: NextFunction) => {
 });
 
 // GET /compliance/dashboard - Get compliance dashboard metrics
-router.get('/dashboard', async (req: any, res: Response, next: NextFunction) => {
+router.get('/dashboard', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { days = 7 } = req.query;
 
@@ -172,7 +173,7 @@ router.get('/dashboard', async (req: any, res: Response, next: NextFunction) => 
 });
 
 // POST /compliance/recalculate/:dateStr - Manually recalculate for date
-router.post('/recalculate/:dateStr', async (req: any, res: Response, next: NextFunction) => {
+router.post('/recalculate/:dateStr', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { dateStr } = req.params;
 

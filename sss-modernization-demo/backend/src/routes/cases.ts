@@ -1,6 +1,9 @@
 import { Router, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
+import { requireStaff } from '../middleware/requireStaff';
+import { getUserRole, isStaff } from '../services/roleService';
+import pool from '../database/connection';
 import {
   createCase,
   getCaseById,
@@ -15,13 +18,7 @@ import {
 
 const router = Router();
 
-interface AuthRequest {
-  headers: any;
-  user?: {
-    sub: string;
-    email: string;
-  };
-}
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Middleware to verify JWT token
 function authMiddleware(req: any, _res: Response, next: NextFunction) {
@@ -43,7 +40,19 @@ function authMiddleware(req: any, _res: Response, next: NextFunction) {
 // Apply auth middleware to all routes
 router.use(authMiddleware);
 
-// POST /cases - Create new case
+/** Loads the case and allows only its owner or staff. */
+async function loadAccessibleCase(req: any, caseId: string) {
+  if (!UUID_PATTERN.test(caseId)) {
+    throw new AppError(404, 'Case not found', 'NOT_FOUND');
+  }
+  const caseData = await getCaseById(caseId);
+  if (caseData.userId !== req.user?.sub && !isStaff(await getUserRole(req.user?.sub))) {
+    throw new AppError(403, 'Access denied', 'FORBIDDEN');
+  }
+  return caseData;
+}
+
+// POST /cases - Create a case for one of the caller's own exemptions
 router.post('/', async (req: any, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.sub;
@@ -52,19 +61,31 @@ router.post('/', async (req: any, res: Response, next: NextFunction) => {
     }
 
     const { exemptionId } = req.body;
+    if (exemptionId) {
+      const owned = await pool.query('SELECT 1 FROM exemptions WHERE id = $1 AND user_id = $2', [exemptionId, userId]);
+      if (owned.rows.length === 0) {
+        throw new AppError(403, 'You can only open a case for your own exemption', 'FORBIDDEN');
+      }
+    }
 
-    const caseData = await createCase({
-      userId,
-      exemptionId,
-    });
-
+    const caseData = await createCase({ userId, exemptionId });
     res.status(201).json(caseData);
   } catch (error) {
     next(error);
   }
 });
 
-// GET /cases - Get cases (user or admin view)
+// GET /cases/stats - Case statistics (staff only). Declared before /:id so it is reachable.
+router.get('/stats', requireStaff, async (_req: any, res: Response, next: NextFunction) => {
+  try {
+    const stats = await getCaseStats();
+    res.json(stats);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /cases - The caller's own cases, or all cases (filtered) for staff
 router.get('/', async (req: any, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.sub;
@@ -72,14 +93,15 @@ router.get('/', async (req: any, res: Response, next: NextFunction) => {
       throw new AppError(401, 'User not found in token', 'UNAUTHORIZED');
     }
 
-    const { page = 1, limit = 10, status, assignedTo } = req.query;
+    const { page = 1, limit = 10, status, assignedTo, scope } = req.query;
 
-    // If admin filter params provided, return all cases
-    if (status || assignedTo) {
+    if (scope === 'all' || status || assignedTo) {
+      if (!isStaff(await getUserRole(userId))) {
+        throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
+      }
       const result = await getAllCases({ status, assignedTo }, parseInt(page), parseInt(limit));
       res.json(result);
     } else {
-      // Otherwise return user's cases
       const result = await getCasesByUserId(userId, parseInt(page), parseInt(limit));
       res.json(result);
     }
@@ -88,27 +110,18 @@ router.get('/', async (req: any, res: Response, next: NextFunction) => {
   }
 });
 
-// GET /cases/:id - Get case details
+// GET /cases/:id - Case details (owner or staff)
 router.get('/:id', async (req: any, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    const caseData = await getCaseById(id);
-
-    // Verify user owns case or is admin
-    const userId = req.user?.sub;
-    if (caseData.userId !== userId) {
-      // In production, would check for admin role
-      throw new AppError(403, 'Access denied', 'FORBIDDEN');
-    }
-
+    const caseData = await loadAccessibleCase(req, req.params.id);
     res.json(caseData);
   } catch (error) {
     next(error);
   }
 });
 
-// PUT /cases/:id - Update case
-router.put('/:id', async (req: any, res: Response, next: NextFunction) => {
+// PUT /cases/:id - Update status / assignment / note (staff only)
+router.put('/:id', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const { status, assignedTo, notes } = req.body;
@@ -120,19 +133,18 @@ router.put('/:id', async (req: any, res: Response, next: NextFunction) => {
   }
 });
 
-// GET /cases/:id/notes - Get case notes
+// GET /cases/:id/notes - Case notes (owner or staff)
 router.get('/:id/notes', async (req: any, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-
-    const notes = await getCaseNotes(id);
+    await loadAccessibleCase(req, req.params.id);
+    const notes = await getCaseNotes(req.params.id);
     res.json({ notes });
   } catch (error) {
     next(error);
   }
 });
 
-// POST /cases/:id/documents - Upload case document
+// POST /cases/:id/documents - Attach a document (owner or staff)
 router.post('/:id/documents', async (req: any, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -142,8 +154,8 @@ router.post('/:id/documents', async (req: any, res: Response, next: NextFunction
       throw new AppError(400, 'documentType and documentUrl are required', 'VALIDATION_ERROR');
     }
 
-    const caseManagerEmail = req.user?.email || 'unknown';
-    const doc = await addCaseDocument(id, documentType, documentUrl, caseManagerEmail);
+    await loadAccessibleCase(req, id);
+    const doc = await addCaseDocument(id, documentType, documentUrl, req.user?.email || 'unknown');
 
     res.status(201).json(doc);
   } catch (error) {
@@ -151,23 +163,12 @@ router.post('/:id/documents', async (req: any, res: Response, next: NextFunction
   }
 });
 
-// GET /cases/:id/documents - Get case documents
+// GET /cases/:id/documents - Case documents (owner or staff)
 router.get('/:id/documents', async (req: any, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-
-    const documents = await getCaseDocuments(id);
+    await loadAccessibleCase(req, req.params.id);
+    const documents = await getCaseDocuments(req.params.id);
     res.json({ documents });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET /cases/stats - Get case statistics (admin only)
-router.get('/stats', async (_req: any, res: Response, next: NextFunction) => {
-  try {
-    const stats = await getCaseStats();
-    res.json(stats);
   } catch (error) {
     next(error);
   }

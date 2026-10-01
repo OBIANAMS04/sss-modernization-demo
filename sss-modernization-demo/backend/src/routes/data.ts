@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { dataPipeline, DataFreshness } from '../services/dataPipelineService';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
+import { getUserRole, isStaff } from '../services/roleService';
 
 const router = Router();
 
@@ -35,7 +36,10 @@ router.get('/pipeline-status', async (req: AuthRequest, res: Response, next: Nex
   try {
     const userId = req.query.userId as string;
 
-    // If user is authenticated, use their ID; otherwise use provided ID
+    // Another user's status is staff-only; anonymous callers get the generic status below
+    if (userId && userId !== req.user?.sub && !(req.user?.sub && isStaff(await getUserRole(req.user.sub)))) {
+      throw new AppError(403, 'Cannot access other user pipeline status', 'FORBIDDEN');
+    }
     const targetUserId = userId || req.user?.sub;
 
     if (!targetUserId) {
