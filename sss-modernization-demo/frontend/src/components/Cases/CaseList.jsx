@@ -139,11 +139,19 @@ export default function CaseList() {
                     <input type="checkbox" checked={filters.openOnly} onChange={(e) => updateFilter('openOnly', e.target.checked)} className="h-4 w-4" />
                     Open cases only
                   </label>
-                  <button onClick={handleExport} disabled={exporting} className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900 disabled:opacity-50">
-                    {exporting ? 'Exporting...' : 'Export CSV'}
+                  <button
+                    onClick={handleExport}
+                    disabled={exporting || loading || result.total === 0}
+                    title="Exports the cases matching the filters on this page"
+                    className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900 disabled:opacity-50"
+                  >
+                    {exporting ? 'Exporting...' : `Export CSV (${result.total} case${result.total === 1 ? '' : 's'})`}
                   </button>
                 </div>
               </div>
+              <p className="mt-3 text-xs text-gray-500">
+                Export downloads exactly the cases matching these filters. Untick "Open cases only" to include approved and denied cases.
+              </p>
               {(filters.status || filters.exemptionType || filters.assignedTo || filters.applicant || !filters.openOnly) && (
                 <button
                   onClick={() => {
