@@ -10,6 +10,7 @@ import casesRoutes from './routes/cases';
 import complianceRoutes from './routes/compliance';
 import latencyRoutes from './routes/latency';
 import auditRoutes from './routes/audit';
+import notificationRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -39,6 +40,7 @@ app.use('/api/cases', casesRoutes);
 app.use('/api/compliance', complianceRoutes);
 app.use('/api/latency', latencyRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

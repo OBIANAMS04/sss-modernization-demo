@@ -1,174 +1,220 @@
 import { Router, Response, NextFunction } from 'express';
-import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
+import { authenticate } from '../middleware/authenticate';
 import { requireStaff } from '../middleware/requireStaff';
 import { getUserRole, isStaff } from '../services/roleService';
-import pool from '../database/connection';
 import {
-  createCase,
-  getCaseById,
-  getCasesByUserId,
-  getAllCases,
-  updateCase,
-  getCaseNotes,
-  addCaseDocument,
-  getCaseDocuments,
+  Actor,
+  CaseFilters,
+  DOCUMENT_TYPES,
+  addDocument,
+  addNote,
+  allowedTransitions,
+  applyForExemption,
+  assignCase,
+  changeStatus,
+  exportCasesCsv,
+  getCaseDetail,
   getCaseStats,
+  getCasesByUserId,
+  getStaffMembers,
+  listCases,
 } from '../services/caseService';
 
 const router = Router();
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Middleware to verify JWT token
-function authMiddleware(req: any, _res: Response, next: NextFunction) {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AppError(401, 'Missing or invalid authorization header', 'UNAUTHORIZED');
-    }
+router.use(authenticate);
 
-    const token = authHeader.substring(7);
-    const decoded = verifyToken(token);
-    req.user = decoded as any;
-    next();
-  } catch (error) {
-    next(error);
-  }
+async function actorFrom(req: any): Promise<Actor> {
+  return { id: req.user.sub, email: req.user.email, role: await getUserRole(req.user.sub) };
 }
 
-// Apply auth middleware to all routes
-router.use(authMiddleware);
-
-/** Loads the case and allows only its owner or staff. */
-async function loadAccessibleCase(req: any, caseId: string) {
-  if (!UUID_PATTERN.test(caseId)) {
-    throw new AppError(404, 'Case not found', 'NOT_FOUND');
-  }
-  const caseData = await getCaseById(caseId);
-  if (caseData.userId !== req.user?.sub && !isStaff(await getUserRole(req.user?.sub))) {
-    throw new AppError(403, 'Access denied', 'FORBIDDEN');
-  }
-  return caseData;
+function filtersFrom(query: any): CaseFilters {
+  return {
+    status: query.status || undefined,
+    exemptionType: query.exemptionType || undefined,
+    assignedTo: query.assignedTo || undefined,
+    applicant: query.applicant || undefined,
+    openOnly: query.openOnly === 'true',
+  };
 }
 
-// POST /cases - Create a case for one of the caller's own exemptions
+/** Loads the case for its owner or staff, with the actions this viewer may take. */
+async function loadCaseForViewer(req: any) {
+  const { id } = req.params;
+  if (!UUID_PATTERN.test(id)) throw new AppError(404, 'Case not found', 'NOT_FOUND');
+
+  const actor = await actorFrom(req);
+  const staff = isStaff(actor.role);
+  const detail = await getCaseDetail(id, staff);
+  const isApplicant = detail.userId === actor.id;
+  if (!isApplicant && !staff) throw new AppError(403, 'Access denied', 'FORBIDDEN');
+
+  // Staff never review their own case: on it they only get applicant actions.
+  const reviewer = staff && !isApplicant;
+  const actions = {
+    transitions: allowedTransitions(detail.status, isApplicant ? 'applicant' : 'staff'),
+    canAssign: reviewer,
+    canAddNote: reviewer,
+    canAddDocument: true,
+  };
+  return { actor, detail, actions, reviewer };
+}
+
+// POST /cases - Applicant applies for one of their own exemptions
 router.post('/', async (req: any, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.sub;
-    if (!userId) {
-      throw new AppError(401, 'User not found in token', 'UNAUTHORIZED');
-    }
-
     const { exemptionId } = req.body;
-    if (exemptionId) {
-      const owned = await pool.query('SELECT 1 FROM exemptions WHERE id = $1 AND user_id = $2', [exemptionId, userId]);
-      if (owned.rows.length === 0) {
-        throw new AppError(403, 'You can only open a case for your own exemption', 'FORBIDDEN');
-      }
+    if (!exemptionId || !UUID_PATTERN.test(exemptionId)) {
+      throw new AppError(400, 'exemptionId is required', 'VALIDATION_ERROR');
     }
-
-    const caseData = await createCase({ userId, exemptionId });
-    res.status(201).json(caseData);
+    res.status(201).json(await applyForExemption(exemptionId, await actorFrom(req)));
   } catch (error) {
     next(error);
   }
 });
 
-// GET /cases/stats - Case statistics (staff only). Declared before /:id so it is reachable.
+// The fixed paths below are declared before /:id so they are reachable.
+
+// GET /cases/managers - Staff members a case can be assigned to
+router.get('/managers', requireStaff, async (_req: any, res: Response, next: NextFunction) => {
+  try {
+    res.json({ managers: await getStaffMembers() });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /cases/export - CSV of cases matching the filters (staff only). Never includes SSNs.
+router.get('/export', requireStaff, async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const csv = await exportCasesCsv(filtersFrom(req.query));
+    const date = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="sss-cases-${date}.csv"`);
+    res.send(csv);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /cases/stats - Case statistics (staff only)
 router.get('/stats', requireStaff, async (_req: any, res: Response, next: NextFunction) => {
   try {
-    const stats = await getCaseStats();
-    res.json(stats);
+    res.json(await getCaseStats());
   } catch (error) {
     next(error);
   }
 });
 
-// GET /cases - The caller's own cases, or all cases (filtered) for staff
+// GET /cases - The caller's own cases, or all cases (filtered) with scope=all for staff
 router.get('/', async (req: any, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.sub;
-    if (!userId) {
-      throw new AppError(401, 'User not found in token', 'UNAUTHORIZED');
-    }
-
-    const { page = 1, limit = 10, status, assignedTo, scope } = req.query;
-
-    if (scope === 'all' || status || assignedTo) {
-      if (!isStaff(await getUserRole(userId))) {
+    const { scope, page = 1, limit = 25 } = req.query;
+    if (scope === 'all') {
+      if (!isStaff(await getUserRole(req.user.sub))) {
         throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
       }
-      const result = await getAllCases({ status, assignedTo }, parseInt(page), parseInt(limit));
-      res.json(result);
+      res.json(await listCases(filtersFrom(req.query), parseInt(page, 10) || 1, parseInt(limit, 10) || 25));
     } else {
-      const result = await getCasesByUserId(userId, parseInt(page), parseInt(limit));
-      res.json(result);
+      const cases = await getCasesByUserId(req.user.sub);
+      res.json({ cases, total: cases.length, page: 1 });
     }
   } catch (error) {
     next(error);
   }
 });
 
-// GET /cases/:id - Case details (owner or staff)
+// GET /cases/:id - Case detail with timeline and the viewer's allowed actions
 router.get('/:id', async (req: any, res: Response, next: NextFunction) => {
   try {
-    const caseData = await loadAccessibleCase(req, req.params.id);
-    res.json(caseData);
+    const { detail, actions } = await loadCaseForViewer(req);
+    res.json({ ...detail, actions, documentTypes: DOCUMENT_TYPES });
   } catch (error) {
     next(error);
   }
 });
 
-// PUT /cases/:id - Update status / assignment / note (staff only)
-router.put('/:id', requireStaff, async (req: any, res: Response, next: NextFunction) => {
+// POST /cases/:id/status - { status, reason } (rules enforced in the service)
+router.post('/:id/status', async (req: any, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    const { status, assignedTo, notes } = req.body;
-
-    const caseData = await updateCase(id, { status, assignedTo, notes });
-    res.json(caseData);
+    const { actor } = await loadCaseForViewer(req);
+    res.json(await changeStatus(req.params.id, req.body.status, actor, req.body.reason));
   } catch (error) {
     next(error);
   }
 });
 
-// GET /cases/:id/notes - Case notes (owner or staff)
+// PUT /cases/:id/assignment - { assignedTo: email | null } (staff, not on their own case)
+router.put('/:id/assignment', async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const { actor, reviewer } = await loadCaseForViewer(req);
+    if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
+    res.json(await assignCase(req.params.id, req.body.assignedTo || null, actor));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /cases/:id/notes - Internal note (staff, not on their own case)
+router.post('/:id/notes', async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const { actor, reviewer } = await loadCaseForViewer(req);
+    if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
+    res.status(201).json(await addNote(req.params.id, req.body.content, actor));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /cases/:id/notes - Internal notes (staff only)
 router.get('/:id/notes', async (req: any, res: Response, next: NextFunction) => {
   try {
-    await loadAccessibleCase(req, req.params.id);
-    const notes = await getCaseNotes(req.params.id);
-    res.json({ notes });
+    const { detail, reviewer } = await loadCaseForViewer(req);
+    if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
+    res.json({ notes: detail.notes });
   } catch (error) {
     next(error);
   }
 });
 
-// POST /cases/:id/documents - Attach a document (owner or staff)
+// POST /cases/:id/documents - { documentType, documentUrl } (owner or staff)
 router.post('/:id/documents', async (req: any, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
+    const { actor } = await loadCaseForViewer(req);
     const { documentType, documentUrl } = req.body;
-
     if (!documentType || !documentUrl) {
       throw new AppError(400, 'documentType and documentUrl are required', 'VALIDATION_ERROR');
     }
-
-    await loadAccessibleCase(req, id);
-    const doc = await addCaseDocument(id, documentType, documentUrl, req.user?.email || 'unknown');
-
-    res.status(201).json(doc);
+    res.status(201).json(await addDocument(req.params.id, documentType, documentUrl, actor));
   } catch (error) {
     next(error);
   }
 });
 
-// GET /cases/:id/documents - Case documents (owner or staff)
+// GET /cases/:id/documents - (owner or staff)
 router.get('/:id/documents', async (req: any, res: Response, next: NextFunction) => {
   try {
-    await loadAccessibleCase(req, req.params.id);
-    const documents = await getCaseDocuments(req.params.id);
-    res.json({ documents });
+    const { detail } = await loadCaseForViewer(req);
+    res.json({ documents: detail.documents });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /cases/:id - { status, reason, assignedTo, notes } in one call (staff reviewer).
+// Kept for the original STORY-007 API; the UI uses the specific endpoints above.
+router.put('/:id', async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const { actor, reviewer } = await loadCaseForViewer(req);
+    if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
+    const { status, reason, assignedTo, notes } = req.body;
+    if (assignedTo !== undefined) await assignCase(req.params.id, assignedTo || null, actor);
+    if (notes) await addNote(req.params.id, notes, actor);
+    if (status) await changeStatus(req.params.id, status, actor, reason);
+    res.json(await getCaseDetail(req.params.id, true));
   } catch (error) {
     next(error);
   }

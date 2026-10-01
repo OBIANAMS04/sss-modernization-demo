@@ -1,23 +1,26 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { getUser, clearAuth } from '../../utils/tokenManager';
+import { Link } from 'react-router-dom';
+import { getUser } from '../../utils/tokenManager';
+import { notificationService } from '../../services/notificationService';
 import UserProfile from './UserProfile';
+import AppNav from '../Common/AppNav';
 import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [inbox, setInbox] = useState({ notifications: [], unread: 0 });
 
   useEffect(() => {
     const userData = getUser();
     setUser(userData);
     setLoading(false);
+    notificationService.list(5).then(setInbox).catch(() => {});
   }, []);
 
-  const handleLogout = () => {
-    clearAuth();
-    navigate('/login');
+  const handleMarkAllRead = async () => {
+    await notificationService.markAllRead();
+    setInbox(await notificationService.list(5));
   };
 
   if (loading) {
@@ -33,30 +36,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">SSS Modernization</h1>
-              <p className="text-sm text-gray-600">Platform Dashboard</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                to="/profile"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition duration-200"
-              >
-                Profile &amp; Exemptions
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition duration-200"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <AppNav title="SSS Modernization" subtitle="Platform Dashboard" />
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <DemoEnvironmentBanner />
@@ -122,8 +102,42 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1">
+          <div className="md:col-span-1 space-y-6">
             {user && <UserProfile user={user} />}
+
+            <section className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-lg font-bold text-gray-900">
+                  Notifications
+                  {inbox.unread > 0 && (
+                    <span className="ml-2 inline-block bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full align-middle">
+                      {inbox.unread} new
+                    </span>
+                  )}
+                </h2>
+                {inbox.unread > 0 && (
+                  <button onClick={handleMarkAllRead} className="text-xs text-blue-600 hover:underline">
+                    Mark all read
+                  </button>
+                )}
+              </div>
+              {inbox.notifications.length === 0 ? (
+                <p className="text-sm text-gray-600">No notifications yet.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {inbox.notifications.map((n) => (
+                    <li key={n.id} className={`text-sm rounded-lg p-3 ${n.read ? 'bg-gray-50 text-gray-600' : 'bg-blue-50 text-gray-900'}`}>
+                      {n.caseId ? (
+                        <Link to={`/cases/${n.caseId}`} className="hover:underline">{n.message}</Link>
+                      ) : (
+                        n.message
+                      )}
+                      <span className="block text-xs text-gray-500 mt-1">{new Date(n.createdAt).toLocaleString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </div>
 
           <div className="md:col-span-2">
@@ -182,8 +196,12 @@ export default function Dashboard() {
                     R1: Profile update with compliance check, and exemption eligibility with reasons
                   </li>
                   <li className="flex items-center">
+                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    R1: Case management: applications, review workflow, timeline, notifications, CSV export
+                  </li>
+                  <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-blue-600 mr-2">→</span>
-                    R1 (next): Case management, compliance validation, role-based dashboards
+                    R1 (next): Compliance validation, audit logging, role-based dashboards
                   </li>
                 </ul>
               </div>
