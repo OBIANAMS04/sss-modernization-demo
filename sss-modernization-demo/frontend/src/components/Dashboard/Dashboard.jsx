@@ -94,8 +94,8 @@ export default function Dashboard() {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-gray-600 text-sm">Platform</p>
-                <p className="text-lg font-semibold text-purple-600">R0</p>
+                <p className="text-gray-600 text-sm">Current release</p>
+                <p className="text-lg font-semibold text-purple-600">R1</p>
               </div>
             </div>
           </div>
@@ -145,11 +145,13 @@ export default function Dashboard() {
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Dashboard Overview</h2>
                 <p className="text-gray-700 mb-4">
-                  Welcome to the SSS Modernization Platform! You have successfully logged in to Release Zero (R0) - Walking Skeleton.
+                  Welcome to the SSS Modernization Platform. Release One (R1) is in progress: exemption eligibility, case management and
+                  compliance validation are live.
                 </p>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
-                    <span className="font-semibold">ℹ️ Release Zero Status:</span> The backend API and database have been successfully deployed. This frontend interface provides user authentication and dashboard functionality.
+                    <span className="font-semibold">ℹ️ Getting started:</span> check your exemption eligibility and apply from Profile &amp;
+                    Exemptions. You can follow each application, and any decision with its reason, from its case page.
                   </p>
                 </div>
               </div>
