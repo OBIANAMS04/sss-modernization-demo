@@ -94,7 +94,7 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 | 2026-09-30 | Guards confirmation posted; tracked migrations; site-wide CSS fix |
 | 2026-10-01 | **STORY-006 live** · security fix (roles) · **STORY-007 live**; both posted |
 | 2026-10-02 | **Ali approves STORY-006 and STORY-007**; asks for case manager access |
-| 2026-10-06 | Access rule required for every route (test-enforced) · expired logins return 401 instead of 500 · honest `/health` with deployed commit · self-verified deploys |
+| 2026-10-06 | Access rule required for every route (test-enforced) · expired logins return 401 instead of 500 · honest `/health` with deployed commit · self-verified deploys · runtime security patches · Ali's case manager access live; reply posted `#__recording_10375070502` |
 
 Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_10355304599` · STORY-006 `#__recording_10362153151` · STORY-007 `#__recording_10363503258` · Ali's approval `#__recording_10365688982` (BUILD ticket https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172)
 
@@ -107,7 +107,7 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 | Proposal Tasks 4, 6–9 waiting on Ali; deadline unknown | Submission at risk | Confirm deadline; Ali's checklist in TASK_COMPLETION_STATUS.md |
 | AWS approval (Ram) pending | Blocks STORY-004 and real document upload | Ram decision |
 | Render DB password and JWT secret were shared in chat (2026-09-17) | Must not hold real PII as-is | Rotate both before any real data |
-| `npm audit`: 8 vulnerabilities (4 moderate, 3 high, 1 critical) on 2026-10-01 | Mostly dev/install-time; `express`/`qs` DoS in request path | Upgrade pass before go-live |
+| `npm audit` (2026-10-06): 44 findings, but only 3 in runtime dependencies after the non-breaking patch update (Express 4.22.3, proxy-addr, qs, body-parser) | Remaining critical (`tar`) runs only while bcrypt installs, never on requests; the rest are jest/eslint tooling | Dependency upgrade pass before go-live (consider bcryptjs to drop tar) |
 | Render free tier sleeps | ~50 s first load | Warm the site before demos, or upgrade |
 | No frontend test framework; old backend route tests stale | Regressions caught late | Add tests as R1 continues |
 | Norton HTTPS scanning on Obi's laptop corrupts some connectors | Colaberry works via local bridge; others fail | Optional Norton exclusion |
