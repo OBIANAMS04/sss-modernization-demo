@@ -120,7 +120,8 @@ export interface ControlResult {
   evidence: string;
 }
 
-const when = (d: Date | null) => (d ? new Date(d).toISOString().replace('T', ' ').slice(0, 16) : 'never');
+// Seconds matter here: a re-check and a profile change often fall in the same minute.
+const when = (d: Date | null) => (d ? `${new Date(d).toISOString().replace('T', ' ').slice(0, 19)} UTC` : 'never');
 
 /** Evaluates every control that applies to the decision. Pure: no I/O. */
 export function evaluateControls(ctx: DecisionContext): ControlResult[] {
