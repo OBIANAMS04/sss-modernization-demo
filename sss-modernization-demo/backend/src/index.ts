@@ -8,6 +8,12 @@ dotenv.config();
 const PORT = process.env.PORT || 3001;
 
 async function start() {
+  // Without JWT_SECRET, tokens would be signed with the public development default and anyone
+  // could forge a login. Refuse to start on Render (which sets RENDER=true) rather than run that way.
+  if (process.env.RENDER && !process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not set; refusing to start with the development default');
+  }
+
   // Bring the schema up to date before accepting traffic. If this fails the process
   // exits, so a Render deploy fails and the previous version keeps serving.
   await runMigrations();

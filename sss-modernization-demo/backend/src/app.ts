@@ -12,6 +12,7 @@ import latencyRoutes from './routes/latency';
 import auditRoutes from './routes/audit';
 import notificationRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
+import pool from './database/connection';
 
 dotenv.config();
 
@@ -42,12 +43,33 @@ app.use('/api/latency', latencyRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-// Health check
-app.get('/health', (req, res) => {
+// Health check. It used to answer "database: checking..." without checking anything; now it reports
+// what is actually true, plus the deployed commit so a deploy can be verified from outside.
+app.get('/health', async (_req, res) => {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('timeout')), 3000);
+  });
+  let database = 'ok';
+  let migrations: { applied: number; latest: string | null } | null = null;
+  try {
+    const result: any = await Promise.race([
+      pool.query('SELECT COUNT(*)::int AS applied, MAX(filename) AS latest FROM schema_migrations'),
+      timeout,
+    ]);
+    migrations = { applied: result.rows[0].applied, latest: result.rows[0].latest };
+  } catch {
+    database = 'unreachable';
+  } finally {
+    clearTimeout(timer);
+  }
+
   res.json({
-    status: 'ok',
+    status: database === 'ok' ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
-    database: 'checking...',
+    commit: (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7),
+    database,
+    migrations,
   });
 });
 
