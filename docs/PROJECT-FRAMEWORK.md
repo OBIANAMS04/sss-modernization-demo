@@ -124,6 +124,7 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 - GitHub: https://github.com/OBIANAMS04/sss-modernization-demo
 - STORY-008 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-008
 - Demo briefing (purpose, problems solved, walkthrough; source for the NotebookLM deck): artifact https://claude.ai/artifact/7uX47ceMBSxM2uVJK8smwo · PDF `docs/demo/SSS-Modernization-Demo-Briefing.pdf`
+- Demo slide deck (15 slides with speaker notes; downloads as PowerPoint or PDF): https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W · source `docs/demo/deck/`
 - Render: https://dashboard.render.com
 - Basecamp BUILD ticket: https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172
 

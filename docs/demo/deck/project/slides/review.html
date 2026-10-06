@@ -1,0 +1,13 @@
+<section id="review" data-transition="fade" style="background:#F5F7FA;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 6</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Failures get a second review</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>The case page shows each control with its evidence.</li>
+<li>The deciding manager cannot clear their own review.</li>
+<li>Another manager writes a justification, then accepts the exception or reopens the case.</li>
+</ul>
+</div>
+<img src="/_blob/2cef02068f886797559457614db245d5" alt="Case page with an open compliance review, a justification box and the control results" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 6: the case page lists every control with its evidence; here CTRL-05 (no assigned reviewer) and CTRL-07 (no proof of age) failed. The manager who made the decision cannot clear the review, which is separation of duties under NIST SP 800-53 AC-5, and the server refuses it too. Sam Ortiz, a different case manager, must write a justification first. Then there are two choices: accept the exception, which is recorded as an override in the audit log, or reopen the case, which returns it to In Review and notifies the applicant. Sam reopens it; after proof of age arrives, Sam takes the case and approves it with all controls passing.</aside>
+</section>

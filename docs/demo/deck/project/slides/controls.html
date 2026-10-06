@@ -1,0 +1,18 @@
+<section id="controls" data-transition="fade" style="background:#E9EFF7;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Decision controls</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">What every decision is checked against</h2>
+</div>
+<table style="font-family:'Public Sans', Arial, sans-serif;font-size:24px;color:#15202F;background:#FCFDFE;border:1px solid #CDD6E2">
+<tr style="background:#DCE5F1"><th style="width:14%;padding:14px 24px">Control</th><th style="width:52%;padding:14px 24px">What is checked</th><th style="width:34%;padding:14px 24px">Basis</th></tr>
+<tr><td style="padding:14px 24px">CTRL-01</td><td style="padding:14px 24px">The approval matches a current eligibility result</td><td style="padding:14px 24px">Program eligibility rules</td></tr>
+<tr style="background:#F0F4F9"><td style="padding:14px 24px">CTRL-02</td><td style="padding:14px 24px">Eligibility re-checked after the last profile change</td><td style="padding:14px 24px">Privacy Act, 5 U.S.C. 552a(e)(5)</td></tr>
+<tr><td style="padding:14px 24px">CTRL-03</td><td style="padding:14px 24px">A denial records its reason and notifies the applicant</td><td style="padding:14px 24px">APA, 5 U.S.C. 555(e)</td></tr>
+<tr style="background:#F0F4F9"><td style="padding:14px 24px">CTRL-04</td><td style="padding:14px 24px">The person deciding is not the applicant</td><td style="padding:14px 24px">NIST SP 800-53 AC-5</td></tr>
+<tr><td style="padding:14px 24px">CTRL-05</td><td style="padding:14px 24px">The case is assigned to the manager who decides it</td><td style="padding:14px 24px">Program policy</td></tr>
+<tr style="background:#F0F4F9"><td style="padding:14px 24px">CTRL-06</td><td style="padding:14px 24px">The decision is made from In Review</td><td style="padding:14px 24px">Program policy</td></tr>
+<tr><td style="padding:14px 24px">CTRL-07</td><td style="padding:14px 24px">The required document is on file</td><td style="padding:14px 24px">Program policy</td></tr>
+<tr style="background:#F0F4F9"><td style="padding:14px 24px">CTRL-08</td><td style="padding:14px 24px">The decision is in the audit log: who, what, when</td><td style="padding:14px 24px">NIST SP 800-53 AU-3</td></tr>
+</table>
+<aside>These are the 8 controls checked automatically on every decision. CTRL-01 and CTRL-07 apply to approvals; CTRL-03 applies to denials; the rest apply to every decision. CTRL-02 reflects the Privacy Act's requirement for accurate, timely records used in determinations. CTRL-03 reflects the Administrative Procedure Act's requirement to state the grounds for a denial. CTRL-04 is separation of duties (NIST SP 800-53 AC-5) and CTRL-08 is audit record content (AU-3). The required documents are proof of age for Type A, an income statement for Type B and hardship evidence for Type C.</aside>
+</section>

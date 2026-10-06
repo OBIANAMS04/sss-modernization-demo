@@ -1,0 +1,20 @@
+{
+  "v": 4,
+  "createdOnFiles": { "v": 1, "at": "2026-10-06T16:22:59Z" },
+  "lists": "css",
+  "title": "SSS Modernization Demo",
+  "order": ["cover", "why", "users", "problems", "signup", "queue", "denial", "checks", "review", "audit", "informed", "controls", "security", "roadmap", "closing"],
+  "sections": {
+    "s1": { "description": "Why the platform matters and who it serves", "start": "cover" },
+    "s2": { "description": "The problems it solves", "start": "problems" },
+    "s3": { "description": "The demo, scene by scene", "start": "signup" },
+    "s4": { "description": "Controls, security, status and next steps", "start": "controls" }
+  },
+  "cover": "cover",
+  "faces": {
+    "merriweather": { "family": "Merriweather", "href": "https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&display=swap" },
+    "public-sans": { "family": "Public Sans", "href": "https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" },
+    "roboto-mono": { "family": "Roboto Mono", "href": "https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap" }
+  },
+  "designSystems": []
+}

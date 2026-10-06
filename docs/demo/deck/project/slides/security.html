@@ -1,0 +1,25 @@
+<section id="security" data-transition="fade" style="background:#F5F7FA;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:64px">
+<div style="width:560px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Security and trust</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Built to be checked</h2>
+<p style="font-size:30px;line-height:1.4;color:#45526A">Each safeguard is enforced in code and tested on every change.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<div style="border-top:2px solid #CDD6E2;padding:20px 0px 0px 0px">
+<p style="font-size:30px;line-height:1.4;color:#45526A"><b><span style="color:#15202F">Protected identity data.</span></b> Passwords and SSNs are stored as one-way hashes. The SSN is never returned, logged or exported.</p>
+</div>
+<div style="border-top:2px solid #CDD6E2;padding:20px 0px 0px 0px">
+<p style="font-size:30px;line-height:1.4;color:#45526A"><b><span style="color:#15202F">Access decided per endpoint.</span></b> Every route declares who may use it, and a test fails the build if one lacks its check.</p>
+</div>
+<div style="border-top:2px solid #CDD6E2;padding:20px 0px 0px 0px">
+<p style="font-size:30px;line-height:1.4;color:#45526A"><b><span style="color:#15202F">Separation of duties.</span></b> No one decides their own case or clears a review of their own decision.</p>
+</div>
+<div style="border-top:2px solid #CDD6E2;padding:20px 0px 0px 0px">
+<p style="font-size:30px;line-height:1.4;color:#45526A"><b><span style="color:#15202F">Complete audit trail.</span></b> Eligibility checks, decisions, overrides and every control result are recorded with who and when.</p>
+</div>
+<div style="border-top:2px solid #CDD6E2;padding:20px 0px 0px 0px">
+<p style="font-size:30px;line-height:1.4;color:#45526A"><b><span style="color:#15202F">Verified releases.</span></b> Each deploy is checked on the live site, and each story ships with screenshots and a conclusion.</p>
+</div>
+</div>
+<aside>Security is built in and tested. Passwords and SSNs are stored as bcrypt hashes; the SSN is never returned by the API, never written to logs and left out of every export. Every API route declares whether it is public, for signed-in users, for the record's owner or for staff, and an automated test fails the build if a route is missing its rule or its check. Case managers cannot decide their own cases or clear reviews of their own decisions. Eligibility checks, status changes, overrides and every compliance result are recorded with the actor and time. After each deploy the team checks the live site automatically: the running version, the database, every protected route refusing anonymous requests, and every staff route refusing an ordinary registrant.</aside>
+</section>
