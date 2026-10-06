@@ -148,7 +148,7 @@ router.post('/:id/status', async (req: any, res: Response, next: NextFunction) =
 });
 
 // PUT /cases/:id/assignment - { assignedTo: email | null } (staff, not on their own case)
-router.put('/:id/assignment', async (req: any, res: Response, next: NextFunction) => {
+router.put('/:id/assignment', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { actor, reviewer } = await loadCaseForViewer(req);
     if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
@@ -159,7 +159,7 @@ router.put('/:id/assignment', async (req: any, res: Response, next: NextFunction
 });
 
 // POST /cases/:id/notes - Internal note (staff, not on their own case)
-router.post('/:id/notes', async (req: any, res: Response, next: NextFunction) => {
+router.post('/:id/notes', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { actor, reviewer } = await loadCaseForViewer(req);
     if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
@@ -170,7 +170,7 @@ router.post('/:id/notes', async (req: any, res: Response, next: NextFunction) =>
 });
 
 // GET /cases/:id/notes - Internal notes (staff only)
-router.get('/:id/notes', async (req: any, res: Response, next: NextFunction) => {
+router.get('/:id/notes', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { detail, reviewer } = await loadCaseForViewer(req);
     if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
@@ -206,7 +206,7 @@ router.get('/:id/documents', async (req: any, res: Response, next: NextFunction)
 
 // PUT /cases/:id - { status, reason, assignedTo, notes } in one call (staff reviewer).
 // Kept for the original STORY-007 API; the UI uses the specific endpoints above.
-router.put('/:id', async (req: any, res: Response, next: NextFunction) => {
+router.put('/:id', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
     const { actor, reviewer } = await loadCaseForViewer(req);
     if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');

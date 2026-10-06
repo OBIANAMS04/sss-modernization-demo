@@ -3,6 +3,7 @@ import { dataPipeline, DataFreshness } from '../services/dataPipelineService';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
 import { getUserRole, isStaff } from '../services/roleService';
+import { authenticate } from '../middleware/authenticate';
 
 const router = Router();
 
@@ -63,7 +64,7 @@ router.get('/pipeline-status', async (req: AuthRequest, res: Response, next: Nex
 });
 
 // GET /data/metrics - Get pipeline metrics
-router.get('/metrics', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/metrics', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.query.userId as string;
     const startTime = req.query.startTime ? new Date(req.query.startTime as string) : undefined;
@@ -89,7 +90,7 @@ router.get('/metrics', async (req: AuthRequest, res: Response, next: NextFunctio
 });
 
 // GET /data/freshness-check - Detailed freshness check
-router.get('/freshness-check', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/freshness-check', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.user?.sub) {
       throw new AppError(401, 'Authentication required', 'UNAUTHORIZED');
