@@ -196,13 +196,13 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       </div>
       <div class="cell">
         <span class="label">BUILD · R1</span>
-        <span class="value">2 of 11 live</span>
-        <span class="note">Exemptions and case management shipped Oct 1; Ali approved both Oct 2</span>
+        <span class="value">3 of 11 live</span>
+        <span class="note">Compliance validation shipped Oct 6; exemptions and case management approved by Ali Oct 2</span>
       </div>
       <div class="cell">
         <span class="label">Next</span>
-        <span class="value">STORY-008</span>
-        <span class="note">Compliance matrix validation</span>
+        <span class="value">STORY-009</span>
+        <span class="note">Data freshness monitoring</span>
       </div>
     </div>
   </section>
@@ -252,12 +252,12 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
 
       <article class="release">
         <div class="release-head"><h3>R1 · Core</h3><span class="range">STORY-006 – 016</span></div>
-        <div class="bar" role="img" aria-label="2 of 11 live"><span class="done" style="width:18%"></span></div>
+        <div class="bar" role="img" aria-label="3 of 11 live"><span class="done" style="width:27%"></span></div>
         <ul class="stories">
           <li><span class="id">STORY-006</span><span class="name">Exemption eligibility<small>Types A, B and C, each with a status and a reason; audit-logged. Approved by Ali Oct 2</small></span><span class="pill ok">Live</span></li>
           <li><span class="id">STORY-007</span><span class="name">Case management<small>Apply, review, deny with reason, appeal; timeline, notifications, CSV export. Approved by Ali Oct 2</small></span><span class="pill ok">Live</span></li>
-          <li><span class="id">STORY-008</span><span class="name">Compliance matrix validation (L3)</span><span class="pill info">Next</span></li>
-          <li><span class="id">STORY-009</span><span class="name">Data freshness monitoring (under 30 s)</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-008</span><span class="name">Compliance matrix validation (L3)<small>Every decision checked against 8 controls; failures reviewed by a second case manager; dashboard and audit log. Posted Oct 6, awaiting Ali's review</small></span><span class="pill ok">Live</span></li>
+          <li><span class="id">STORY-009</span><span class="name">Data freshness monitoring (under 30 s)</span><span class="pill info">Next</span></li>
           <li><span class="id">STORY-010</span><span class="name">Security audit logging, 100% coverage<small>Exemption checks and case changes already logged</small></span><span class="pill warn">Partial</span></li>
           <li><span class="id">STORY-011</span><span class="name">Accessibility testing (Section 508)</span><span class="pill idle">Not started</span></li>
           <li><span class="id">STORY-012–015</span><span class="name">Role-based dashboards<small>Citizen, case manager and admin roles are in place</small></span><span class="pill warn">Partial</span></li>
@@ -298,6 +298,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><strong>Profile and compliance</strong>Phone, address, income and hardship; checks 18+, phone and address</li>
       <li><strong>Exemption eligibility</strong>Senior (65+), income (under $20,000), hardship (caseworker review), each with a reason</li>
       <li><strong>Case management</strong>Submitted → In Review → Approved or Denied, appeals, timeline and internal notes</li>
+      <li><strong>Compliance validation</strong>Every decision checked against 8 controls; a failure is reviewed by a second case manager; dashboard with a 99% target and a full audit log</li>
       <li><strong>Notifications</strong>Applicants are notified of every status change, with the reason</li>
       <li><strong>Roles and audit</strong>Citizen, case manager and admin; staff actions and eligibility checks are audit-logged</li>
     </ul>
@@ -306,7 +307,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
   <section id="platform" aria-labelledby="platform-h">
     <header>
       <h2 id="platform-h">Platform</h2>
-      <p class="sub">Claude commits each completed phase, Obi pushes, and Render deploys automatically. Database changes apply on startup through tracked migrations (001–012).</p>
+      <p class="sub">Claude commits and pushes each change, and Render deploys automatically. Claude then verifies the live site itself: the commits served, the database and migrations, every protected route refusing requests without a token or from a citizen, and screenshots. Database changes apply on startup through tracked migrations (001–013).</p>
     </header>
     <div class="flow">
       <div class="node"><span class="k">Source</span><span class="v">GitHub</span><span class="m">OBIANAMS04/sss-modernization-demo</span></div>
@@ -331,6 +332,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td class="num">2026-09-30</td><td>Ship profile update (STORY-002) together with exemption eligibility</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-01</td><td>Case managers granted by email list; documents attached as links until object storage arrives with AWS</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-02</td><td>STORY-006 and STORY-007 approved as shipped. Every route gets its access check when it is written, now enforced by a test. The team verifies its own deploys and posts the evidence; Ali reviews the live site as a user</td><td>Ali</td></tr>
+          <tr><td class="num">2026-10-06</td><td>STORY-008: decision controls are checked at the moment of decision; a failed decision opens a review that only a different case manager can resolve, with a written justification; failed decisions keep counting toward the 99% target</td><td>Obi</td></tr>
         </tbody>
       </table>
     </div>
@@ -348,6 +350,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><time datetime="2026-10-01">Oct 1, 2026</time><span class="big">Exemption eligibility and case management live; access-control fix</span></li>
       <li><time datetime="2026-10-02">Oct 2, 2026</time><span class="big">Ali approves STORY-006 and STORY-007</span></li>
       <li><time datetime="2026-10-06">Oct 6, 2026</time><span>Every route must declare its access rule (test-enforced); expired logins return 401; health check reports the real database state and deployed commit; runtime security patches; Ali's case manager access live</span></li>
+      <li><time datetime="2026-10-06">Oct 6, 2026</time><span class="big">STORY-008 compliance validation live, verified on the live site, evidence posted</span></li>
     </ol>
   </section>
 
@@ -361,8 +364,10 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td><span class="pill bad">High</span></td><td>AWS approval pending</td><td>Unblocks STORY-004 and real document upload</td><td>Ram</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>Database password and session secret were shared in chat on Sep 17</td><td>Rotate both before any real data</td><td>Obi</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>Dependency advisories: 3 remain in the running server after the Oct 6 patch update; the critical one only runs while bcrypt installs</td><td>Upgrade pass before go-live</td><td>Obi</td></tr>
+          <tr><td><span class="pill warn">Medium</span></td><td>The case-manager role is granted from an email list without verifying that the person owns the address</td><td>Email verification or admin-assigned roles before any real data</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>Free hosting sleeps when idle</td><td>Open the site a minute before a demo</td><td>Obi</td></tr>
-          <tr><td><span class="pill idle">Low</span></td><td>No automated frontend tests; older backend route tests are stale</td><td>Add tests as R1 continues</td><td>Obi</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>No frontend unit tests (the UI is now checked end to end by the evidence scripts); older backend route tests are stale</td><td>Repair or retire the stale suites</td><td>Obi</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>Colaberry's upload endpoint refuses files over about 1 MB, although its tools allow 10 MB</td><td>Raise the server's upload limit; meanwhile posts attach the key screenshot and link the full evidence pack</td><td>Colaberry admin</td></tr>
         </tbody>
       </table>
     </div>
@@ -373,7 +378,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <ul class="links">
       <li><span class="k">Live demo</span><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></li>
       <li><span class="k">Basecamp BUILD ticket</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172">Selective Service Modernization – BUILD</a></li>
-      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10363503258">STORY-007 Case Management</a></li>
+      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10375183698">STORY-008 Compliance Matrix Validation</a></li>
+      <li><span class="k">STORY-008 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-008">Screenshots and checks</a></li>
       <li><span class="k">Ali's approval</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10365688982">R0 and R1 review, Oct 2</a></li>
       <li><span class="k">Security rules</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/blob/master/docs/SECURITY-RULES.md">docs/SECURITY-RULES.md</a></li>
       <li><span class="k">Source code</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo">github.com/OBIANAMS04/sss-modernization-demo</a></li>
