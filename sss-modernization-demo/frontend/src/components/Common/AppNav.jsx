@@ -7,7 +7,7 @@ const linkClass = ({ isActive }) =>
     isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-blue-700 hover:bg-gray-50'
   }`;
 
-/** Shared top navigation. "Case Management" only appears for case managers and admins. */
+/** Shared top navigation. "Case Management" and "Compliance" only appear for case managers and admins. */
 export default function AppNav({ title, subtitle }) {
   const navigate = useNavigate();
   const user = getUser();
@@ -29,7 +29,10 @@ export default function AppNav({ title, subtitle }) {
             <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
             <NavLink to="/profile" className={linkClass}>Profile &amp; Exemptions</NavLink>
             {isStaffUser(user) && (
-              <NavLink to="/cases" end className={linkClass}>Case Management</NavLink>
+              <>
+                <NavLink to="/cases" end className={linkClass}>Case Management</NavLink>
+                <NavLink to="/compliance" className={linkClass}>Compliance</NavLink>
+              </>
             )}
             <button
               onClick={handleLogout}

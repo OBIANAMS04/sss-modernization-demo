@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { getUser } from '../../utils/tokenManager';
 import { getApiErrorMessage } from '../../utils/apiError';
 import { caseService } from '../../services/caseService';
+import { complianceService } from '../../services/complianceService';
+import CompliancePanel from './CompliancePanel';
 import { isStaffUser } from '../../utils/roles';
 import AppNav from '../Common/AppNav';
 import StatusBadge from '../Common/StatusBadge';
@@ -67,13 +69,15 @@ export default function CaseDetail() {
   const [assignee, setAssignee] = useState('');
   const [note, setNote] = useState('');
   const [doc, setDoc] = useState({ type: 'proof_of_age', url: '' });
+  const [compliance, setCompliance] = useState(null);
 
   const load = useCallback(async () => {
     const data = await caseService.getCase(id);
     setCaseData(data);
     setAssignee(data.assignedTo || '');
     if (data.actions.canAssign) setManagers(await caseService.managers());
-  }, [id]);
+    if (staff) setCompliance(await complianceService.caseCompliance(id));
+  }, [id, staff]);
 
   useEffect(() => {
     load()
@@ -179,23 +183,39 @@ export default function CaseDetail() {
               </section>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <section className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Timeline</h3>
-                  <ol className="space-y-4">
-                    {caseData.timeline.map((event) => (
-                      <li key={event.id} className="border-l-4 border-blue-200 pl-4">
-                        <p className="font-medium text-gray-900 text-sm">{describeEvent(event)}</p>
-                        {event.eventType === 'status_change' && event.detail && (
-                          <p className="text-sm text-gray-700 mt-1">Reason: {event.detail}</p>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formatDate(event.createdAt)}
-                          {event.actorEmail ? ` · ${event.actorEmail}` : ''}
-                        </p>
-                      </li>
-                    ))}
-                  </ol>
-                </section>
+                <div className="lg:col-span-2 space-y-6">
+                  <section className="bg-white rounded-lg shadow-md p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Timeline</h3>
+                    <ol className="space-y-4">
+                      {caseData.timeline.map((event) => (
+                        <li key={event.id} className="border-l-4 border-blue-200 pl-4">
+                          <p className="font-medium text-gray-900 text-sm">{describeEvent(event)}</p>
+                          {event.eventType === 'status_change' && event.detail && (
+                            <p className="text-sm text-gray-700 mt-1">Reason: {event.detail}</p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            {formatDate(event.createdAt)}
+                            {event.actorEmail ? ` · ${event.actorEmail}` : ''}
+                          </p>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+
+                  {staff && compliance && (
+                    <CompliancePanel
+                      compliance={compliance}
+                      currentEmail={user?.email}
+                      busy={busy}
+                      onResolve={(reviewId, action, resolveNote) =>
+                        run(
+                          () => complianceService.resolve(reviewId, action, resolveNote),
+                          action === 'reopen' ? 'Case reopened for review.' : 'Exception accepted and recorded.'
+                        )
+                      }
+                    />
+                  )}
+                </div>
 
                 <div className="space-y-6">
                   {caseData.actions.transitions.length > 0 && (

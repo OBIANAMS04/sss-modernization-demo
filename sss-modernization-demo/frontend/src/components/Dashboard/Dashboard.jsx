@@ -200,8 +200,12 @@ export default function Dashboard() {
                     R1: Case management: applications, review workflow, timeline, notifications, CSV export
                   </li>
                   <li className="flex items-center">
+                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    R1: Compliance validation: every decision checked against 8 controls, with reviews and an audit log
+                  </li>
+                  <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-blue-600 mr-2">→</span>
-                    R1 (next): Compliance validation, audit logging, role-based dashboards
+                    R1 (next): Data freshness, audit logging, accessibility (Section 508), role-based dashboards
                   </li>
                 </ul>
               </div>
