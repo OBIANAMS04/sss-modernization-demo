@@ -2,6 +2,8 @@ import pool from '../database/connection';
 import { AppError, NotFoundError, ValidationError } from '../utils/errors';
 import { AuditAction, logAuditEvent } from './auditService';
 import { isStaff } from './roleService';
+import { Actor, inTransaction, notify, recordEvent } from './caseEvents';
+import { evaluateDecision } from './complianceService';
 
 export type CaseStatus = 'Draft' | 'Submitted' | 'In Review' | 'Approved' | 'Denied' | 'Appealed';
 
@@ -30,11 +32,7 @@ export function allowedTransitions(from: CaseStatus, actor: 'applicant' | 'staff
 
 export const DOCUMENT_TYPES = ['proof_of_age', 'income_statement', 'hardship_evidence', 'identity', 'other'];
 
-export interface Actor {
-  id: string;
-  email: string;
-  role: string | null;
-}
+export type { Actor };
 
 export interface CaseSummary {
   id: string;
@@ -138,39 +136,6 @@ function mapDocument(row: any): CaseDocument {
   };
 }
 
-async function recordEvent(
-  client: any,
-  caseId: string,
-  eventType: string,
-  actor: Actor,
-  extra: { fromStatus?: string | null; toStatus?: string | null; detail?: string | null } = {}
-) {
-  await client.query(
-    `INSERT INTO case_events (case_id, event_type, from_status, to_status, actor_id, actor_email, detail)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [caseId, eventType, extra.fromStatus ?? null, extra.toStatus ?? null, actor.id, actor.email, extra.detail ?? null]
-  );
-}
-
-async function notify(client: any, userId: string, caseId: string, message: string) {
-  await client.query('INSERT INTO notifications (user_id, case_id, message) VALUES ($1, $2, $3)', [userId, caseId, message]);
-}
-
-async function inTransaction<T>(work: (client: any) => Promise<T>): Promise<T> {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    const result = await work(client);
-    await client.query('COMMIT');
-    return result;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
 async function getSummary(caseId: string): Promise<CaseSummary> {
   const result = await pool.query(`${SUMMARY_SELECT} WHERE c.id = $1`, [caseId]);
   if (result.rows.length === 0) throw new NotFoundError('Case not found');
@@ -236,14 +201,14 @@ export async function changeStatus(caseId: string, toStatus: string, actor: Acto
   }
   const cleanReason = reason?.trim() ? reason.trim().slice(0, 1000) : null;
 
-  await inTransaction(async (client) => {
+  const eventId = await inTransaction(async (client) => {
     await client.query(
       `UPDATE cases SET status = $1::varchar, updated_at = NOW(),
          approved_at = CASE WHEN $1::varchar = 'Approved' THEN NOW() ELSE approved_at END
        WHERE id = $2`,
       [toStatus, caseId]
     );
-    await recordEvent(client, caseId, 'status_change', actor, {
+    const id = await recordEvent(client, caseId, 'status_change', actor, {
       fromStatus: current.status,
       toStatus,
       detail: cleanReason,
@@ -252,6 +217,7 @@ export async function changeStatus(caseId: string, toStatus: string, actor: Acto
     const message =
       `Your ${typeLabel}exemption case is now ${toStatus}.` + (cleanReason ? ` Reason: ${cleanReason}` : '');
     await notify(client, current.userId, caseId, message);
+    return id;
   });
 
   await logAuditEvent(AuditAction.CASE_STATUS_CHANGE, 'cases', 'success', {
@@ -260,6 +226,12 @@ export async function changeStatus(caseId: string, toStatus: string, actor: Acto
     resourceId: caseId,
     details: { from: current.status, to: toStatus },
   });
+
+  // STORY-008: every exemption decision is evaluated against the decision controls when it is
+  // made (after the audit write, which one of the controls verifies).
+  if (toStatus === 'Approved' || toStatus === 'Denied') {
+    await evaluateDecision(caseId, eventId, actor);
+  }
   return getSummary(caseId);
 }
 

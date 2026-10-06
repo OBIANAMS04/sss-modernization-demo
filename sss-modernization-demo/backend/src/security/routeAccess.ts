@@ -60,12 +60,11 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'PUT /api/cases/:id': 'staff',
 
   'GET /api/compliance/matrix': 'signed-in',
-  'POST /api/compliance/check/case/:caseId': 'staff',
-  'GET /api/compliance/checks/requirement/:requirementId': 'staff',
-  'GET /api/compliance/checks/case/:caseId': 'staff',
-  'GET /api/compliance/audit': 'staff',
   'GET /api/compliance/dashboard': 'staff',
-  'POST /api/compliance/recalculate/:dateStr': 'staff',
+  'GET /api/compliance/decisions': 'staff',
+  'GET /api/compliance/cases/:caseId': 'staff',
+  'GET /api/compliance/reviews': 'staff',
+  'POST /api/compliance/reviews/:id/resolve': 'staff',
 
   'GET /api/latency/stats': 'staff',
   'GET /api/latency/metrics': 'staff',

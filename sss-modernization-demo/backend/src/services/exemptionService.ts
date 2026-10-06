@@ -138,16 +138,18 @@ export async function runEligibilityCheck(
   try {
     await client.query('BEGIN');
     for (const e of result.evaluations) {
+      // determined_at uses the database clock, like users.updated_at, so the two can be compared
+      // reliably (STORY-008 control CTRL-02); a JS ISO string is UTC while NOW() is the DB's zone.
       await client.query(
         `INSERT INTO exemptions (user_id, exemption_type, status, reason, determined_at, determined_by)
-         VALUES ($1, $2, $3, $4, $5, 'system')
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, 'system')
          ON CONFLICT (user_id, exemption_type) DO UPDATE
            SET status = EXCLUDED.status,
                reason = EXCLUDED.reason,
                determined_at = EXCLUDED.determined_at,
                determined_by = EXCLUDED.determined_by,
                updated_at = CURRENT_TIMESTAMP`,
-        [userId, e.exemptionType, e.status, e.reason, result.determinedAt]
+        [userId, e.exemptionType, e.status, e.reason]
       );
     }
     await client.query('COMMIT');
