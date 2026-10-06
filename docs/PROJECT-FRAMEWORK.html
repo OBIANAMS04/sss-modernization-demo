@@ -163,7 +163,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <h1>SSS Modernization Framework</h1>
     <p class="lede">Modernizing the U.S. Selective Service System's business systems: online registration, registrant records, compliance verification, exemption and appeal case management, and reporting. Two tracks, the proposal and the working demo, meet at submission.</p>
     <div class="meta">
-      <span>Last updated <strong>October 1, 2026</strong></span>
+      <span>Last updated <strong>October 6, 2026</strong></span>
       <span>Owner <strong>Obi Anamelechi Kingsley</strong></span>
       <span>Decision makers <strong>Ali Muwwakkil, Ram Katamaraja</strong></span>
     </div>
@@ -197,7 +197,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <div class="cell">
         <span class="label">BUILD · R1</span>
         <span class="value">2 of 11 live</span>
-        <span class="note">Exemptions and case management shipped Oct 1</span>
+        <span class="note">Exemptions and case management shipped Oct 1; Ali approved both Oct 2</span>
       </div>
       <div class="cell">
         <span class="label">Next</span>
@@ -254,8 +254,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
         <div class="release-head"><h3>R1 · Core</h3><span class="range">STORY-006 – 016</span></div>
         <div class="bar" role="img" aria-label="2 of 11 live"><span class="done" style="width:18%"></span></div>
         <ul class="stories">
-          <li><span class="id">STORY-006</span><span class="name">Exemption eligibility<small>Types A, B and C, each with a status and a reason; audit-logged</small></span><span class="pill ok">Live</span></li>
-          <li><span class="id">STORY-007</span><span class="name">Case management<small>Apply, review, deny with reason, appeal; timeline, notifications, CSV export</small></span><span class="pill ok">Live</span></li>
+          <li><span class="id">STORY-006</span><span class="name">Exemption eligibility<small>Types A, B and C, each with a status and a reason; audit-logged. Approved by Ali Oct 2</small></span><span class="pill ok">Live</span></li>
+          <li><span class="id">STORY-007</span><span class="name">Case management<small>Apply, review, deny with reason, appeal; timeline, notifications, CSV export. Approved by Ali Oct 2</small></span><span class="pill ok">Live</span></li>
           <li><span class="id">STORY-008</span><span class="name">Compliance matrix validation (L3)</span><span class="pill info">Next</span></li>
           <li><span class="id">STORY-009</span><span class="name">Data freshness monitoring (under 30 s)</span><span class="pill idle">Not started</span></li>
           <li><span class="id">STORY-010</span><span class="name">Security audit logging, 100% coverage<small>Exemption checks and case changes already logged</small></span><span class="pill warn">Partial</span></li>
@@ -330,6 +330,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td class="num">2026-09-17</td><td>"Do both now": demo-data banner, and SSN hashed and never logged. One post per milestone on the BUILD list</td><td>Ali</td></tr>
           <tr><td class="num">2026-09-30</td><td>Ship profile update (STORY-002) together with exemption eligibility</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-01</td><td>Case managers granted by email list; documents attached as links until object storage arrives with AWS</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-02</td><td>STORY-006 and STORY-007 approved as shipped. Every route gets its access check when it is written, now enforced by a test. The team verifies its own deploys and posts the evidence; Ali reviews the live site as a user</td><td>Ali</td></tr>
         </tbody>
       </table>
     </div>
@@ -345,6 +346,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><time datetime="2026-09-26">Sep 26, 2026</time><span>Guards live: SSN hashed, demo banner, masked SSN, real error messages</span></li>
       <li><time datetime="2026-09-30">Sep 30, 2026</time><span>Guards confirmation posted; automatic migrations; site-wide styling fix</span></li>
       <li><time datetime="2026-10-01">Oct 1, 2026</time><span class="big">Exemption eligibility and case management live; access-control fix</span></li>
+      <li><time datetime="2026-10-02">Oct 2, 2026</time><span class="big">Ali approves STORY-006 and STORY-007</span></li>
+      <li><time datetime="2026-10-06">Oct 6, 2026</time><span>Every route must declare its access rule (test-enforced); expired logins return 401; health check reports the real database state and deployed commit</span></li>
     </ol>
   </section>
 
@@ -371,6 +374,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><span class="k">Live demo</span><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></li>
       <li><span class="k">Basecamp BUILD ticket</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172">Selective Service Modernization – BUILD</a></li>
       <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10363503258">STORY-007 Case Management</a></li>
+      <li><span class="k">Ali's approval</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10365688982">R0 and R1 review, Oct 2</a></li>
+      <li><span class="k">Security rules</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/blob/master/docs/SECURITY-RULES.md">docs/SECURITY-RULES.md</a></li>
       <li><span class="k">Source code</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo">github.com/OBIANAMS04/sss-modernization-demo</a></li>
       <li><span class="k">Hosting</span><a href="https://dashboard.render.com">dashboard.render.com</a></li>
       <li><span class="k">API health</span><a href="https://sss-demo-backend.onrender.com/health">sss-demo-backend.onrender.com/health</a></li>

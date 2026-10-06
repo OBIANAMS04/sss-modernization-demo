@@ -2,7 +2,7 @@
 
 **Client opportunity:** U.S. Selective Service System (SSS) business-systems modernization (RFP)
 **Bidder:** Colaberry · **Owner:** Obi Anamelechi Kingsley · **Decision makers:** Ali Muwwakkil (Managing Director), Ram Katamaraja
-**Last updated:** 2026-10-01 · Updated after every milestone (see "How this document is maintained")
+**Last updated:** 2026-10-06 · Updated after every milestone (see "How this document is maintained")
 
 ---
 
@@ -44,7 +44,7 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 | Release | Stories | Status |
 |---|---|---|
 | **R0 Walking Skeleton** | 001 Registration & login · 002 Profile & compliance · 003 MFA · 004 Cloud infra (AWS, L5) · 005 Data pipeline (L2) | 001 ✅ live (+ Ali's guards) · 002 ✅ live · 003 backend only, no UI · 004 🚩 blocked on Ram's AWS approval (demo runs on Render) · 005 backend only, unverified |
-| **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API governance (OPA) | 006 ✅ live · 007 ✅ live · **008 next** · roles foundation in place for 012–015 · audit logging partly in place |
+| **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API governance (OPA) | 006 ✅ live · 007 ✅ live (both approved by Ali, 2026-10-02) · **008 next** · roles foundation in place for 012–015 · audit logging partly in place |
 | **R2 AI & Governance** | 017–020 RAG policy Q&A · 021 drift · 022 hallucination monitoring · 023 HITL ladder · 024 override tracking · 025 bias testing · 026–029 observability | Not started |
 | **R3 Scale & Launch** | 030–032 load testing · 033 performance · 034 failover · 035 training · 036 monitoring · 037 incident playbook · 038–040 docs · 041 pen test · 042 accessibility audit · 043–046 go-live review | Not started |
 
@@ -78,6 +78,7 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 | 2026-09-17 | "Do both now": demo-data banner + SSN hashed, never logged. One post per milestone on the BUILD list | Ali |
 | 2026-09-30 | Fold STORY-002 (profile) into R1 alongside STORY-006 | Obi |
 | 2026-10-01 | Case managers granted by email allowlist; documents attached as links until object storage (STORY-004) | Obi |
+| 2026-10-02 | STORY-006 and STORY-007 approved as shipped `[decision-2026-10-02-sss-r0-r1-approved]`. Lesson: every route gets its access check when written (now enforced by a test, see docs/SECURITY-RULES.md). Process: the team verifies its own deploys and posts screenshots + conclusion; Ali reviews the live site as a user. File uploads waiting on STORY-004 is on Ram and Ali | Ali |
 
 ---
 
@@ -92,8 +93,10 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 | 2026-09-26 | Guards live (SSN hashed, banner), masked SSN, real error messages |
 | 2026-09-30 | Guards confirmation posted; tracked migrations; site-wide CSS fix |
 | 2026-10-01 | **STORY-006 live** · security fix (roles) · **STORY-007 live**; both posted |
+| 2026-10-02 | **Ali approves STORY-006 and STORY-007**; asks for case manager access |
+| 2026-10-06 | Access rule required for every route (test-enforced) · expired logins return 401 instead of 500 · honest `/health` with deployed commit · self-verified deploys |
 
-Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_10355304599` · STORY-006 `#__recording_10362153151` · STORY-007 `#__recording_10363503258` (BUILD ticket https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172)
+Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_10355304599` · STORY-006 `#__recording_10362153151` · STORY-007 `#__recording_10363503258` · Ali's approval `#__recording_10365688982` (BUILD ticket https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172)
 
 ---
 
