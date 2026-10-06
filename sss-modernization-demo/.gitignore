@@ -16,3 +16,6 @@ terraform/.terraform.lock.hcl
 terraform/terraform.tfvars
 *.tfstate
 *.tfstate.backup
+
+# Evidence PDFs are rebuilt by scripts/evidence/report.mjs from the committed screenshots
+docs/evidence/**/*.pdf
