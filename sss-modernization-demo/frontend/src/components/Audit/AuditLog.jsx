@@ -35,6 +35,7 @@ const LABELS = {
   OVERRIDE: 'Override',
   ALERT_TRIGGERED: 'Freshness alert',
   DEPLOYMENT: 'Deployment',
+  CONFIG_CHANGE: 'Configuration change',
 };
 
 const inputClass =
@@ -62,8 +63,11 @@ function describe(log) {
   const text = Object.entries(d)
     .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.map(item).join(', ') || 'none' : typeof v === 'object' && v !== null ? JSON.stringify(v) : v}`)
     .join(' · ');
-  return text.length > 160 ? `${text.slice(0, 157)}...` : text || '—';
+  return text || '—';
 }
+
+// Long details are shortened in the table; the full text shows on hover
+const shorten = (text) => (text.length > 160 ? `${text.slice(0, 157)}...` : text);
 
 export default function AuditLog() {
   const staff = isStaffUser(getUser());
@@ -219,7 +223,7 @@ export default function AuditLog() {
                             {log.status === 'success' ? 'Succeeded' : 'Refused or failed'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-gray-700 max-w-md break-words">{describe(log)}</td>
+                        <td className="px-4 py-3 text-gray-700 max-w-md break-words" title={describe(log)}>{shorten(describe(log))}</td>
                         <td className="px-4 py-3 font-mono text-xs text-gray-500 whitespace-nowrap">{log.ipAddress || '—'}</td>
                       </tr>
                     ))
