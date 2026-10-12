@@ -1,0 +1,72 @@
+{
+  "id": "story-011",
+  "title": "STORY-011 Accessibility Testing (Section 508): evidence",
+  "capturedBy": "scripts/a11y/audit.mjs (screens 1-6 on a local copy of the deployed code, screen 8 on the demo deployment) and scripts/verify-live-citizen.mjs (screen 7)",
+  "summary": [
+    "STORY-011 works on the demo deployment, with synthetic data; it is not operating in production. Every page now passes the WCAG 2.1 Level AA checks we can run, signed out, as an applicant and as a case manager. Section 508 incorporates WCAG 2.0 AA; these checks use 2.1 AA, which includes it.",
+    "A new audit runs in real Chrome on 12 page and role combinations. It applies every WCAG 2.0 and 2.1 A and AA rule in axe-core 4.10.2, then tabs through each page: every control must be reached, focus must always be visible, there must be no keyboard trap, and a skip link must come first. It also checks for a descriptive page title, one h1 and one main landmark, and nothing scrolling sideways, cut off or overlapping at 320 pixels. Finally it records what Chrome's accessibility tree, which screen readers read, says about each field.",
+    "Three criteria that automated tools cannot test were checked and fixed. WCAG 2.2.1 (Timing Adjustable): sign-ins ended after an hour without warning; now a warning appears two minutes before the end and the session can be extended, up to 12 hours from sign-in. WCAG 1.4.11 (Non-text Contrast): field borders were 1.4:1 and are now 4.8:1. WCAG 3.3.4 (Error Prevention): applying for an exemption and appealing a decision are now confirmed before they are sent.",
+    "Run on the code before this story, the same audit failed every page (screen 1). Every browser tab was titled 'frontend' and there was no skip link. Form fields were named by their placeholders, so a screen reader read the password field as a row of bullets. Green buttons and text had 3.24:1 contrast against the 4.5:1 required. Sign-in and registration had no main landmark, errors were never announced, and date fields lost their focus ring. All of these are fixed (screen 2).",
+    "Found in our own STORY-010 work: the Logout button sent its request after the token had already been cleared, so every sign-out from the UI was logged as a refused request instead of a sign-out. The STORY-010 checks only signed out through the API, so they missed it. It is fixed, and the audit now signs out with the button and reads the log. That new check also caught our first fix failing, because the server refused its empty body.",
+    "Found in this story's own screenshots: at 320 pixels, a long email on the case page overlapped the next column, but the reflow check passed because it only looked for sideways scrolling of the whole page. The check now also fails on any text wider than its box, unless the box scrolls on purpose. Run on the unfixed build, it caught that overlap and a dashboard tile; both are fixed.",
+    "Screens 1 to 6 come from an automated run against a local copy of the deployed code, because the demo site has no test case-manager accounts. Screens 7 and 8 are the deployed demo site."
+  ],
+  "checks": [
+    "Demo deployment (scripts/verify-deploy.mjs): the API serves 8ce73d1 and the site serves 14695f2 (each with its latest change); all 8 page paths serve the current build; database ok; 16 migrations applied; 42 routes in the access table (41 before this story, plus the session extension); all 22 protected GET routes answer 401 without a token.",
+    "On the demo deployment, signed in as a synthetic citizen (scripts/verify-live-citizen.mjs): all 13 staff GET routes answer 403, no staff links show, and the dashboard lists accessibility as done.",
+    "Accessibility audit on the demo deployment (scripts/a11y/audit.mjs --live, signed out and as the synthetic citizen, creating no records): 4 of 4 pages pass every check with 0 axe WCAG A/AA issues; both form checks pass (sign-in and registration mark each empty field invalid, described by its message, with focus on the first).",
+    "Extending a session on the demo deployment, through the API: refused without a token (401); with the citizen’s token, a new token valid for 3600 seconds that keeps the original sign-in time.",
+    "Accessibility audit, local (scripts/a11y/audit.mjs): 12 of 12 page and role combinations pass every check (including no text wider than its box at 320 pixels), with 0 axe WCAG A/AA issues and 0 best-practice advisories across 178 Tab stops, each showing a focus indicator. Both failed-submit checks pass: the sign-in error is an alert, and registration marks 5 of 5 fields invalid, each described by its message, with focus on the first. The session warning passes end to end: it appears 2 minutes before the end with 0 axe issues, is a named modal, and holds focus. Escape extends the session with a new 1-hour token that keeps the sign-in time. Doing nothing signs out with a notice. A sign-out from the UI is logged as a sign-out. Before the fixes, the same run passed 0 of 12 pages and neither form check.",
+    "Unit tests: 182 passed (10 new for extending a session, including the 12-hour cap, which fails when the cap is removed). API end to end, local (scripts/e2e): 135 checks passed: access 33, case workflow 26, compliance 30, freshness 16, audit 30."
+  ],
+  "shots": [
+    {
+      "file": "00-before-a11y-report.png",
+      "title": "Before: the audit fails every page",
+      "caption": "The same audit on the code before this story: 0 of 12 pages pass and both form checks fail. The reasons are the 'frontend' tab titles, no skip link, unnamed date and select fields, 3.24:1 green contrast, no main landmark on sign-in and registration, unannounced errors, and date fields that lost their focus ring."
+    },
+    {
+      "file": "01-a11y-report.png",
+      "title": "After: every page passes",
+      "caption": "12 of 12 page and role combinations pass, with 0 axe WCAG A/AA issues and every control reached by Tab with a visible focus indicator. Both failed submits are announced, and the session warning and UI sign-out checks pass. The last table shows what a screen reader is told about the registration form after an empty submit: each field by its label, required, invalid, and described by its error."
+    },
+    {
+      "file": "02-skip-link.png",
+      "title": "Skip to main content",
+      "caption": "The first Tab on any signed-in page shows a Skip to main content link at the top left; Enter moves focus past the navigation to the page's main content."
+    },
+    {
+      "file": "03-form-errors.png",
+      "title": "Errors a screen reader announces",
+      "caption": "Registration after an empty submit. Each message sits under its field, the field is marked invalid and described by the message, and focus moves to the first one. A screen reader announces the field's name, that it is invalid, and what is wrong."
+    },
+    {
+      "file": "04-reflow-320.png",
+      "title": "320 pixels wide",
+      "caption": "The applicant's case page at 320 CSS pixels, the width of a small phone or a desktop zoomed to 400%. Everything wraps into one column with no sideways scrolling (WCAG 1.4.10)."
+    },
+    {
+      "file": "05-session-warning.png",
+      "title": "Before a session ends",
+      "caption": "Two minutes before the session ends, a modal warning names the sign-out time and offers Stay signed in or Sign out. Focus starts on Stay signed in and stays inside the dialog, and Escape also stays. Doing nothing signs the person out with a notice on the sign-in page (WCAG 2.2.1)."
+    },
+    {
+      "file": "live-01-citizen-dashboard.png",
+      "title": "Demo site after the deploy (citizen view)",
+      "caption": "The deployed demo site lists accessibility as done, and a citizen sees no staff links."
+    },
+    {
+      "file": "live-a11y-report.png",
+      "title": "Demo site: the audit passes",
+      "caption": "The audit on the deployed demo site after the deploy, signed out and as the synthetic citizen: sign-in, registration, dashboard and profile all pass, and both forms announce their errors."
+    }
+  ],
+  "notes": [
+    "Automated rules cover only part of WCAG. No one has yet used the app with JAWS, NVDA or VoiceOver: the audit checks what assistive technology is told (names, roles, states, alerts) through Chrome's accessibility tree, which is not the same as a person using a screen reader. A hands-on audit with each screen reader, and a WCAG 2.1 AA conformance report (VPAT/ACR) for the proposal, belong with the R3 accessibility audit (STORY-042).",
+    "The audit runs in Chrome only. Firefox, Safari, Edge and mobile screen readers have not been tried.",
+    "Case-manager pages were audited on a local copy of the deployed code only, because the demo site has no test case-manager accounts. On the demo site, the audit covers the sign-in and registration pages and the citizen's dashboard and profile.",
+    "The session warning was tested end to end locally with short-lived tokens. On the demo site, extending a session was checked through the API: it keeps the sign-in time and issues a one-hour token.",
+    "The page behind the session warning is not made inert; the dialog relies on aria-modal and its own focus trap.",
+    "All data shown is synthetic."
+  ]
+}

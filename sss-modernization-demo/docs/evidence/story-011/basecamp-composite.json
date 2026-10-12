@@ -1,0 +1,58 @@
+{
+  "out": "story-011-screens.jpg",
+  "maxKb": 650,
+  "title": "STORY-011 Accessibility (Section 508) - demonstrated on the synthetic demo deployment",
+  "columns": 2,
+  "tileWidth": 960,
+  "tiles": [
+    {
+      "file": "00-before-a11y-report.png",
+      "label": "1. Before: the same audit fails every page",
+      "top": 0,
+      "height": 1000
+    },
+    {
+      "file": "01-a11y-report.png",
+      "label": "2. After: 12 of 12 pages pass WCAG 2.1 AA checks",
+      "top": 0,
+      "height": 1000
+    },
+    {
+      "file": "02-skip-link.png",
+      "label": "3. First Tab: Skip to main content",
+      "top": 0,
+      "height": 330
+    },
+    {
+      "file": "03-form-errors.png",
+      "label": "4. Errors announced, focus on the first field",
+      "top": 0,
+      "height": 948
+    },
+    {
+      "file": "04-reflow-320.png",
+      "label": "5. 320 px wide: one column, no sideways scroll",
+      "top": 0,
+      "height": 760,
+      "natural": true
+    },
+    {
+      "file": "05-session-warning.png",
+      "label": "6. Warning before a session ends, with Stay",
+      "top": 380,
+      "height": 640
+    },
+    {
+      "file": "live-01-citizen-dashboard.png",
+      "label": "7. Demo site: accessibility listed as done",
+      "top": 900,
+      "height": 465
+    },
+    {
+      "file": "live-a11y-report.png",
+      "label": "8. Demo site: the audit passes after the deploy",
+      "top": 0,
+      "height": 900
+    }
+  ]
+}

@@ -1,0 +1,469 @@
+{
+  "summary": {
+    "site": "http://localhost:4173",
+    "at": "2026-10-12T22:45:01.366Z",
+    "axe": "4.10.2",
+    "rules": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa"
+    ],
+    "pages": 12,
+    "passed": 12,
+    "forms": [
+      {
+        "form": "Sign in, wrong password",
+        "invalid": 0,
+        "described": 0,
+        "alerts": [
+          "Invalid email or password"
+        ],
+        "focusOnInvalid": false,
+        "axe": 0,
+        "pass": true
+      },
+      {
+        "form": "Registration, empty",
+        "invalid": 5,
+        "described": 5,
+        "alerts": [],
+        "focusOnInvalid": true,
+        "axe": 0,
+        "pass": true
+      }
+    ],
+    "session": {
+      "shown": true,
+      "axe": 0,
+      "modal": true,
+      "labelled": true,
+      "described": true,
+      "focusOnStay": true,
+      "focusTrapped": true,
+      "extended": true,
+      "authTimeKept": true,
+      "newLifetime": 3600,
+      "signedOutWithMessage": true,
+      "pass": true
+    },
+    "signOut": {
+      "recorded": true,
+      "refused": false,
+      "pass": true
+    }
+  },
+  "results": [
+    {
+      "role": "Signed out",
+      "page": "/login",
+      "title": "Sign in · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 4,
+        "reached": 4,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "email",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Signed out",
+      "page": "/register",
+      "title": "Create account · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 8,
+        "reached": 8,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "email",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Applicant",
+      "page": "/dashboard",
+      "title": "Dashboard · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 8,
+        "reached": 8,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Applicant",
+      "page": "/profile",
+      "title": "My Profile · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 12,
+        "reached": 12,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Applicant",
+      "page": "/cases/:id",
+      "title": "Exemption Case · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 8,
+        "reached": 8,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Case manager",
+      "page": "/dashboard",
+      "title": "Dashboard · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 8,
+        "reached": 8,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Case manager",
+      "page": "/cases",
+      "title": "Case Management · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 14,
+        "reached": 14,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Case manager",
+      "page": "/cases/:id",
+      "title": "Exemption Case · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 18,
+        "reached": 18,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Case manager",
+      "page": "/compliance",
+      "title": "Compliance · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 17,
+        "reached": 17,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Case manager",
+      "page": "/compliance/audit",
+      "title": "Compliance Audit Log · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 52,
+        "reached": 52,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Case manager",
+      "page": "/freshness",
+      "title": "Data Freshness · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 12,
+        "reached": 12,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Case manager",
+      "page": "/audit",
+      "title": "Security Audit Log · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 17,
+        "reached": 17,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    }
+  ],
+  "accessibilityTree": [
+    {
+      "role": "textbox",
+      "name": "Email Address",
+      "description": "Email is required",
+      "required": true,
+      "invalid": true
+    },
+    {
+      "role": "textbox",
+      "name": "Full Name",
+      "description": "Full name is required",
+      "required": true,
+      "invalid": true
+    },
+    {
+      "role": "textbox",
+      "name": "Password",
+      "description": "Password is required",
+      "required": true,
+      "invalid": true
+    },
+    {
+      "role": "button",
+      "name": "Create Account",
+      "description": "",
+      "required": false,
+      "invalid": false
+    },
+    {
+      "role": "textbox",
+      "name": "Social Security Number",
+      "description": "SSN is required",
+      "required": true,
+      "invalid": true
+    },
+    {
+      "role": "button",
+      "name": "Show",
+      "description": "",
+      "required": false,
+      "invalid": false
+    },
+    {
+      "role": "button",
+      "name": "Show date picker Show date picker",
+      "description": "Date of birth is required",
+      "required": false,
+      "invalid": false
+    }
+  ]
+}
