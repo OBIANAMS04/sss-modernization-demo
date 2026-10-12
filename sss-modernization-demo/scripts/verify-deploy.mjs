@@ -102,7 +102,9 @@ async function liveAccessSweep() {
     const res = await fetch(API + path, { signal: AbortSignal.timeout(30_000) }).catch(() => null);
     if (res?.status !== 401) open.push(`${path} -> ${res?.status ?? 'no answer'}`);
   }
-  return { checked: paths.length, open };
+  // Ali, 2026-10-12: keep the size of the API surface visible in every report
+  const routes = [...table.matchAll(/'(?:GET|POST|PUT|PATCH|DELETE) \/[^']*': '[a-z-]+'/g)].length;
+  return { routes, checked: paths.length, open };
 }
 
 const access = apiOk ? await liveAccessSweep() : null;
@@ -111,7 +113,7 @@ const ok = apiOk && siteOk && api?.database === 'ok' && access?.open.length === 
 console.log(JSON.stringify({ target, required, api, site, access, pages }, null, 2));
 console.log(
   ok
-    ? `VERIFIED: API serves ${api.commit} and site serves ${site.commit}, each including its latest change; all ${PAGE_PATHS.length} page paths serve the current build; database ok; ${api.migrations?.applied} migrations applied (latest ${api.migrations?.latest}); all ${access.checked} protected GET routes refuse requests without a token.`
+    ? `VERIFIED: API serves ${api.commit} and site serves ${site.commit}, each including its latest change; all ${PAGE_PATHS.length} page paths serve the current build; database ok; ${api.migrations?.applied} migrations applied (latest ${api.migrations?.latest}); ${access.routes} routes in the access table; all ${access.checked} protected GET routes refuse requests without a token.`
     : 'NOT VERIFIED: see the served and required commits, stale page paths and any open routes above.'
 );
 process.exit(ok ? 0 : 1);

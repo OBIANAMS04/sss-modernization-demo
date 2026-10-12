@@ -4,13 +4,24 @@
 // spec.json: { "out": "path.jpg", "maxKb": 650, "title": "…", "columns": 2, "tileWidth": 960,
 //              "tiles": [{ "file": "path.png", "label": "…", "top": 0, "height": 900 }] }
 // Paths are relative to the spec file. top/height crop each screenshot before it is scaled to tileWidth.
-import { readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { launch } from './browser.mjs';
 
 const specPath = resolve(process.argv[2]);
 const spec = JSON.parse(readFileSync(specPath, 'utf8'));
 const base = dirname(specPath);
+
+// Ali, 2026-10-12: the image attached to a post must carry every screen in the evidence pack, or the thread
+// and the pack disagree. Next to an evidence.json, refuse to build while any of its screens is left out.
+const evidence = resolve(base, 'evidence.json');
+if (existsSync(evidence)) {
+  const missing = JSON.parse(readFileSync(evidence, 'utf8')).shots.map((s) => s.file).filter((f) => !spec.tiles.some((t) => t.file === f));
+  if (missing.length) {
+    console.error(`The composite leaves out evidence screens: ${missing.join(', ')}. Add a tile for each.`);
+    process.exit(1);
+  }
+}
 const tiles = spec.tiles.map((t) => ({ ...t, data: readFileSync(resolve(base, t.file)).toString('base64') }));
 
 const page = await launch();
