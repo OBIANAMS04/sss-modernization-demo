@@ -62,6 +62,12 @@ run(async () => {
   await sleep(300);
   expect('reading the audit log is itself audited', (await find({ action: 'DATA_READ', user: MANAGER, resource: 'audit', limit: 1 })).total > 0, true);
   expect('each server start is recorded as a deployment', (await find({ action: 'DEPLOYMENT', limit: 1 })).total > 0, true);
+  const config = (await find({ action: 'CONFIG_CHANGE', limit: 100 })).logs;
+  expect(
+    'configuration is recorded at startup, naming changed secrets without values or fingerprints',
+    [config.length > 0, config.every((l) => l.resource === 'system' && Array.isArray(l.details.changed ?? l.details.settings)), /sha256:/.test(JSON.stringify(config))],
+    [true, true, false]
+  );
 
   const stats = (await call('GET', '/audit/stats', m.token)).data;
   expect('write-once and retention are read from the database', [stats.immutable, stats.retention], [true, '7 years']);

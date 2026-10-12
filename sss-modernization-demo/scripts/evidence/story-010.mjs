@@ -2,8 +2,10 @@
 // an export), then the Security Audit Log in headless Chrome: the overview, one person's whole trail, and the
 // refusals. Also tries to edit and delete history directly in the database, which must be refused.
 //
-// Runs on the same local stack as story-008.mjs, against a FRESH database (see that file's header):
-//   E2E_BASE=http://localhost:3002/api node scripts/evidence/story-010.mjs
+// Runs on the same local stack as story-008.mjs, against a FRESH database (see that file's header). Start
+// the backend once as usual (the first record of its settings), then restart it with JWT_EXPIRY=1800 and a
+// new JWT_SECRET, so that screen 4 shows a configuration change; pass the same secret here:
+//   EVIDENCE_JWT_SECRET=<secret> E2E_BASE=http://localhost:3002/api node scripts/evidence/story-010.mjs
 // Screenshots land in docs/evidence/story-010/.
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -91,6 +93,16 @@ run(async () => {
     await page.waitForText('/api/cases/stats');
     expect('refusals show who, what was tried and the answer', [await page.hasText('GET /api/cases/stats → 403'), await page.hasText('GET /api/cases → 401')], [true, true]);
     await shot('03-refusals');
+
+    // 4. Settings changed between server starts (see the header): public values shown, secrets only named
+    await page.click('Reset');
+    await sleep(400);
+    await search('#l-action', 'CONFIG_CHANGE');
+    await page.waitForText('(not set) → 1800');
+    const text = await page.evaluate('document.body.innerText');
+    expect('the change shows the new session length and names the rotated secret', /changed: JWT_EXPIRY, JWT_SECRET/.test(text), true);
+    expect('no secret value or fingerprint on the page', /sha256:/.test(text) || text.includes(process.env.EVIDENCE_JWT_SECRET || '\u0000'), false);
+    await shot('04-configuration-changes');
 
     // The applicant cannot open the log
     await page.signIn(SITE, session);
