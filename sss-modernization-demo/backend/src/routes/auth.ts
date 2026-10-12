@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { registerUser, loginUser } from '../services/authService';
 import { AuditAction, recordAudit } from '../services/auditService';
 import { authenticate } from '../middleware/authenticate';
+import { extendToken, generateToken, MAX_SESSION_SECONDS } from '../utils/jwt';
 import { validateRegistrationInput } from '../utils/validators';
 import { ValidationError, AppError } from '../utils/errors';
 
@@ -98,6 +99,17 @@ router.post('/login', async (req: LoginRequest, res: Response, next: NextFunctio
 router.post('/logout', authenticate, (req: any, res: Response) => {
   recordAudit(AuditAction.USER_LOGOUT, 'auth', 'success', { actor: req.user.sub, actorEmail: req.user.email, resourceId: req.user.sub });
   res.status(204).end();
+});
+
+// POST /auth/refresh - STORY-011 (WCAG 2.2.1): a person warned that their session is about to end can extend it.
+// Every token carries the time of the original sign-in, so extending never keeps a session going past 12 hours.
+router.post('/refresh', authenticate, (req: any, res: Response, next: NextFunction) => {
+  const authTime = req.user.auth_time ?? req.user.iat; // tokens issued before this change have no auth_time
+  if (Math.floor(Date.now() / 1000) - authTime > MAX_SESSION_SECONDS) {
+    return next(new AppError(401, 'Your session has reached its maximum length. Please sign in again.', 'UNAUTHORIZED'));
+  }
+  recordAudit(AuditAction.SESSION_EXTEND, 'auth', 'success', { actor: req.user.sub, actorEmail: req.user.email, resourceId: req.user.sub });
+  res.json({ token: extendToken(req.user.sub, req.user.email, authTime) });
 });
 
 export default router;

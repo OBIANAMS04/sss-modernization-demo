@@ -29,6 +29,7 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'POST /api/auth/register': 'public',
   'POST /api/auth/login': 'public',
   'POST /api/auth/logout': 'signed-in',
+  'POST /api/auth/refresh': 'signed-in',
 
   'GET /api/users/:id': 'owner',
   'PUT /api/users/:id': 'owner',
