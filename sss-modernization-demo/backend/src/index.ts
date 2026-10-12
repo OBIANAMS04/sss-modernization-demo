@@ -3,6 +3,7 @@ import app from './app';
 import { runMigrations } from './database/migrate';
 import { syncCaseManagerRoles } from './services/roleService';
 import { AuditAction, logAuditEvent } from './services/auditService';
+import { recordConfigChanges } from './services/configAuditService';
 
 dotenv.config();
 
@@ -19,6 +20,8 @@ async function start() {
   // exits, so a Render deploy fails and the previous version keeps serving.
   const migrationsApplied = await runMigrations();
   await syncCaseManagerRoles();
+  // STORY-010: a setting changed since the previous start is an audited configuration change
+  await recordConfigChanges();
   // STORY-010: each start of a release is an audited infrastructure event
   await logAuditEvent(AuditAction.DEPLOYMENT, 'system', 'success', {
     details: { commit: (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7), migrationsApplied },
