@@ -84,12 +84,15 @@ if (shotsDir) {
     await page.signIn(SITE, session);
     await page.goto(`${SITE}/dashboard`);
     await page.waitForText('Release Progress', 60_000);
-    check('live dashboard lists compliance validation as done', await page.hasText('R1: Compliance validation'));
-    check('no Compliance link for a citizen', await page.evaluate(`!document.querySelector('a[href="/compliance"]')`));
+    check('live dashboard lists the latest shipped story (data freshness) as done', await page.hasText('R1: Data freshness'));
+    check('no staff links for a citizen', await page.evaluate(`!document.querySelector('a[href="/compliance"], a[href="/freshness"], a[href="/cases"]')`));
     await page.screenshot(join(shotsDir, 'live-01-citizen-dashboard.png'));
     await page.goto(`${SITE}/compliance`);
     await page.waitForText('available to case managers only', 60_000);
     await page.screenshot(join(shotsDir, 'live-02-citizen-compliance-page.png'));
+    await page.goto(`${SITE}/freshness`);
+    await page.waitForText('available to case managers only', 60_000);
+    await page.screenshot(join(shotsDir, 'live-03-citizen-freshness-page.png'));
     console.log(`      saved live screenshots in ${shotsDir}`);
   } finally {
     await page.close();

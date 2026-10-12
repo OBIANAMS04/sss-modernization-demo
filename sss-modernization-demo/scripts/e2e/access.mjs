@@ -33,10 +33,11 @@ run(async () => {
   expect('citizen: GET /compliance/dashboard', (await call('GET', '/compliance/dashboard', b.token)).status, 403);
   expect('citizen: GET /compliance/decisions', (await call('GET', '/compliance/decisions', b.token)).status, 403);
   expect('citizen: POST /compliance/reviews/:id/resolve', (await call('POST', `/compliance/reviews/${uuid}/resolve`, b.token, { action: 'accept', note: 'x' })).status, 403);
-  expect('citizen: POST /latency/cleanup', (await call('POST', '/latency/cleanup', b.token, {})).status, 403);
+  expect('citizen: GET /freshness/dashboard', (await call('GET', '/freshness/dashboard', b.token)).status, 403);
+  expect('citizen: POST /freshness/probe', (await call('POST', '/freshness/probe', b.token)).status, 403);
   expect('citizen: GET /exemptions/stats', (await call('GET', '/exemptions/stats', b.token)).status, 403);
-  expect('citizen: GET /data/pipeline-status?userId=<other>', (await call('GET', `/data/pipeline-status?userId=${a.user.id}`, b.token)).status, 403);
-  expect('anonymous: GET /data/pipeline-status?userId=<other>', (await call('GET', `/data/pipeline-status?userId=${a.user.id}`, null)).status, 403);
+  expect('removed placeholder: GET /data/pipeline-status', (await call('GET', '/data/pipeline-status', null)).status, 404);
+  expect('removed placeholder: POST /latency/cleanup', (await call('POST', '/latency/cleanup', m.token, {})).status, 404);
   expect('anonymous: GET /cases', (await call('GET', '/cases', null)).status, 401);
   expect('invalid token: GET /cases (401, not 500)', (await call('GET', '/cases', 'not-a-token')).status, 401);
 
@@ -48,4 +49,5 @@ run(async () => {
   expect('staff: GET /cases/stats', (await call('GET', '/cases/stats', m.token)).status, 200);
   expect('staff: GET /audit', (await call('GET', '/audit', m.token)).status, 200);
   expect('staff: GET /compliance/dashboard', (await call('GET', '/compliance/dashboard', m.token)).status, 200);
+  expect('staff: GET /freshness/dashboard', (await call('GET', '/freshness/dashboard', m.token)).status, 200);
 });
