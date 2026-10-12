@@ -181,7 +181,16 @@ async function reflow(shotFile) {
   const at = (width, height) => page.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
   await at(320, 900);
   await sleep(400);
-  const r = await page.evaluate('({ scroll: document.documentElement.scrollWidth, width: window.innerWidth })');
+  // Besides sideways scrolling, any text wider than its own box overlaps or is cut off (a long email in a narrow
+  // column, say), unless the box sits inside one that scrolls on purpose, as the wide tables do.
+  const r = await page.evaluate(`(() => {
+    const scrolls = (el) => { for (let p = el.parentElement; p; p = p.parentElement) { if (/auto|scroll/.test(getComputedStyle(p).overflowX)) return true; } return false; };
+    const overflowing = [...document.querySelectorAll('body *')]
+      .filter((el) => el.children.length === 0 && !/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(el.tagName)
+        && getComputedStyle(el).overflowX === 'visible' && el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 1 && !scrolls(el))
+      .map((el) => el.innerText.trim().slice(0, 40));
+    return { scroll: document.documentElement.scrollWidth, width: window.innerWidth, overflowing };
+  })()`);
   if (shotFile) {
     const { cssContentSize } = await page.send('Page.getLayoutMetrics');
     await at(320, Math.ceil(cssContentSize.height));
@@ -191,7 +200,7 @@ async function reflow(shotFile) {
   }
   await at(1280, 900);
   await sleep(200);
-  return { ok: r.scroll <= r.width + 1, scrollWidth: r.scroll };
+  return { ok: r.scroll <= r.width + 1 && r.overflowing.length === 0, scrollWidth: r.scroll, overflowing: r.overflowing };
 }
 
 const formState = `(() => {

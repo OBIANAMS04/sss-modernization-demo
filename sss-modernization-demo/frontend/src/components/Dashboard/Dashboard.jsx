@@ -159,7 +159,7 @@ export default function Dashboard() {
 
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Stats</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
                     <p className="text-gray-600 text-sm">Release Zero</p>
                     <p className="text-3xl font-bold text-blue-600">Complete</p>

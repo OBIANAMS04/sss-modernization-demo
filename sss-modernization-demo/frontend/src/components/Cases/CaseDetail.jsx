@@ -164,7 +164,7 @@ export default function CaseDetail() {
                   </div>
                   <StatusBadge status={caseData.status} />
                 </div>
-                <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+                <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm wrap-anywhere">
                   <div>
                     <dt className="text-gray-500">Submitted</dt>
                     <dd className="text-gray-900">{formatDate(caseData.submittedAt)}</dd>
