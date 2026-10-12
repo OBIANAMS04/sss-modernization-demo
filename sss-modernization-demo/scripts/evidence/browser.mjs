@@ -73,6 +73,7 @@ export async function launch({ width = 1280, height = 900 } = {}) {
 
   await send('Page.enable');
   await send('Runtime.enable');
+  await send('Emulation.setFocusEmulationEnabled', { enabled: true });
   const viewport = (h) => send('Emulation.setDeviceMetricsOverride', { width, height: h, deviceScaleFactor: 1, mobile: false });
   await viewport(height);
 
@@ -131,6 +132,14 @@ export async function launch({ width = 1280, height = 900 } = {}) {
     async type(selector, text) {
       await evaluate(`document.querySelector(${JSON.stringify(selector)}).focus()`);
       await send('Input.insertText', { text });
+    },
+
+    /** Presses a key with real keyboard events, e.g. Tab (Shift+Tab with { shift: true }), Enter or Escape. */
+    async press(key, { shift = false } = {}) {
+      const codes = { Tab: 9, Enter: 13, Escape: 27 };
+      const event = { key, code: key, windowsVirtualKeyCode: codes[key], nativeVirtualKeyCode: codes[key], modifiers: shift ? 8 : 0 };
+      await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...event, ...(key === 'Enter' ? { text: '\r' } : {}) });
+      await send('Input.dispatchKeyEvent', { type: 'keyUp', ...event });
     },
 
     async select(selector, value) {
