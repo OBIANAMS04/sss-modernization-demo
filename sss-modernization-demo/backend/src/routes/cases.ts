@@ -20,6 +20,7 @@ import {
   getStaffMembers,
   listCases,
 } from '../services/caseService';
+import { trackWrite, versionOf } from '../services/freshnessService';
 
 const router = Router();
 
@@ -70,7 +71,14 @@ router.post('/', async (req: any, res: Response, next: NextFunction) => {
     if (!exemptionId || !UUID_PATTERN.test(exemptionId)) {
       throw new AppError(400, 'exemptionId is required', 'VALIDATION_ERROR');
     }
-    res.status(201).json(await applyForExemption(exemptionId, await actorFrom(req)));
+    const actor = await actorFrom(req);
+    const created = await trackWrite(
+      'application',
+      'create',
+      (result) => (result ? versionOf.case(result.id) : null),
+      () => applyForExemption(exemptionId, actor)
+    );
+    res.status(201).json(created);
   } catch (error) {
     next(error);
   }
@@ -141,7 +149,11 @@ router.get('/:id', async (req: any, res: Response, next: NextFunction) => {
 router.post('/:id/status', async (req: any, res: Response, next: NextFunction) => {
   try {
     const { actor } = await loadCaseForViewer(req);
-    res.json(await changeStatus(req.params.id, req.body.status, actor, req.body.reason));
+    res.json(
+      await trackWrite('case_status', 'status_change', () => versionOf.case(req.params.id), () =>
+        changeStatus(req.params.id, req.body.status, actor, req.body.reason)
+      )
+    );
   } catch (error) {
     next(error);
   }
@@ -150,9 +162,13 @@ router.post('/:id/status', async (req: any, res: Response, next: NextFunction) =
 // PUT /cases/:id/assignment - { assignedTo: email | null } (staff, not on their own case)
 router.put('/:id/assignment', requireStaff, async (req: any, res: Response, next: NextFunction) => {
   try {
-    const { actor, reviewer } = await loadCaseForViewer(req);
+    const { actor, reviewer, detail } = await loadCaseForViewer(req);
     if (!reviewer) throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
-    res.json(await assignCase(req.params.id, req.body.assignedTo || null, actor));
+    const assignee: string | null = req.body.assignedTo || null;
+    const assign = () => assignCase(req.params.id, assignee, actor);
+    // Re-assigning to the current owner writes nothing, so it is not timed (STORY-009)
+    const unchanged = (assignee ?? '').toLowerCase() === (detail.assignedTo ?? '').toLowerCase();
+    res.json(unchanged ? await assign() : await trackWrite('case_status', 'assign', () => versionOf.case(req.params.id), assign));
   } catch (error) {
     next(error);
   }

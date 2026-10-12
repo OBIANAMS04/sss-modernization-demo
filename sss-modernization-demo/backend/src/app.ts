@@ -4,11 +4,10 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import usersRoutes from './routes/users';
 import mfaRoutes from './routes/mfa';
-import dataRoutes from './routes/data';
 import exemptionsRoutes from './routes/exemptions';
 import casesRoutes from './routes/cases';
 import complianceRoutes from './routes/compliance';
-import latencyRoutes from './routes/latency';
+import freshnessRoutes from './routes/freshness';
 import auditRoutes from './routes/audit';
 import notificationRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
@@ -35,11 +34,10 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/mfa', mfaRoutes);
-app.use('/api/data', dataRoutes);
 app.use('/api/exemptions', exemptionsRoutes);
 app.use('/api/cases', casesRoutes);
 app.use('/api/compliance', complianceRoutes);
-app.use('/api/latency', latencyRoutes);
+app.use('/api/freshness', freshnessRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/notifications', notificationRoutes);
 

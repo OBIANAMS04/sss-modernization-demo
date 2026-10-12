@@ -37,10 +37,6 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'POST /api/mfa/verify-code': 'signed-in',
   'GET /api/mfa/status': 'signed-in',
 
-  'GET /api/data/pipeline-status': 'optional-sign-in',
-  'GET /api/data/metrics': 'signed-in',
-  'GET /api/data/freshness-check': 'signed-in',
-
   'GET /api/exemptions': 'signed-in',
   'POST /api/exemptions/check': 'signed-in',
   'GET /api/exemptions/stats': 'staff',
@@ -66,11 +62,8 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'GET /api/compliance/reviews': 'staff',
   'POST /api/compliance/reviews/:id/resolve': 'staff',
 
-  'GET /api/latency/stats': 'staff',
-  'GET /api/latency/metrics': 'staff',
-  'GET /api/latency/slo-violations': 'staff',
-  'POST /api/latency/cleanup': 'staff',
-  'GET /api/latency/health': 'signed-in',
+  'GET /api/freshness/dashboard': 'staff',
+  'POST /api/freshness/probe': 'staff',
 
   'GET /api/audit': 'staff',
   'GET /api/audit/user/:userId': 'owner-or-staff',

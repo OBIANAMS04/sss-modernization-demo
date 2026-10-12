@@ -40,8 +40,9 @@ beforeAll(() => {
 afterAll(() => jest.restoreAllMocks());
 
 describe('route access rules', () => {
+  // Guards against route discovery silently finding nothing, which would make every check below pass.
   it('finds the routes the app serves', () => {
-    expect(routes.length).toBeGreaterThan(40);
+    expect(routes.length).toBeGreaterThanOrEqual(Object.keys(ROUTE_ACCESS).length);
   });
 
   it('declares an access rule for every route the app serves', () => {

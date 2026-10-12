@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { getUserById, updateUserProfile } from '../services/userService';
 import { runEligibilityCheck } from '../services/exemptionService';
+import { trackWrite, versionOf } from '../services/freshnessService';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
 
@@ -61,10 +62,17 @@ router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) =
       throw new AppError(403, 'Access denied', 'FORBIDDEN');
     }
 
-    const updatedUser = await updateUserProfile(id, { phone, address, annualIncome, hasDocumentedHardship });
+    const changes = { phone, address, annualIncome, hasDocumentedHardship };
+    const save = () => updateUserProfile(id, changes);
+    // STORY-009: a save that changes nothing writes nothing, so only real updates are timed
+    const updatedUser = Object.values(changes).some((v) => v !== undefined)
+      ? await trackWrite('profile', 'update', () => versionOf.user(id), save)
+      : await save();
 
     // STORY-006: exemption eligibility is re-determined whenever the profile changes
-    const eligibility = await runEligibilityCheck(id, 'profile_update', req.user?.email);
+    const eligibility = await trackWrite('eligibility', 'profile_update', () => versionOf.eligibility(id), () =>
+      runEligibilityCheck(id, 'profile_update', req.user?.email)
+    );
 
     res.json({ ...updatedUser, eligibility });
   } catch (error) {

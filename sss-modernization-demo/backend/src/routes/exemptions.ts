@@ -7,6 +7,7 @@ import {
   runEligibilityCheck,
   getExemptionStats,
 } from '../services/exemptionService';
+import { trackWrite, versionOf } from '../services/freshnessService';
 
 const router = Router();
 
@@ -66,7 +67,9 @@ router.post('/check', async (req: AuthRequest, res: Response, next: NextFunction
       throw new AppError(401, 'User not found in token', 'UNAUTHORIZED');
     }
 
-    const eligibility = await runEligibilityCheck(userId, 'manual', req.user?.email);
+    const eligibility = await trackWrite('eligibility', 'check', () => versionOf.eligibility(userId), () =>
+      runEligibilityCheck(userId, 'manual', req.user?.email)
+    );
 
     res.json(eligibility);
   } catch (error) {
