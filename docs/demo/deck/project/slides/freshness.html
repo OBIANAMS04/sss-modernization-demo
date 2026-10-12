@@ -1,0 +1,13 @@
+<section id="freshness" data-transition="fade" style="background:#E9EFF7;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 9</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Every change is timed</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>Each update is timed until the next request can read it.</li>
+<li>Target: 30 seconds for 95% of updates, for each data type.</li>
+<li>A real 31-second slowdown on profile saves raised the alert.</li>
+</ul>
+</div>
+<img src="/_blob/c8d141a5dd296bd6b1760966ed498dba" alt="Data Freshness page with an over-target alert for profile updates and per-type figures" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 9, data freshness (STORY-009): every profile save, eligibility check, application and case change is timed from the start of the write until a separate read sees it, the way the next request would. Staff see each data type against a 30-second target for 95% of updates. To show the alert is real, the demo held one applicant's database row locked for 31 seconds while that applicant saved their profile: profile updates went over target and the page raised the alert, while every other data type stayed in the milliseconds. The slowest-updates list shows the time went into the write, not the wait to read. Check now times a write end to end from the browser. Measured on the demo deployment, which reads straight from its database; the same check will measure cache or replica lag once those exist.</aside>
+</section>

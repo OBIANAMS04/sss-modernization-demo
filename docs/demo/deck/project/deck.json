@@ -3,7 +3,7 @@
   "createdOnFiles": { "v": 1, "at": "2026-10-06T16:22:59Z" },
   "lists": "css",
   "title": "SSS Modernization Demo",
-  "order": ["cover", "why", "users", "problems", "signup", "queue", "denial", "checks", "review", "audit", "informed", "controls", "security", "roadmap", "closing"],
+  "order": ["cover", "why", "users", "problems", "signup", "queue", "denial", "checks", "review", "audit", "informed", "freshness", "controls", "security", "roadmap", "closing"],
   "sections": {
     "s1": { "description": "Why the platform matters and who it serves", "start": "cover" },
     "s2": { "description": "The problems it solves", "start": "problems" },

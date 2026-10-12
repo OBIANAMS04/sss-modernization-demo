@@ -118,11 +118,11 @@
     <h1>SSS Modernization Demo</h1>
     <p class="lede">A working platform for the Selective Service System's registrant services: online accounts, exemption eligibility, case management with appeals, and automatic compliance checks on every decision.</p>
     <div class="facts">
-      <span>Live demo <strong><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></strong></span>
-      <span>Status as of <strong>October 6, 2026</strong></span>
-      <span>Live today <strong>2 of 5 R0 stories, 3 of 11 R1 stories</strong></span>
+      <span>Demo site <strong><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></strong></span>
+      <span>Status as of <strong>October 12, 2026</strong></span>
+      <span>Working in the demo <strong>2 of 5 R0 stories, 4 of 11 R1 stories</strong></span>
     </div>
-    <p class="notice">Demo environment with synthetic data only. The exemption types shown (A senior, B income, C hardship) are illustrative rules built to exercise the workflow. They are not Selective Service policy.</p>
+    <p class="notice">Everything described here is demonstrated on a synthetic demo deployment; none of it is operating in production. Synthetic data only. The exemption types shown (A senior, B income, C hardship) are illustrative rules built to exercise the workflow. They are not Selective Service policy.</p>
   </header>
 
   <section id="purpose" aria-labelledby="purpose-h">
@@ -153,31 +153,36 @@
       <div class="problem">
         <div><h3>Registrants can't see where they stand</h3><p class="need">People need to register, update their details and know the status of a request without calling or mailing anyone.</p></div>
         <p>Self-service accounts, a profile with a built-in compliance check, eligibility results with a plain-language reason for each, a case timeline and in-app notifications at every status change.</p>
-        <span class="pill live">Live</span>
+        <span class="pill live">In the demo</span>
       </div>
       <div class="problem">
         <div><h3>Decisions that are hard to explain or challenge</h3><p class="need">Applicants deserve to know why they were refused and how to respond.</p></div>
         <p>Rules produce a status and a reason for every exemption type. A denial cannot be saved without a written reason, which the applicant sees, and a denied applicant can appeal from the same page.</p>
-        <span class="pill live">Live</span>
+        <span class="pill live">In the demo</span>
       </div>
       <div class="problem">
         <div><h3>No proof that each decision followed the rules</h3><p class="need">Oversight needs evidence for every decision, not a sample.</p></div>
         <p>Every approval and denial is checked against 8 decision controls the moment it is made. A failure opens a review that only a different case manager can resolve, with a written justification. A dashboard tracks the rate against a 99% target.</p>
-        <span class="pill live">Live</span>
+        <span class="pill live">In the demo</span>
       </div>
       <div class="problem">
         <div><h3>Sensitive personal data at risk</h3><p class="need">Social Security numbers and case records must be protected and only seen by the right people.</p></div>
         <p>SSNs are stored only as one-way hashes, never shown back or logged, and entered in a masked field. Every page of the API declares who may use it, and an automated test fails the build if any route lacks its access check.</p>
-        <span class="pill live">Live</span>
+        <span class="pill live">In the demo</span>
       </div>
       <div class="problem">
         <div><h3>Case work spread across inboxes and spreadsheets</h3><p class="need">Staff need one queue with clear ownership.</p></div>
         <p>A shared case queue with status counts, filters, assignment, internal notes, document links and CSV export that never includes SSNs.</p>
-        <span class="pill live">Live</span>
+        <span class="pill live">In the demo</span>
       </div>
       <div class="problem">
-        <div><h3>Stale data and inaccessible screens</h3><p class="need">Records should update within seconds, and every screen must work for people using assistive technology.</p></div>
-        <p>Data freshness monitoring under 30 seconds (STORY-009) and Section 508 testing (STORY-011) are the next R1 stories.</p>
+        <div><h3>Screens that show stale data</h3><p class="need">Dashboards and case pages must show current information within seconds of a change.</p></div>
+        <p>Every profile save, eligibility check, application and case change is timed until the next request can read it. Staff see each data type against a 30-second target for 95% of updates, an alert when one falls behind, and the slowest updates.</p>
+        <span class="pill live">In the demo</span>
+      </div>
+      <div class="problem">
+        <div><h3>Screens some people cannot use</h3><p class="need">Every screen must work for people using assistive technology (Section 508).</p></div>
+        <p>Section 508 testing (STORY-011) is a coming R1 story.</p>
         <span class="pill plan">Planned</span>
       </div>
       <div class="problem">
@@ -190,7 +195,7 @@
 
   <section id="walkthrough" aria-labelledby="walkthrough-h">
     <p class="eyebrow">Demo walkthrough</p>
-    <h2 id="walkthrough-h">Eight scenes, about ten minutes</h2>
+    <h2 id="walkthrough-h">Nine scenes, about twelve minutes</h2>
     <ol class="scenes">
       <li class="scene">
         <h3>A registrant creates an account</h3>
@@ -256,6 +261,15 @@
         </ul>
         <figure><img src="screens/tour-02-citizen-dashboard.png" width="1280" height="1221" alt="Applicant dashboard with notifications about the case" loading="lazy"><figcaption>Jordan Rivera's dashboard: every step of the case as a notification, newest first, including the reopening and the final approval.</figcaption></figure>
       </li>
+      <li class="scene">
+        <h3>Every change is timed until it is readable</h3>
+        <ul>
+          <li>Each profile save, eligibility check, application and case change is timed from the start of the write until a separate read sees it, the way the next request would.</li>
+          <li>The target is 30 seconds for 95% of updates. Here one profile save waited 31 seconds on a database row held locked by another transaction, so profile updates went over target and the page raised the alert. The slowest-updates list shows the time went into the write.</li>
+          <li>Check now times a write end to end from the browser and separates server time from network time.</li>
+        </ul>
+        <figure><img src="screens/tour-09-freshness-alert.png" width="1280" height="1570" alt="Data Freshness page with an over-target alert for profile updates" loading="lazy"><figcaption>After a real slowdown: profile updates' p95 is 31.1 s, over the 30 s target; every other data type is measured in milliseconds.</figcaption></figure>
+      </li>
     </ol>
   </section>
 
@@ -287,7 +301,7 @@
       <li><strong>Access decided per endpoint.</strong> Each route declares whether it is public, for signed-in users, for the record's owner or for staff. A test fails the build when a route is missing its rule or its check.</li>
       <li><strong>Separation of duties.</strong> Case managers cannot decide their own cases or clear reviews of their own decisions.</li>
       <li><strong>Complete audit trail.</strong> Eligibility checks, status changes, overrides and every compliance result are recorded with the actor and time.</li>
-      <li><strong>Verified releases.</strong> After each deploy the team checks the live site automatically: the running version, the database, all protected routes refusing anonymous requests, and every staff route refusing an ordinary registrant. Each story ships with screenshots and a written conclusion.</li>
+      <li><strong>Verified releases.</strong> After each deploy the team checks the demo deployment automatically: the running version, the database, all protected routes refusing anonymous requests, and every staff route refusing an ordinary registrant. Each story ships with screenshots and a written conclusion.</li>
     </ul>
   </section>
 
@@ -297,15 +311,15 @@
     <div class="releases">
       <div class="release">
         <h3>R0 · Walking skeleton</h3>
-        <div class="meter" role="img" aria-label="2 of 5 live"><span style="width:40%"></span></div>
-        <p class="count">2 of 5 live</p>
+        <div class="meter" role="img" aria-label="2 of 5 working in the demo"><span style="width:40%"></span></div>
+        <p class="count">2 of 5 in the demo</p>
         <p>Secure registration and sign-in, profile and compliance check. Multi-factor sign-in and the data pipeline are partly built; cloud infrastructure waits on AWS approval.</p>
       </div>
       <div class="release">
         <h3>R1 · Core services</h3>
-        <div class="meter" role="img" aria-label="3 of 11 live"><span style="width:27%"></span></div>
-        <p class="count">3 of 11 live</p>
-        <p>Live: exemption eligibility, case management, compliance validation. Next: data freshness, full audit logging, Section 508 testing, role dashboards, API governance.</p>
+        <div class="meter" role="img" aria-label="4 of 11 working in the demo"><span style="width:36%"></span></div>
+        <p class="count">4 of 11 in the demo</p>
+        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness. Next: full audit logging, Section 508 testing, role dashboards, API governance.</p>
       </div>
       <div class="release">
         <h3>R2 · AI and governance</h3>
@@ -329,18 +343,19 @@
     <ol class="outline">
       <li>Title: SSS Modernization Demo, Colaberry, solicitation 90MC26R0004</li>
       <li>Why it matters: the registry, who depends on accurate registration status</li>
-      <li>The problems: seven challenges and how the platform answers each</li>
+      <li>The problems: eight challenges and how the platform answers each</li>
       <li>Who uses it: registrants, case managers, compliance and leadership</li>
       <li>Registrant journey: account, eligibility with reasons, apply, follow the case (scenes 1, 2 and 8)</li>
       <li>Case management: one queue, decisions with reasons, appeals (scenes 3 and 4)</li>
       <li>Compliance by design: 8 controls on every decision, dashboard and target (scene 5 and the control table)</li>
       <li>Accountability: second-manager review and the audit log (scenes 6 and 7)</li>
+      <li>Current data: every change timed against a 30-second target, with an alert (scene 9)</li>
       <li>Security and trust: protected SSNs, per-endpoint access, verified releases</li>
-      <li>Status and roadmap: what is live today and what comes next</li>
+      <li>Status and roadmap: what works in the demo today and what comes next</li>
     </ol>
   </section>
 
   <footer>
-    <p>Prepared by Colaberry for the SSS modernization proposal. Screens come from the demo application running the code that is live at <a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a>, with synthetic people and records. The first visit after a quiet period takes about a minute while the demo server wakes.</p>
+    <p>Prepared by Colaberry for the SSS modernization proposal. Screens come from the demo application running the code deployed at <a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a>, with synthetic people and records. Everything shown is demonstrated on that synthetic deployment, not operating in production. The first visit after a quiet period takes about a minute while the demo server wakes.</p>
   </footer>
 </main>
