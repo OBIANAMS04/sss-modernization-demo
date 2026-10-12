@@ -93,6 +93,9 @@ if (shotsDir) {
     await page.goto(`${SITE}/freshness`);
     await page.waitForText('available to case managers only', 60_000);
     await page.screenshot(join(shotsDir, 'live-03-citizen-freshness-page.png'));
+    await page.goto(`${SITE}/audit`);
+    await page.waitForText('available to case managers only', 60_000);
+    await page.screenshot(join(shotsDir, 'live-04-citizen-audit-page.png'));
     console.log(`      saved live screenshots in ${shotsDir}`);
   } finally {
     await page.close();

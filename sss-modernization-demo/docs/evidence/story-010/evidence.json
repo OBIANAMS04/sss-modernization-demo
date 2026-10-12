@@ -1,0 +1,53 @@
+{
+  "id": "story-010",
+  "title": "STORY-010 Security Audit Logging: evidence",
+  "capturedBy": "scripts/evidence/story-010.mjs (screens 1-3) and scripts/verify-live-citizen.mjs (screens 4 and 5)",
+  "summary": [
+    "STORY-010 works on the demo deployment, with synthetic data; it is not operating in production. Every security-relevant event is now recorded with who, what, when, the result and the caller's address: registration, sign-in (failed attempts with the address tried, never the password), sign-out, MFA steps, every refusal (401 or 403), every successful read of the API by its route, exports, profile updates (field names only), case decisions and overrides, role grants and removals, each deployment, and freshness and compliance alerts.",
+    "The database makes the log write-once: triggers refuse any update, delete or truncate, every entry carries a retain-until date seven years after it was written, and SSNs, passwords, codes and tokens are removed before anything is written. Staff search it on a Security Audit Log page by date, user, event, area and result.",
+    "Screens 1 to 3 come from an automated run against a local copy of the deployed code, because the demo site has no test case-manager accounts. Screens 4 and 5 are the deployed demo site."
+  ],
+  "checks": [
+    "Demo deployment (scripts/verify-deploy.mjs): the API and the site serve c4678ad; all 8 page paths serve the current build; database ok; 15 migrations applied (latest 015_audit_write_once.sql); all 22 protected GET routes answer 401 without a token.",
+    "On the demo deployment, signed in as a synthetic citizen (scripts/verify-live-citizen.mjs): all 13 staff GET routes answer 403, no staff links show (the audit log included), and the audit page tells the citizen it is for case managers only.",
+    "UI run (scripts/evidence/story-010.mjs): 8 checks passed, including the database refusing to edit or delete a recorded failed sign-in.",
+    "API end to end, local (scripts/e2e): 134 checks passed: access 33, case workflow 26, compliance 30, freshness 16, audit 29. The audit suite also tries UPDATE, DELETE and TRUNCATE directly in the database, and all three are refused.",
+    "Unit tests: 162 passed, including recursive redaction (nested SSNs, passwords, MFA codes and tokens), read-to-route mapping, and an ACCESS_DENIED entry written for every refusal."
+  ],
+  "shots": [
+    {
+      "file": "01-audit-overview.png",
+      "title": "Every kind of event, newest first",
+      "caption": "Sam Ortiz, a case manager, opens the Security Audit Log: deployment, role grants, sign-ups, failed and successful sign-ins, profile and eligibility changes, an application, refusals, a decision with its compliance check, an export and reads of the log itself. The cards confirm write-once, seven-year retention and no personal data, read from the database. The run's helper tries to sign each person in before registering them, so each sign-up starts with a refused sign-in; From shows ::1, the local machine, because the run was local."
+    },
+    {
+      "file": "02-one-persons-trail.png",
+      "title": "One person's whole trail",
+      "caption": "Searching for Jordan Rivera shows everything, including two refused sign-ins filed under the address that was tried: one before Jordan had an account, and one with a mistyped password. Profile changes list the fields, not their values. No SSN or password appears anywhere."
+    },
+    {
+      "file": "03-refusals.png",
+      "title": "Every refusal, with what was tried",
+      "caption": "Filtered to Access denied: Jordan was refused two staff pages (403), and a caller who was not signed in was refused the case list (401). Each entry shows the method, the path and the answer."
+    },
+    {
+      "file": "live-01-citizen-dashboard.png",
+      "title": "Demo site after the deploy (citizen view)",
+      "caption": "The deployed demo site lists the security audit log as done, and a citizen sees no staff links."
+    },
+    {
+      "file": "live-04-citizen-audit-page.png",
+      "title": "Demo site: a citizen cannot open the audit log",
+      "caption": "Opening /audit directly on the deployed demo site as a citizen shows only that the log is for case managers; the API refuses the same citizen with 403."
+    }
+  ],
+  "notes": [
+    "Write-once is enforced by database triggers, which also bind the database owner. A database superuser could still disable a trigger, so production should also ship entries to separate append-only storage (for example AWS CloudWatch Logs or S3 with Object Lock), which comes with the AWS environment (STORY-004).",
+    "The log holds no SSNs, passwords, MFA codes or tokens. It does hold email addresses and caller IP addresses, which an audit trail needs to identify who acted.",
+    "On the demo deployment, requests reach the API through Render's proxies. The server trusts only private-network proxies, so a caller cannot fake their address with a header, but the address recorded there may be a Render edge address rather than the visitor's own. We could not check it, because we have no case-manager account on the demo site.",
+    "Sign-out is recorded, but sign-in tokens remain valid until they expire after an hour; revoking them on sign-out would need a server-side deny list.",
+    "There is no password-change feature yet, so there is no password-change event to record.",
+    "The case-manager role still comes from an email list without verifying that the person owns the address. Every grant is now audited, so a wrongly claimed role is visible, but verified identities are still needed before real data.",
+    "All data shown is synthetic."
+  ]
+}

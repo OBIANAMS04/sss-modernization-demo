@@ -1,0 +1,14 @@
+{
+  "out": "story-010-screens.jpg",
+  "maxKb": 650,
+  "title": "STORY-010 Security Audit Logging - demonstrated on the synthetic demo deployment",
+  "columns": 2,
+  "tileWidth": 960,
+  "tiles": [
+    { "file": "01-audit-overview.png", "label": "1. Every kind of event, newest first; write-once, kept 7 years", "top": 0, "height": 1300 },
+    { "file": "02-one-persons-trail.png", "label": "2. One person's whole trail: fields changed, never values", "top": 0, "height": 1322 },
+    { "file": "03-refusals.png", "label": "3. Every refusal: who, what was tried, 401 or 403", "top": 0, "height": 710 },
+    { "file": "live-01-citizen-dashboard.png", "label": "4. Demo site after the deploy: audit log listed as done", "top": 900, "height": 390 },
+    { "file": "live-04-citizen-audit-page.png", "label": "5. Demo site: a citizen cannot open the audit log", "top": 0, "height": 270 }
+  ]
+}
