@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { isAuthenticated } from './utils/tokenManager';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
@@ -13,8 +14,13 @@ import FreshnessDashboard from './components/Freshness/FreshnessDashboard';
 import AuditLog from './components/Audit/AuditLog';
 import './App.css';
 
+// A signed-in person is sent on to the dashboard. The check is made each time the route renders, not once when the app
+// loads (useAuth): when a session ends or someone signs out, /login has to be reachable from any state, otherwise the
+// redirects bounce between /login and /dashboard forever and the page stays blank.
+const SignedOutOnly = ({ children }) => (isAuthenticated() ? <Navigate to="/dashboard" replace /> : children);
+
 function App() {
-  const { isAuthenticated, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -32,15 +38,15 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
+          element={<SignedOutOnly><Navigate to="/login" replace /></SignedOutOnly>}
         />
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
+          element={<SignedOutOnly><Login /></SignedOutOnly>}
         />
         <Route
           path="/register"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />}
+          element={<SignedOutOnly><Register /></SignedOutOnly>}
         />
         <Route
           path="/dashboard"
