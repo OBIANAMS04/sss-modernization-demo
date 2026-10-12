@@ -46,7 +46,7 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 | Release | Stories | Status |
 |---|---|---|
 | **R0 Walking Skeleton** | 001 Registration & login · 002 Profile & compliance · 003 MFA · 004 Cloud infra (AWS, L5) · 005 Data pipeline (L2) | 001 ✅ in the demo (+ Ali's guards) · 002 ✅ in the demo · 003 backend only, no UI · 004 🚩 blocked on Ram's AWS approval (demo runs on Render) · 005 backend only, unverified |
-| **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API governance (OPA) | 006 ✅ · 007 ✅ (both approved by Ali, 2026-10-02) · 008 ✅ 2026-10-06 (reviewed by Ali 2026-10-07) · 009 ✅ 2026-10-12 (posted) · **010 next** · roles foundation in place for 012–015 · audit logging partly in place |
+| **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API governance (OPA) | 006 ✅ · 007 ✅ (both approved by Ali, 2026-10-02) · 008 ✅ 2026-10-06 (reviewed by Ali 2026-10-07) · 009 ✅ 2026-10-12 (posted) · 010 ✅ 2026-10-12 (posted) · **011 next** · roles foundation in place for 012–015 |
 | **R2 AI & Governance** | 017–020 RAG policy Q&A · 021 drift · 022 hallucination monitoring · 023 HITL ladder · 024 override tracking · 025 bias testing · 026–029 observability | Not started |
 | **R3 Scale & Launch** | 030–032 load testing · 033 performance · 034 failover · 035 training · 036 monitoring · 037 incident playbook · 038–040 docs · 041 pen test · 042 accessibility audit · 043–046 go-live review | Not started |
 
@@ -57,7 +57,8 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 - Case management: apply → Submitted → In Review → Approved/Denied (reason required) → Appeal; timeline, in-app notifications, internal notes, document links, staff filters, CSV export (no SSNs).
 - Compliance validation: every approval or denial is checked against 8 decision controls (eligibility basis, re-check after a profile change, denial reason and notice, separation of duties, assignment, review before decision, required document, audit entry). A failure opens a review that a *different* case manager resolves with a justification (accept the exception, recorded as an override, or reopen the case). Staff get a compliance dashboard (99% target with an alert) and a filterable audit log of every control result.
 - Data freshness: every profile save, eligibility check, application, case status change and assignment is timed from the start of the write until a separate read sees the new row version. Staff get a Data Freshness page: p50/p95/p99 per data type against 30 s for 95% of updates, an alert when a type falls behind, the slowest updates (write time vs. wait time), and a Check now end-to-end test from the browser.
-- Roles: citizen / case manager / admin. Case managers come from Render env `CASE_MANAGER_EMAILS`.
+- Security audit log: every registration, sign-in (failed ones under the address tried, never the password), sign-out, MFA step, refusal (401/403), successful API read, export, profile change (field names only), decision, override, role grant or removal, deployment, configuration change between server starts (secrets named, never their values) and alert is recorded with who, when and the caller's address. The database refuses UPDATE, DELETE and TRUNCATE on the log (triggers, migration 015); each entry has a retain-until date 7 years on; SSNs, passwords, codes, tokens and secrets are removed before writing. Staff search it on a Security Audit Log page by date, user, event, area and result.
+- Roles: citizen / case manager / admin. Case managers come from Render env `CASE_MANAGER_EMAILS`; every grant and removal is audit-logged.
 
 ### Screens (2026-10-12)
 Captured from the demo application running the deployed code, with synthetic data. Full sets with captions are in each story's evidence pack.
@@ -68,6 +69,7 @@ Captured from the demo application running the deployed code, with synthetic dat
 | **STORY-007 · Case queue** ![Case management queue](demo/screens/tour-05-case-management.png) | **STORY-007 · Denial with reason** ![Denied case with reason and appeal](demo/screens/tour-04-denied-with-reason.png) |
 | **STORY-008 · Compliance dashboard** ![Compliance dashboard with alert](demo/screens/tour-06-compliance-dashboard.png) | **STORY-008 · Second-manager review** ![Open compliance review](demo/screens/tour-07-second-review.png) |
 | **STORY-009 · Data freshness** ![Data Freshness on target](demo/screens/tour-10-freshness-on-target.png) | **STORY-009 · Freshness alert** ![Data Freshness alert after a 31 s slowdown](demo/screens/tour-09-freshness-alert.png) |
+| **STORY-010 · Security audit log** ![One applicant's whole trail in the Security Audit Log](demo/screens/tour-11-audit-trail.png) | **STORY-010 · Configuration change** ![A changed setting shown with old and new value, a secret only named](demo/screens/tour-12-config-change.png) |
 
 ---
 
@@ -77,7 +79,7 @@ Captured from the demo application running the deployed code, with synthetic dat
 |---|---|
 | Frontend | React 18 + Vite + Tailwind v4 → Render static site `sss-demo-frontend` |
 | Backend | Node + Express + TypeScript → Render web service `sss-demo-backend` (free tier, sleeps when idle) |
-| Database | Render PostgreSQL `sss-demo-db` (Oregon); migrations 001–014 apply automatically on startup |
+| Database | Render PostgreSQL `sss-demo-db` (Oregon); migrations 001–016 apply automatically on startup |
 | Source | https://github.com/OBIANAMS04/sss-modernization-demo (Render auto-deploys on push to master) |
 | Workflow | Claude commits and pushes each change; Render deploys; Claude verifies the demo deployment itself and posts the conclusion with screenshots to the BUILD ticket (one post per milestone, one composite image of several screens per post) |
 | Verification | `scripts/verify-deploy.mjs`: served commits on every page path, database, migrations, and every protected route refuses requests without a token · `scripts/verify-live-citizen.mjs`: every staff route refuses a signed-in citizen · `scripts/evidence/<story>.mjs`: drives the UI in headless Chrome and captures the evidence pack in `docs/evidence/<story>/` · `scripts/evidence/composite.mjs`: the Basecamp image |
@@ -98,6 +100,7 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-07 | STORY-008 reviewed: separation of duties done properly, overrides audited, verification sweeps the strongest part. Claim boundary: everything is "demonstrated on a synthetic demo deployment"; never let proposal language drift into "operating in production" `[ali-ack-2026-10-07-sss-story008]` | Ali |
 | 2026-10-12 | Screenshots in every Basecamp post, slide deck, artifact and the framework, and existing ones updated as the work changes | Obi |
 | 2026-10-12 | STORY-009: freshness is measured on real writes (start of write until a separate read sees the new row version), not estimated; the placeholder data and latency endpoints were removed | Obi |
+| 2026-10-12 | STORY-010: the audit log is write-once in the database itself (triggers refuse UPDATE, DELETE and TRUNCATE, even for the owner) and kept 7 years; every successful API read and every refusal is logged; configuration changes are found at each server start, with secrets named but never valued. Production adds an append-only copy on AWS (STORY-004) | Obi |
 
 ---
 
@@ -116,8 +119,9 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-06 | Access rule required for every route (test-enforced) · expired logins return 401 instead of 500 · honest `/health` with deployed commit · self-verified deploys · runtime security patches · Ali's case manager access granted; reply posted `#__recording_10375070502` · **STORY-008 in the demo**: compliance validation, reviews, dashboard and audit log, verified on the demo deployment with an evidence pack; posted `#__recording_10375183698` |
 | 2026-10-07 | **Ali reviews STORY-008** and sets the claim boundary (demonstrated on a synthetic deployment, not production) |
 | 2026-10-12 | **STORY-009 in the demo**: data freshness timed on every write, alert, slowest updates; verified on the demo deployment (every page path current, 22 protected routes refuse anonymous, 13 staff routes refuse a citizen); posted with screenshots `#__recording_10395976909` |
+| 2026-10-12 | **STORY-010 in the demo**: security audit log of every sign-in, refusal, read, change and configuration change, write-once and kept 7 years; verified on the demo deployment (16 migrations, 22 protected routes refuse anonymous, 13 staff routes refuse a citizen); posted with screenshots `#__recording_10396171859` |
 
-Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_10355304599` · STORY-006 `#__recording_10362153151` · STORY-007 `#__recording_10363503258` · Ali's approval `#__recording_10365688982` · Ali's access `#__recording_10375070502` · STORY-008 `#__recording_10375183698` · STORY-009 `#__recording_10395976909` (BUILD ticket https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172)
+Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_10355304599` · STORY-006 `#__recording_10362153151` · STORY-007 `#__recording_10363503258` · Ali's approval `#__recording_10365688982` · Ali's access `#__recording_10375070502` · STORY-008 `#__recording_10375183698` · STORY-009 `#__recording_10395976909` · STORY-010 `#__recording_10396171859` (BUILD ticket https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172)
 
 ---
 
@@ -126,13 +130,16 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 | Risk / follow-up | Impact | Action |
 |---|---|---|
 | Proposal Tasks 4, 6–9 waiting on Ali; deadline unknown | Submission at risk | Confirm deadline; Ali's checklist in TASK_COMPLETION_STATUS.md |
-| AWS approval (Ram) pending | Blocks STORY-004, real document upload and CloudWatch metrics for STORY-009 | Ram decision |
+| AWS approval (Ram) pending | Blocks STORY-004, real document upload, CloudWatch metrics for STORY-009 and an append-only copy of the audit log for STORY-010 | Ram decision |
 | Render DB password and JWT secret were shared in chat (2026-09-17) | Must not hold real PII as-is | Rotate both before any real data |
 | `npm audit` (2026-10-06): 44 findings, but only 3 in runtime dependencies after the non-breaking patch update (Express 4.22.3, proxy-addr, qs, body-parser) | Remaining critical (`tar`) runs only while bcrypt installs, never on requests; the rest are jest/eslint tooling | Dependency upgrade pass before go-live (consider bcryptjs to drop tar) |
 | Render free tier sleeps | ~50 s first load | Warm the site before demos, or upgrade |
 | No frontend unit tests; 8 old backend route-test suites are stale (they need a `sss_demo_test` database), and `apiGovernanceService` imports a missing logger | Regressions caught late | The UI is checked end to end by the evidence scripts; repair or retire the stale suites |
-| The case-manager role is granted from an email list without verifying that the person owns the address | Whoever registers a listed address first gets staff access | Email verification or admin-assigned roles before any real data (planned alongside STORY-010) |
+| The case-manager role is granted from an email list without verifying that the person owns the address | Whoever registers a listed address first gets staff access | Every grant and removal is now in the audit log (STORY-010), so a wrongly claimed role shows. Verified identity (email verification, invitation codes or admin-assigned roles) is still needed before any real data; Obi to choose |
 | Colaberry's upload endpoint refuses requests over ~1 MB (nginx 413), although its tools say 10 MB | Whole evidence PDFs can't be attached to Basecamp | Raised with Ali in the 2026-10-12 post; meanwhile each post attaches one composite image and links the full pack |
+| The audit log's write-once rule is enforced by database triggers, which a database superuser could disable | Not enough on its own for production | Copy every entry to append-only storage (CloudWatch Logs or S3 Object Lock) with STORY-004 |
+| Sign-out is logged but a sign-in token stays valid until it expires (1 hour) | A copied token keeps working after sign-out | Server-side deny list before production |
+| On the demo deployment, the caller address passes through Render's proxies and has not been checked there (no staff account of ours on the demo site) | The From column may show a Render address for everyone | Asked Ali in the STORY-010 post to glance at it; adjust the proxy setting if needed |
 | For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page | A reviewer opening a deep link right after a deploy can see the previous version | verify-deploy waits until every page path serves the current build; a Render header rule could shorten it |
 | Norton HTTPS scanning on Obi's laptop corrupts some connectors | Colaberry works via local bridge; others fail | Optional Norton exclusion |
 
@@ -143,8 +150,9 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 - GitHub: https://github.com/OBIANAMS04/sss-modernization-demo
 - STORY-008 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-008
 - STORY-009 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-009
+- STORY-010 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-010
 - Demo briefing (purpose, problems solved, walkthrough; source for the NotebookLM deck): artifact https://claude.ai/artifact/7uX47ceMBSxM2uVJK8smwo · PDF `docs/demo/SSS-Modernization-Demo-Briefing.pdf`
-- Demo slide deck (16 slides with speaker notes; downloads as PowerPoint or PDF): https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W · source `docs/demo/deck/`
+- Demo slide deck (17 slides with speaker notes; downloads as PowerPoint or PDF): https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W · source `docs/demo/deck/`
 - Render: https://dashboard.render.com
 - Basecamp BUILD ticket: https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172
 
