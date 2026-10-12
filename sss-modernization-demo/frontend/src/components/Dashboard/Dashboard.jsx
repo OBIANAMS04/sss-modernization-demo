@@ -146,7 +146,7 @@ export default function Dashboard() {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Dashboard Overview</h2>
                 <p className="text-gray-700 mb-4">
                   Welcome to the SSS Modernization Platform. Release One (R1) is in progress. Working in this demo today: exemption
-                  eligibility, case management, compliance validation and data freshness monitoring.
+                  eligibility, case management, compliance validation, data freshness monitoring and a security audit log.
                 </p>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
@@ -191,7 +191,7 @@ export default function Dashboard() {
                   </li>
                   <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
-                    R0: Live deployment with managed database
+                    R0: Demo deployment online, with a managed database
                   </li>
                   <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
@@ -210,8 +210,12 @@ export default function Dashboard() {
                     R1: Data freshness: every update timed until it is readable, against a 30-second target
                   </li>
                   <li className="flex items-center">
+                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    R1: Security audit log: every sign-in, refusal, data access and change, write-once
+                  </li>
+                  <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-blue-600 mr-2">→</span>
-                    R1 (next): Audit logging, accessibility (Section 508), role-based dashboards
+                    R1 (next): Accessibility (Section 508), role-based dashboards
                   </li>
                 </ul>
               </div>

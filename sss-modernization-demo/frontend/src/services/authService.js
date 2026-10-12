@@ -18,5 +18,8 @@ export const authService = {
       password
     });
     return response.data;
-  }
+  },
+
+  // Records the sign-out in the audit log; signing out locally never waits on it
+  logout: () => api.post('/auth/logout').catch(() => {})
 };

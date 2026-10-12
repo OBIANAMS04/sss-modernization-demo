@@ -1,18 +1,20 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { getUser, clearAuth } from '../../utils/tokenManager';
 import { isStaffUser } from '../../utils/roles';
+import { authService } from '../../services/authService';
 
 const linkClass = ({ isActive }) =>
   `px-3 py-2 rounded-lg text-sm font-medium transition duration-200 ${
     isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-blue-700 hover:bg-gray-50'
   }`;
 
-/** Shared top navigation. The staff pages (cases, compliance, freshness) only appear for case managers and admins. */
+/** Shared top navigation. The staff pages (cases, compliance, freshness, audit) only appear for case managers and admins. */
 export default function AppNav({ title, subtitle }) {
   const navigate = useNavigate();
   const user = getUser();
 
   const handleLogout = () => {
+    authService.logout(); // recorded in the audit log; sign-out does not wait for it
     clearAuth();
     navigate('/login');
   };
@@ -33,6 +35,7 @@ export default function AppNav({ title, subtitle }) {
                 <NavLink to="/cases" end className={linkClass}>Case Management</NavLink>
                 <NavLink to="/compliance" className={linkClass}>Compliance</NavLink>
                 <NavLink to="/freshness" className={linkClass}>Data Freshness</NavLink>
+                <NavLink to="/audit" className={linkClass}>Audit Log</NavLink>
               </>
             )}
             <button

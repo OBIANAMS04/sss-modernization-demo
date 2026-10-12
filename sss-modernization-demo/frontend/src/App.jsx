@@ -10,6 +10,7 @@ import CaseDetail from './components/Cases/CaseDetail';
 import ComplianceDashboard from './components/Compliance/ComplianceDashboard';
 import ComplianceAudit from './components/Compliance/ComplianceAudit';
 import FreshnessDashboard from './components/Freshness/FreshnessDashboard';
+import AuditLog from './components/Audit/AuditLog';
 import './App.css';
 
 function App() {
@@ -94,6 +95,14 @@ function App() {
           element={
             <ProtectedRoute>
               <FreshnessDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/audit"
+          element={
+            <ProtectedRoute>
+              <AuditLog />
             </ProtectedRoute>
           }
         />
