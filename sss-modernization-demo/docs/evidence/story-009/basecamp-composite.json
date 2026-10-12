@@ -1,0 +1,13 @@
+{
+  "out": "story-009-screens.jpg",
+  "maxKb": 650,
+  "title": "STORY-009 Data Freshness - demonstrated on the synthetic demo deployment",
+  "columns": 2,
+  "tileWidth": 960,
+  "tiles": [
+    { "file": "03-freshness-alert.png", "label": "1. A real 31 s slowdown raises the alert", "top": 0, "height": 1090 },
+    { "file": "01-freshness-on-target.png", "label": "2. On target: 19 updates, p95 172 ms", "top": 0, "height": 900 },
+    { "file": "02-end-to-end-check.png", "label": "3. Check now: write readable in 27 ms", "top": 0, "height": 530 },
+    { "file": "live-01-citizen-dashboard.png", "label": "4. Demo site after the deploy (citizen view)", "top": 560, "height": 661 }
+  ]
+}
