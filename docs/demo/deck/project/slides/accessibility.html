@@ -1,0 +1,13 @@
+<section id="accessibility" data-transition="fade" style="background:#E9EFF7;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 11</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Everyone can use it</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>Every page checked against WCAG 2.1 AA, for each kind of user.</li>
+<li>Keyboard with a skip link; screen readers hear names and errors.</li>
+<li>The same audit failed every page before; all twelve pass now.</li>
+</ul>
+</div>
+<img src="/_blob/f8e4d0b8cc97e2cd8f05b38c460068ca" alt="Registration form after an empty submit, with each error under its field and the first field focused" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 11, accessibility (STORY-011, Section 508). Every page is checked against WCAG 2.1 AA, which includes the Section 508 standard, signed out, as an applicant and as a case manager. An automated audit runs in Chrome: every WCAG A and AA rule in axe-core, a keyboard pass that reaches every control with visible focus and a skip link first, page titles and landmarks, nothing lost at 320 pixels wide, and how errors are announced. Run on the code before this work it failed every page: tabs titled "frontend", fields named by their placeholders, low-contrast green, no skip link, errors never announced. All twelve page and role combinations pass now. Three criteria tools cannot test were also fixed: a warning two minutes before a session ends with Stay signed in, form borders with 3:1 contrast, and a confirmation before an application or appeal is sent. Shown here: registration after an empty submit; each field is marked invalid with its message, and focus is on the first one. A hands-on audit with JAWS, NVDA and VoiceOver is planned for R3. Demonstrated on a synthetic demo deployment.</aside>
+</section>

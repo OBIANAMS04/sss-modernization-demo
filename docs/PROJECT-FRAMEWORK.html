@@ -204,13 +204,13 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       </div>
       <div class="cell">
         <span class="label">BUILD · R1</span>
-        <span class="value">5 of 11 in the demo</span>
-        <span class="note">Security audit log and data freshness shipped Oct 12; Ali reviewed compliance validation Oct 7 and approved 006 and 007 Oct 2</span>
+        <span class="value">6 of 11 in the demo</span>
+        <span class="note">Accessibility shipped Oct 12; Ali accepted data freshness and the audit log Oct 12, reviewed compliance validation Oct 7 and approved 006 and 007 Oct 2</span>
       </div>
       <div class="cell">
         <span class="label">Next</span>
-        <span class="value">STORY-011</span>
-        <span class="note">Section 508 accessibility testing of every screen</span>
+        <span class="value">STORY-012–015</span>
+        <span class="note">Role-based dashboards for each kind of user</span>
       </div>
     </div>
     <p class="sub">"In the demo" means working on the synthetic demo deployment. Nothing here is operating in production (Ali, Oct 7).</p>
@@ -261,15 +261,15 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
 
       <article class="release">
         <div class="release-head"><h3>R1 · Core</h3><span class="range">STORY-006 – 016</span></div>
-        <div class="bar" role="img" aria-label="5 of 11 in the demo"><span class="done" style="width:45%"></span></div>
+        <div class="bar" role="img" aria-label="6 of 11 in the demo"><span class="done" style="width:55%"></span></div>
         <ul class="stories">
           <li><span class="id">STORY-006</span><span class="name">Exemption eligibility<small>Types A, B and C, each with a status and a reason; audit-logged. Approved by Ali Oct 2</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-007</span><span class="name">Case management<small>Apply, review, deny with reason, appeal; timeline, notifications, CSV export. Approved by Ali Oct 2</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-008</span><span class="name">Compliance matrix validation (L3)<small>Every decision checked against 8 controls; failures reviewed by a second case manager; dashboard and audit log. Reviewed by Ali Oct 7: design sound, verification sweeps the strongest part</small></span><span class="pill ok">In demo</span></li>
-          <li><span class="id">STORY-009</span><span class="name">Data freshness monitoring (under 30 s)<small>Every change timed until readable; per-type p50/p95/p99 against 30 s for 95%; alert; slowest updates. Posted Oct 12</small></span><span class="pill ok">In demo</span></li>
-          <li><span class="id">STORY-010</span><span class="name">Security audit logging, 100% coverage<small>Every sign-in, refusal, read, change, deployment and configuration change; write-once in the database, kept 7 years, no personal data. Posted Oct 12</small></span><span class="pill ok">In demo</span></li>
-          <li><span class="id">STORY-011</span><span class="name">Accessibility testing (Section 508)<small>Next</small></span><span class="pill info">Next</span></li>
-          <li><span class="id">STORY-012–015</span><span class="name">Role-based dashboards<small>Citizen, case manager and admin roles are in place</small></span><span class="pill warn">Partial</span></li>
+          <li><span class="id">STORY-009</span><span class="name">Data freshness monitoring (under 30 s)<small>Every change timed until readable; per-type p50/p95/p99 against 30 s for 95%; alert; slowest updates. Accepted by Ali Oct 12</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-010</span><span class="name">Security audit logging, 100% coverage<small>Every sign-in, refusal, read, change, deployment and configuration change; write-once in the database, kept 7 years, no personal data. Accepted by Ali Oct 12</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-011</span><span class="name">Accessibility testing (Section 508)<small>Every page passes WCAG 2.1 AA checks for each role (0 of 12 before, 12 of 12 after); session warning; confirmations. Posted Oct 12</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-012–015</span><span class="name">Role-based dashboards<small>Next. Citizen, case manager and admin roles are in place</small></span><span class="pill info">Next</span></li>
           <li><span class="id">STORY-016</span><span class="name">API governance layer (OPA/ABAC)<small>Draft code exists but is not built or deployed</small></span><span class="pill idle">Not started</span></li>
         </ul>
       </article>
@@ -311,6 +311,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><strong>Data freshness</strong>Every change timed until the next request can read it; per data type against 30 s for 95% of updates, with an alert and the slowest updates</li>
       <li><strong>Notifications</strong>Applicants are notified of every status change, with the reason</li>
       <li><strong>Security audit log</strong>Every sign-in, refusal, read, export, change, role grant, deployment and configuration change, with who, when and from where; the database refuses edits and deletions; kept 7 years; no SSNs, passwords or secrets</li>
+      <li><strong>Accessibility</strong>Every page passes WCAG 2.1 AA checks for each role: keyboard and skip link, screen-reader names and errors, contrast, 320 px reflow; a warning before a session ends; confirmation before applying or appealing</li>
       <li><strong>Roles</strong>Citizen, case manager and admin; every role grant and removal is in the audit log</li>
     </ul>
   </section>
@@ -331,6 +332,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <figure><img src="demo/screens/tour-09-freshness-alert.png" width="1280" height="1570" alt="Data Freshness page with an over-target alert for profile updates" loading="lazy"><figcaption><strong>STORY-009 · Freshness alert</strong>A real 31-second slowdown pushed profile saves over target and raised the alert.</figcaption></figure>
       <figure><img src="demo/screens/tour-11-audit-trail.png" width="1280" height="1322" alt="Security Audit Log searched for one applicant, showing their whole trail" loading="lazy"><figcaption><strong>STORY-010 · Security audit log</strong>One applicant's whole trail, including refused sign-ins and staff pages; a profile change lists fields, not values.</figcaption></figure>
       <figure><img src="demo/screens/tour-12-config-change.png" width="1280" height="900" alt="Security Audit Log filtered to configuration changes" loading="lazy"><figcaption><strong>STORY-010 · Configuration change</strong>A shorter sign-in lifetime is shown with old and new value; the rotated secret is only named.</figcaption></figure>
+      <figure><img src="demo/screens/tour-13-form-errors.png" width="1280" height="948" alt="Registration after an empty submit, each field marked invalid with its message" loading="lazy"><figcaption><strong>STORY-011 · Errors announced</strong>Each field is named, marked invalid and described by its message; focus moves to the first one.</figcaption></figure>
+      <figure><img src="demo/screens/tour-14-session-warning.png" width="1280" height="1365" alt="Warning two minutes before a session ends, with Stay signed in and Sign out" loading="lazy"><figcaption><strong>STORY-011 · Session warning</strong>Two minutes before the session ends: Stay signed in or Sign out, with focus kept inside.</figcaption></figure>
     </div>
   </section>
 
@@ -367,6 +370,9 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td class="num">2026-10-12</td><td>Screenshots in every Basecamp post, slide deck, artifact and the framework, and existing ones updated as the work changes</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-12</td><td>STORY-009: freshness is measured on real writes (start of write until a separate read sees the new row version), not estimated; the placeholder data and latency endpoints were removed</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-12</td><td>STORY-010: the audit log is write-once in the database itself (triggers refuse UPDATE, DELETE and TRUNCATE, even for the owner) and kept 7 years; every successful API read and every refusal is logged; configuration changes are found at each server start, with secrets named but never valued. Production adds an append-only copy on AWS (STORY-004)</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-12</td><td>STORY-009 and STORY-010 accepted. Most valued: reporting that the old audit table's &quot;immutable&quot; constraint was CHECK (true); &quot;a check that cannot fail is worse than no check&quot;, and finding such a thing in our own work and saying so plainly is the behaviour to repeat. Notes: the image attached to a post must match the evidence pack; keep the route count visible <span class="mono">[ali-ack-2026-10-12-sss-story009-010]</span></td><td>Ali</td></tr>
+          <tr><td class="num">2026-10-12</td><td>STORY-011: WCAG 2.1 AA (which includes Section 508) checked by an automated audit in Chrome on every page and role, plus the criteria no tool can test (session warning, field-border contrast, confirming applications and appeals). A hands-on screen-reader audit and a VPAT/ACR come with STORY-042 (R3)</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-12</td><td>Model choice: Opus 5.5 (Max) for design, debugging, verification and Ali-facing wording; Sonnet 5.5 (Max) helper agents for well-specified routine work</td><td>Obi</td></tr>
         </tbody>
       </table>
     </div>
@@ -388,6 +394,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><time datetime="2026-10-07">Oct 7, 2026</time><span class="big">Ali reviews STORY-008 and sets the claim boundary: demonstrated on a synthetic deployment, not production</span></li>
       <li><time datetime="2026-10-12">Oct 12, 2026</time><span class="big">STORY-009 data freshness in the demo, verified on the demo deployment, posted with screenshots</span></li>
       <li><time datetime="2026-10-12">Oct 12, 2026</time><span class="big">STORY-010 security audit log in the demo: write-once, kept 7 years, configuration changes recorded; verified on the demo deployment, posted with screenshots</span></li>
+      <li><time datetime="2026-10-12">Oct 12, 2026</time><span class="big">Ali accepts STORY-009 and STORY-010</span></li>
+      <li><time datetime="2026-10-12">Oct 12, 2026</time><span class="big">STORY-011 accessibility in the demo: every page passes WCAG 2.1 AA checks (0 of 12 before, 12 of 12 after); verified on the demo deployment, posted with screenshots</span></li>
     </ol>
   </section>
 
@@ -407,7 +415,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td><span class="pill idle">Low</span></td><td>The caller address recorded on the demo deployment passes through Render's proxies and has not been checked there</td><td>Asked Ali in the STORY-010 post to glance at the From column; adjust the proxy setting if needed</td><td>Ali, Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>Free hosting sleeps when idle</td><td>Open the site a minute before a demo</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>No frontend unit tests (the UI is now checked end to end by the evidence scripts); older backend route tests are stale</td><td>Repair or retire the stale suites</td><td>Obi</td></tr>
-          <tr><td><span class="pill idle">Low</span></td><td>Colaberry's upload endpoint refuses files over about 1 MB, although its tools allow 10 MB</td><td>Raised with Ali in the Oct 12 post; meanwhile each post attaches one composite image of several screens and links the full evidence pack</td><td>Ali (Colaberry)</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>Colaberry's upload endpoint refuses files over about 1 MB, although its tools allow 10 MB</td><td>Raised with Ali in the STORY-009 post (not yet answered) and again with Ali and Ram in the STORY-011 post; meanwhile each post attaches one composite image and links the full evidence pack</td><td>Ali, Ram (Colaberry)</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>No one has used the app with JAWS, NVDA or VoiceOver yet; automated checks cover only part of WCAG</td><td>Hands-on screen-reader audit and a VPAT/ACR with STORY-042 (R3)</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page</td><td>verify-deploy waits until every page path serves the current build; a Render header rule could shorten it</td><td>Obi</td></tr>
         </tbody>
       </table>
@@ -419,12 +428,14 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <ul class="links">
       <li><span class="k">Demo site</span><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></li>
       <li><span class="k">Basecamp BUILD ticket</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172">Selective Service Modernization – BUILD</a></li>
-      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10396171859">STORY-010 Security Audit Logging</a></li>
+      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10397764209">STORY-011 Accessibility Testing</a></li>
+      <li><span class="k">STORY-011 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-011">Screenshots and checks</a></li>
+      <li><span class="k">STORY-010 post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10396171859">STORY-010 Security Audit Logging</a></li>
       <li><span class="k">STORY-010 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-010">Screenshots and checks</a></li>
       <li><span class="k">STORY-009 post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10395976909">STORY-009 Data Freshness Monitoring</a></li>
       <li><span class="k">STORY-009 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-009">Screenshots and checks</a></li>
       <li><span class="k">Demo briefing</span><a href="https://claude.ai/artifact/7uX47ceMBSxM2uVJK8smwo">Purpose, problems solved and walkthrough</a></li>
-      <li><span class="k">Demo slide deck</span><a href="https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W">17 slides with speaker notes</a></li>
+      <li><span class="k">Demo slide deck</span><a href="https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W">18 slides with speaker notes</a></li>
       <li><span class="k">STORY-008 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-008">Screenshots and checks</a></li>
       <li><span class="k">Ali's approval</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10365688982">R0 and R1 review, Oct 2</a></li>
       <li><span class="k">Security rules</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/blob/master/docs/SECURITY-RULES.md">docs/SECURITY-RULES.md</a></li>
