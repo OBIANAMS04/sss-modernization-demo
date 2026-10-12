@@ -120,7 +120,7 @@
     <div class="facts">
       <span>Demo site <strong><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></strong></span>
       <span>Status as of <strong>October 12, 2026</strong></span>
-      <span>Working in the demo <strong>2 of 5 R0 stories, 4 of 11 R1 stories</strong></span>
+      <span>Working in the demo <strong>2 of 5 R0 stories, 5 of 11 R1 stories</strong></span>
     </div>
     <p class="notice">Everything described here is demonstrated on a synthetic demo deployment; none of it is operating in production. Synthetic data only. The exemption types shown (A senior, B income, C hardship) are illustrative rules built to exercise the workflow. They are not Selective Service policy.</p>
   </header>
@@ -141,7 +141,7 @@
       </div>
       <div class="role">
         <h3>Compliance and leadership</h3>
-        <p>See whether decisions follow the rules, review any that do not, and search a complete audit log of every control result.</p>
+        <p>See whether decisions follow the rules, review any that do not, and search two audit logs: every control result, and every sign-in, refusal, data access and change.</p>
       </div>
     </div>
   </section>
@@ -167,7 +167,7 @@
       </div>
       <div class="problem">
         <div><h3>Sensitive personal data at risk</h3><p class="need">Social Security numbers and case records must be protected and only seen by the right people.</p></div>
-        <p>SSNs are stored only as one-way hashes, never shown back or logged, and entered in a masked field. Every page of the API declares who may use it, and an automated test fails the build if any route lacks its access check.</p>
+        <p>SSNs are stored only as one-way hashes, never shown back or logged, and entered in a masked field. Every page of the API declares who may use it, an automated test fails the build if any route lacks its access check, and every read, export and refusal goes into a write-once security audit log.</p>
         <span class="pill live">In the demo</span>
       </div>
       <div class="problem">
@@ -195,7 +195,7 @@
 
   <section id="walkthrough" aria-labelledby="walkthrough-h">
     <p class="eyebrow">Demo walkthrough</p>
-    <h2 id="walkthrough-h">Nine scenes, about twelve minutes</h2>
+    <h2 id="walkthrough-h">Ten scenes, about thirteen minutes</h2>
     <ol class="scenes">
       <li class="scene">
         <h3>A registrant creates an account</h3>
@@ -270,6 +270,14 @@
         </ul>
         <figure><img src="screens/tour-09-freshness-alert.png" width="1280" height="1570" alt="Data Freshness page with an over-target alert for profile updates" loading="lazy"><figcaption>After a real slowdown: profile updates' p95 is 31.1 s, over the 30 s target; every other data type is measured in milliseconds.</figcaption></figure>
       </li>
+      <li class="scene">
+        <h3>Every security event is on the record</h3>
+        <ul>
+          <li>Sign-ins, including failed ones filed under the address tried, sign-outs, refusals, reads, exports, profile changes, decisions, role grants, deployments and configuration changes, each with who, when and from where.</li>
+          <li>The database refuses to edit or delete an entry, even for its owner, and keeps each one seven years. SSNs, passwords, codes and secrets never enter the log; a profile change lists the fields, not the values.</li>
+        </ul>
+        <figure><img src="screens/tour-11-audit-trail.png" width="1280" height="1322" alt="Security Audit Log searched for one applicant, showing their whole trail" loading="lazy"><figcaption>Jordan Rivera's whole trail, newest first: refused staff pages, the application, a profile change that names fields but not values, and two refused sign-ins filed under the address tried.</figcaption></figure>
+      </li>
     </ol>
   </section>
 
@@ -300,7 +308,7 @@
       <li><strong>Protected identity data.</strong> Passwords and SSNs are stored as bcrypt hashes. The SSN is never returned by the API, never written to logs and left out of every export.</li>
       <li><strong>Access decided per endpoint.</strong> Each route declares whether it is public, for signed-in users, for the record's owner or for staff. A test fails the build when a route is missing its rule or its check.</li>
       <li><strong>Separation of duties.</strong> Case managers cannot decide their own cases or clear reviews of their own decisions.</li>
-      <li><strong>Complete audit trail.</strong> Eligibility checks, status changes, overrides and every compliance result are recorded with the actor and time.</li>
+      <li><strong>Write-once audit trail.</strong> Every sign-in, refusal, data read, export, change, role grant, deployment and configuration change is recorded with who, when and from where, alongside every compliance result. The database refuses edits and deletions, entries are kept seven years, and no SSN, password or secret is written to the log.</li>
       <li><strong>Verified releases.</strong> After each deploy the team checks the demo deployment automatically: the running version, the database, all protected routes refusing anonymous requests, and every staff route refusing an ordinary registrant. Each story ships with screenshots and a written conclusion.</li>
     </ul>
   </section>
@@ -317,9 +325,9 @@
       </div>
       <div class="release">
         <h3>R1 · Core services</h3>
-        <div class="meter" role="img" aria-label="4 of 11 working in the demo"><span style="width:36%"></span></div>
-        <p class="count">4 of 11 in the demo</p>
-        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness. Next: full audit logging, Section 508 testing, role dashboards, API governance.</p>
+        <div class="meter" role="img" aria-label="5 of 11 working in the demo"><span style="width:45%"></span></div>
+        <p class="count">5 of 11 in the demo</p>
+        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness, security audit logging. Next: Section 508 testing, role dashboards, API governance.</p>
       </div>
       <div class="release">
         <h3>R2 · AI and governance</h3>
@@ -350,6 +358,7 @@
       <li>Compliance by design: 8 controls on every decision, dashboard and target (scene 5 and the control table)</li>
       <li>Accountability: second-manager review and the audit log (scenes 6 and 7)</li>
       <li>Current data: every change timed against a 30-second target, with an alert (scene 9)</li>
+      <li>On the record: every sign-in, refusal, read and change in a write-once log (scene 10)</li>
       <li>Security and trust: protected SSNs, per-endpoint access, verified releases</li>
       <li>Status and roadmap: what works in the demo today and what comes next</li>
     </ol>
