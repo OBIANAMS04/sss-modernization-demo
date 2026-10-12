@@ -1,0 +1,13 @@
+<section id="securitylog" data-transition="fade" style="background:#F5F7FA;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 10</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Every action is on the record</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>Sign-ins, refusals, reads, exports and changes, with who, when and from where.</li>
+<li>The database refuses edits and deletions; entries are kept seven years.</li>
+<li>No SSN, password or secret is ever written to the log.</li>
+</ul>
+</div>
+<img src="/_blob/09612dcd9b1c03f6ecc9ae0d2a8b04bb" alt="Security Audit Log searched for one applicant, showing twelve entries from registration to sign-out" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 10, security audit logging (STORY-010): every security-relevant event is recorded with who, what, when, the result and the caller's address. That covers registrations, sign-ins including failed ones (filed under the address that was tried, never the password), sign-outs, MFA steps, every refusal, every successful read of the API, exports, profile changes (field names only), decisions and overrides, role grants, deployments, configuration changes and alerts. Here a case manager searches for one applicant and sees the whole trail, newest first: two staff pages refused with 403, the application and its document, the eligibility check, a profile change that lists the fields but not the values, the sign-in, and two refused sign-ins, one before the account existed and one with a mistyped password. The database refuses any edit, deletion or truncation of the log, even by its owner, and each entry carries a retain-until date seven years on. A changed setting such as the sign-in lifetime is logged with its old and new value; a secret is named, never its value. Demonstrated on a synthetic demo deployment; production would also copy every entry to separate append-only storage on AWS.</aside>
+</section>
