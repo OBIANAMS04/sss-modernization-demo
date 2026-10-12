@@ -6,13 +6,15 @@
 //   - a descriptive page title, one h1 and one main landmark; signed in, a skip link is the first Tab stop
 //   - reflow: no sideways scrolling at 320 CSS pixels (WCAG 1.4.10); wide tables scroll inside their own box
 // and for the forms, after a failed submit: the message is announced (role="alert") or each invalid field
-// is marked aria-invalid and described by its message, with focus on the first one.
+// is marked aria-invalid and described by its message, with focus on the first one. Locally it also checks the
+// warning before a session ends (WCAG 2.2.1): shown in time, accessible, extendable, and a clear sign-out if ignored.
 // Writes results.json and report.html (plus screenshots) to the output folder; exits 1 on any failure.
 //
 // Local stack (creates synthetic accounts and one case; set up as in scripts/evidence/story-008.mjs):
 //   E2E_BASE=http://localhost:3002/api node scripts/a11y/audit.mjs http://localhost:4173 docs/evidence/story-011
 // Demo deployment, signed out and as the synthetic live citizen (creates no records):
 //   node scripts/a11y/audit.mjs --live docs/evidence/story-011
+import { createHmac } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
@@ -76,6 +78,23 @@ async function setup() {
       session: sam,
     })),
   ];
+}
+
+/** An HS256 token like the backend's, for the session checks (local stack with the development secret only). */
+function mintToken(user, lifetimeSeconds, authTime) {
+  const now = Math.floor(Date.now() / 1000);
+  const part = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+  const body = `${part({ alg: 'HS256', typ: 'JWT' })}.${part({ sub: user.id, email: user.email, auth_time: authTime, iat: now, exp: now + lifetimeSeconds })}`;
+  return `${body}.${createHmac('sha256', process.env.JWT_SECRET || 'dev_secret_key').update(body).digest('base64url')}`;
+}
+
+async function until(expression, timeout) {
+  const end = Date.now() + timeout;
+  while (Date.now() < end) {
+    if (await page.evaluate(expression).catch(() => false)) return true;
+    await sleep(250);
+  }
+  return false;
 }
 
 const page = await launch();
@@ -247,7 +266,67 @@ try {
     if (!ok) failures.push(f.form);
   }
 
-  const summary = { site: SITE, at: new Date().toISOString(), axe: AXE_VERSION, rules: WCAG, pages: results.length, passed: results.filter((r) => r.pass).length, forms };
+  // WCAG 2.2.1 Timing Adjustable: before a session ends the app warns, and the user can extend it. Local only: it
+  // needs short-lived tokens, signed here with the evidence backend's development secret.
+  let session = null;
+  let signOut = null;
+  if (!live) {
+    const { user } = pages.find((p) => p.role === 'Applicant').session;
+    const signedInAt = Math.floor(Date.now() / 1000) - 600;
+    await page.signIn(SITE, { token: mintToken(user, 125, signedInAt), user }); // the warning opens 120 s before the end
+    await page.goto(`${SITE}/dashboard`);
+    const shown = await until(`!!document.querySelector('[role="alertdialog"]')`, 20_000);
+    const inside = `!!document.activeElement?.closest('[role="alertdialog"]')`;
+    session = { shown, axe: shown ? (await axe(WCAG)).length : null };
+    if (shown) {
+      Object.assign(session, await page.evaluate(`(() => { const d = document.querySelector('[role="alertdialog"]');
+        const named = (attr) => (d.getAttribute(attr) || '').split(' ').some((id) => document.getElementById(id)?.innerText.trim());
+        return { modal: d.getAttribute('aria-modal') === 'true', labelled: named('aria-labelledby'), described: named('aria-describedby'),
+          focusOnStay: /stay signed in/i.test(document.activeElement?.innerText || '') }; })()`));
+      let trapped = true;
+      for (let i = 0; i < 3; i++) {
+        await page.press('Tab');
+        trapped = trapped && (await page.evaluate(inside));
+      }
+      session.focusTrapped = trapped;
+      await page.screenshot(join(OUT, '05-session-warning.png'));
+      const before = await page.evaluate("localStorage.getItem('auth_token')");
+      await page.press('Escape'); // same as Stay signed in
+      session.extended = await until(`!document.querySelector('[role="alertdialog"]') && localStorage.getItem('auth_token') !== ${JSON.stringify(before)}`, 10_000);
+      const renewed = await page.evaluate("JSON.parse(atob(localStorage.getItem('auth_token').split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))");
+      session.authTimeKept = renewed.auth_time === signedInAt;
+      session.newLifetime = renewed.exp - Math.floor(Date.now() / 1000);
+    }
+    // Doing nothing: at the end of the session the user is signed out and told why
+    await page.signIn(SITE, { token: mintToken(user, 5, signedInAt), user });
+    await page.goto(`${SITE}/dashboard`);
+    session.signedOutWithMessage = await until(`location.pathname === '/login' && document.body.innerText.includes('Your session ended')`, 20_000);
+    session.pass = Boolean(shown && session.axe === 0 && session.modal && session.labelled && session.described && session.focusOnStay &&
+      session.focusTrapped && session.extended && session.authTimeKept && session.newLifetime > 3000 && session.signedOutWithMessage);
+    console.log(`${session.pass ? 'PASS' : 'FAIL'}  Session warning (WCAG 2.2.1)       ${JSON.stringify(session)}`);
+    if (!session.pass) failures.push('Session warning');
+
+    // Found in our own STORY-010 work: the Logout button's request left without its token, so every sign-out from
+    // the UI was logged as a refused request. Sign out with the button and read the log.
+    await page.signIn(SITE, pages.find((p) => p.role === 'Applicant').session);
+    await page.goto(`${SITE}/dashboard`);
+    await until("[...document.querySelectorAll('button')].some((b) => b.innerText.trim() === 'Logout')", 20_000);
+    await page.click('Logout');
+    await until("location.pathname === '/login'", 10_000);
+    await sleep(1000);
+    const { call } = await import('../e2e/lib.mjs');
+    const staff = pages.find((p) => p.role === 'Case manager').session;
+    const logs = (await call('GET', `/audit?user=${encodeURIComponent(user.email)}&limit=500`, staff.token)).data.logs;
+    signOut = {
+      recorded: logs.some((l) => l.action === 'USER_LOGOUT'),
+      refused: logs.some((l) => l.action === 'ACCESS_DENIED' && l.details?.path === '/api/auth/logout'),
+    };
+    signOut.pass = signOut.recorded && !signOut.refused;
+    console.log(`${signOut.pass ? 'PASS' : 'FAIL'}  Sign-out from the UI is logged     ${JSON.stringify(signOut)}`);
+    if (!signOut.pass) failures.push('UI sign-out');
+  }
+
+  const summary = { site: SITE, at: new Date().toISOString(), axe: AXE_VERSION, rules: WCAG, pages: results.length, passed: results.filter((r) => r.pass).length, forms, session, signOut };
   writeFileSync(join(OUT, `${PREFIX}a11y-results.json`), JSON.stringify({ summary, results, accessibilityTree: apiTree }, null, 2) + '\n');
   const report = join(OUT, `${PREFIX}a11y-report.html`);
   writeFileSync(report, renderReport(summary, results, forms, apiTree));
@@ -259,6 +338,13 @@ try {
 
 console.log(failures.length ? `\n${failures.length} FAILURE(S): ${failures.join(', ')}` : '\nALL PASSED');
 process.exit(failures.length ? 1 : 0);
+
+function sessionTable(s, cell) {
+  const yes = (ok) => (ok ? 'yes' : 'no');
+  return `<h2>Session about to end (WCAG 2.2.1 Timing Adjustable)</h2>
+<table><tr><th>Warning shown 2 minutes before</th><th class="num">axe issues</th><th>Modal, named and described</th><th>Focus on Stay signed in, kept inside</th><th>Escape extends: new 1-hour token, same sign-in time</th><th>No action: signed out, told why</th><th>Result</th></tr>
+<tr><td>${yes(s.shown)}</td><td class="num">${s.axe ?? ''}</td><td>${yes(s.modal && s.labelled && s.described)}</td><td>${yes(s.focusOnStay && s.focusTrapped)}</td><td>${yes(s.extended && s.authTimeKept && s.newLifetime > 3000)}</td><td>${yes(s.signedOutWithMessage)}</td>${cell(s.pass)}</tr></table>`;
+}
 
 function renderReport(summary, rows, forms, tree) {
   const cell = (ok) => `<td class="${ok ? 'ok' : 'bad'}">${ok ? 'Pass' : 'Fail'}</td>`;
@@ -279,6 +365,8 @@ ${rows.map((r) => `<tr><td>${esc(r.role)}</td><td><code>${esc(r.page)}</code></t
 <table><tr><th>Form</th><th>Announced alert</th><th class="num">Invalid fields</th><th class="num">Described by their message</th><th>Focus on first invalid field</th><th class="num">axe issues</th>${'<th>Result</th>'}</tr>
 ${forms.map((f) => `<tr><td>${esc(f.form)}</td><td>${esc(f.alerts.join(' · ') || 'none')}</td><td class="num">${f.invalid}</td><td class="num">${f.described}</td><td>${f.focusOnInvalid ? 'yes' : 'no'}</td><td class="num">${f.axe}</td>${cell(f.pass)}</tr>`).join('\n')}
 </table>
+${summary.session ? sessionTable(summary.session, cell) : ''}
+${summary.signOut ? `<h2>Found in our own earlier work: sign-out from the UI</h2><p>Logout button, then the audit log: sign-out recorded: ${summary.signOut.recorded ? 'yes' : 'no'}; logged as a refused request: ${summary.signOut.refused ? 'yes' : 'no'}.</p>` : ''}
 <h2>What a screen reader is told about the registration form after an empty submit</h2>
 <table><tr><th>Role</th><th>Accessible name</th><th>Description</th><th>Required</th><th>Invalid</th></tr>
 ${tree.map((n) => `<tr><td>${esc(n.role)}</td><td>${esc(n.name)}</td><td>${esc(n.description)}</td><td>${n.required ? 'yes' : ''}</td><td>${n.invalid ? 'yes' : ''}</td></tr>`).join('\n')}

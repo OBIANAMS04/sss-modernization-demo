@@ -2,7 +2,7 @@
 // many screens in its one attachment (Colaberry accepts about 700 KB per file).
 //   node scripts/evidence/composite.mjs <spec.json>
 // spec.json: { "out": "path.jpg", "maxKb": 650, "title": "…", "columns": 2, "tileWidth": 960,
-//              "tiles": [{ "file": "path.png", "label": "…", "top": 0, "height": 900 }] }
+//              "tiles": [{ "file": "path.png", "label": "…", "top": 0, "height": 900, "natural": false }] }
 // Paths are relative to the spec file. top/height crop each screenshot before it is scaled to tileWidth.
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -33,7 +33,9 @@ try {
     const images = await Promise.all(tiles.map(async (t) => {
       const img = new Image(); img.src = 'data:image/png;base64,' + t.data; await img.decode();
       const top = t.top || 0, height = Math.min(t.height || img.height, img.height - top);
-      return { img, top, height, scaled: Math.round(height * spec.tileWidth / img.width), label: t.label };
+      // natural: a narrow capture (e.g. a 320 px phone view) keeps its own size, centred, instead of being enlarged
+      const width = t.natural ? Math.min(img.width, spec.tileWidth) : spec.tileWidth;
+      return { img, top, height, width, scaled: Math.round(height * width / img.width), label: t.label };
     }));
     const rows = [];
     for (let i = 0; i < images.length; i += spec.columns) rows.push(images.slice(i, i + spec.columns));
@@ -52,8 +54,9 @@ try {
         ctx.fillStyle = '#15202f'; ctx.font = 'bold 26px Segoe UI, Arial, sans-serif';
         ctx.fillText(t.label, x, y + 30);
         ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(t.img, 0, t.top, t.img.width, t.height, x, y + label, spec.tileWidth, t.scaled);
-        ctx.strokeStyle = '#b8c4d4'; ctx.lineWidth = 2; ctx.strokeRect(x, y + label, spec.tileWidth, t.scaled);
+        const left = x + Math.round((spec.tileWidth - t.width) / 2);
+        ctx.drawImage(t.img, 0, t.top, t.img.width, t.height, left, y + label, t.width, t.scaled);
+        ctx.strokeStyle = '#b8c4d4'; ctx.lineWidth = 2; ctx.strokeRect(left, y + label, t.width, t.scaled);
       });
       y += rowHeights[ri] + gap;
     });
