@@ -63,6 +63,30 @@ while (Date.now() < deadline) {
   await new Promise((resolve) => setTimeout(resolve, 20_000));
 }
 
+// The site's CDN caches the page served for each deep link (s-maxage=300), so for a few minutes after a
+// deploy a path can still return the previous index.html and its old bundle while /version.json is new.
+// A deploy is only verified once every page path serves the same bundle as the freshly fetched root.
+const PAGE_PATHS = ['/login', '/register', '/dashboard', '/profile', '/cases', '/compliance', '/compliance/audit', '/freshness'];
+const bundleOf = async (url) => {
+  try {
+    const html = await (await fetch(url, { signal: AbortSignal.timeout(60_000) })).text();
+    return html.match(/assets\/index-[\w-]+\.js/)?.[0] ?? null;
+  } catch {
+    return null;
+  }
+};
+
+async function waitForCurrentPages() {
+  for (;;) {
+    const current = await bundleOf(`${SITE}/?fresh=${Date.now()}`);
+    const served = await Promise.all(PAGE_PATHS.map(async (path) => [path, await bundleOf(SITE + path)]));
+    const stale = served.filter(([, bundle]) => !current || bundle !== current).map(([path]) => path);
+    if (stale.length === 0 || Date.now() > deadline) return { current, stale };
+    console.log(`waiting: ${stale.join(', ')} still served from the CDN's cache of the previous page`);
+    await new Promise((resolve) => setTimeout(resolve, 20_000));
+  }
+}
+
 /**
  * Every protected GET route in the access table must answer 401 without a token. GET only, so a
  * missing guard is detected without anything on the live site being changed by the check itself
@@ -82,11 +106,12 @@ async function liveAccessSweep() {
 }
 
 const access = apiOk ? await liveAccessSweep() : null;
-const ok = apiOk && siteOk && api?.database === 'ok' && access?.open.length === 0;
-console.log(JSON.stringify({ target, required, api, site, access }, null, 2));
+const pages = siteOk ? await waitForCurrentPages() : null;
+const ok = apiOk && siteOk && api?.database === 'ok' && access?.open.length === 0 && pages?.stale.length === 0;
+console.log(JSON.stringify({ target, required, api, site, access, pages }, null, 2));
 console.log(
   ok
-    ? `VERIFIED: API serves ${api.commit} and site serves ${site.commit}, each including its latest change; database ok; ${api.migrations?.applied} migrations applied (latest ${api.migrations?.latest}); all ${access.checked} protected GET routes refuse requests without a token.`
-    : 'NOT VERIFIED: see the served and required commits, and any open routes, above.'
+    ? `VERIFIED: API serves ${api.commit} and site serves ${site.commit}, each including its latest change; all ${PAGE_PATHS.length} page paths serve the current build; database ok; ${api.migrations?.applied} migrations applied (latest ${api.migrations?.latest}); all ${access.checked} protected GET routes refuse requests without a token.`
+    : 'NOT VERIFIED: see the served and required commits, stale page paths and any open routes above.'
 );
 process.exit(ok ? 0 : 1);
