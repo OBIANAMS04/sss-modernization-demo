@@ -39,6 +39,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [errorField, setErrorField] = useState(''); // the input the current error message is about, if any
   const [notice, setNotice] = useState('');
 
   const refreshEligibilityAndCases = useCallback(async () => {
@@ -65,10 +66,12 @@ export default function Profile() {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     setNotice('');
+    if (errorField === name) setErrorField('');
   };
 
   const runAction = async (action, successMessage) => {
     setError('');
+    setErrorField('');
     setNotice('');
     setBusy(true);
     try {
@@ -87,6 +90,8 @@ export default function Profile() {
     const income = String(form.annualIncome).trim();
     if (income !== '' && !/^\d+$/.test(income)) {
       setError('Annual income must be a whole number of dollars (no commas or decimals).');
+      setErrorField('annualIncome');
+      document.getElementById('annualIncome')?.focus();
       return;
     }
     runAction(async () => {
@@ -115,11 +120,11 @@ export default function Profile() {
     <div className="min-h-screen bg-gray-50">
       <AppNav title="My Profile" subtitle="Profile details, exemption eligibility, and applications" />
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 focus:outline-none">
         <DemoEnvironmentBanner />
 
-        {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
-        {notice && <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">{notice}</div>}
+        {error && <div id="profile-error" role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
+        {notice && <div role="status" className="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">{notice}</div>}
 
         {loading ? (
           <div className="text-center py-12">
@@ -148,24 +153,35 @@ export default function Profile() {
                   <form onSubmit={handleSave} className="space-y-4">
                     <div>
                       <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                      <input id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="555-0100" className={inputClass} />
+                      <input id="phone" name="phone" type="tel" autoComplete="tel" value={form.phone} onChange={handleChange} placeholder="555-0100" className={inputClass} />
                     </div>
 
                     <div>
                       <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                      <textarea id="address" name="address" rows={2} value={form.address} onChange={handleChange} maxLength={500} placeholder="1 Main St, Springfield" className={inputClass} />
+                      <textarea id="address" name="address" autoComplete="street-address" rows={2} value={form.address} onChange={handleChange} maxLength={500} placeholder="1 Main St, Springfield" className={inputClass} />
                     </div>
 
                     <div>
                       <label htmlFor="annualIncome" className="block text-sm font-medium text-gray-700 mb-2">
                         Annual income (USD, optional)
                       </label>
-                      <input id="annualIncome" name="annualIncome" type="text" inputMode="numeric" value={form.annualIncome} onChange={handleChange} placeholder="e.g. 18000" className={inputClass} />
-                      <p className="text-xs text-gray-500 mt-1">Used for the income-based exemption (Type B). Leave blank if you prefer not to say.</p>
+                      <input
+                        id="annualIncome"
+                        name="annualIncome"
+                        type="text"
+                        inputMode="numeric"
+                        value={form.annualIncome}
+                        onChange={handleChange}
+                        placeholder="e.g. 18000"
+                        aria-invalid={errorField === 'annualIncome' ? 'true' : undefined}
+                        aria-describedby={errorField === 'annualIncome' ? 'profile-annualIncome-hint profile-error' : 'profile-annualIncome-hint'}
+                        className={inputClass}
+                      />
+                      <p id="profile-annualIncome-hint" className="text-xs text-gray-500 mt-1">Used for the income-based exemption (Type B). Leave blank if you prefer not to say.</p>
                     </div>
 
-                    <label className="flex items-start gap-3">
-                      <input name="hasDocumentedHardship" type="checkbox" checked={form.hasDocumentedHardship} onChange={handleChange} className="mt-1 h-4 w-4" />
+                    <label htmlFor="profile-hasDocumentedHardship" className="flex items-start gap-3">
+                      <input id="profile-hasDocumentedHardship" name="hasDocumentedHardship" type="checkbox" checked={form.hasDocumentedHardship} onChange={handleChange} className="mt-1 h-4 w-4" />
                       <span className="text-sm text-gray-700">
                         I have a documented hardship
                         <span className="block text-xs text-gray-500">Hardship exemptions (Type C) are reviewed by a caseworker.</span>
@@ -188,7 +204,7 @@ export default function Profile() {
                     <button
                       onClick={handleCheck}
                       disabled={busy}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition duration-200"
+                      className="bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-800 disabled:opacity-50 transition duration-200"
                     >
                       Check Eligibility
                     </button>

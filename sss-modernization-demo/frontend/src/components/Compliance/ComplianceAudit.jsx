@@ -11,7 +11,7 @@ const PAGE_SIZE = 50;
 const EMPTY = { from: '', to: '', user: '', decision: '', controlId: '', result: '' };
 
 const inputClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white';
+  'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent';
 
 export default function ComplianceAudit() {
   const staff = isStaffUser(getUser());
@@ -52,7 +52,7 @@ export default function ComplianceAudit() {
     <div className="min-h-screen bg-gray-50">
       <AppNav title="Compliance Audit Log" subtitle="Every control result for every exemption decision" />
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 focus:outline-none">
         <DemoEnvironmentBanner />
         <Link to="/compliance" className="inline-block mb-4 text-blue-600 font-medium hover:text-blue-700">← Compliance dashboard</Link>
 
@@ -60,7 +60,7 @@ export default function ComplianceAudit() {
           <div className="bg-white rounded-lg shadow-md p-6 text-gray-700">The audit log is available to case managers only.</div>
         ) : (
           <>
-            {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
+            {error && <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
 
             <form onSubmit={apply} className="bg-white rounded-lg shadow-md p-6 mb-6 grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
               <div>

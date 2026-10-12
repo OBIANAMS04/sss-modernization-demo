@@ -100,14 +100,14 @@ export default function FreshnessDashboard() {
     <div className="min-h-screen bg-gray-50">
       <AppNav title="Data Freshness" subtitle="How long until each change is readable by the next request" />
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 focus:outline-none">
         <DemoEnvironmentBanner />
 
         {!staff ? (
           <div className="bg-white rounded-lg shadow-md p-6 text-gray-700">Data freshness is available to case managers only.</div>
         ) : (
           <>
-            {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
+            {error && <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
 
             <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
               <div className="flex gap-2" role="group" aria-label="Time window">
@@ -115,6 +115,7 @@ export default function FreshnessDashboard() {
                   <button
                     key={w.hours}
                     onClick={() => setHours(w.hours)}
+                    aria-pressed={hours === w.hours}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${
                       hours === w.hours ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                     }`}
@@ -152,7 +153,7 @@ export default function FreshnessDashboard() {
                     <p className="text-sm">{data.alert}</p>
                   </div>
                 ) : onTarget ? (
-                  <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
+                  <div role="status" className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
                     Within target: {overall.withinRate}% of {overall.count} updates were readable within {formatMs(data.targetMs)} (target{' '}
                     {data.sloPercent}%). p95 {formatMs(overall.p95Ms)}.
                   </div>

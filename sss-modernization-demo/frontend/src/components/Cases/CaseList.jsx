@@ -83,7 +83,7 @@ export default function CaseList() {
     <div className="min-h-screen bg-gray-50">
       <AppNav title="Case Management" subtitle="Review and decide exemption applications" />
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 focus:outline-none">
         <DemoEnvironmentBanner />
 
         {!staff ? (
@@ -92,7 +92,7 @@ export default function CaseList() {
           </div>
         ) : (
           <>
-            {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
+            {error && <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
 
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
               {statCards.map((card) => (
@@ -176,7 +176,7 @@ export default function CaseList() {
                     <th className="px-4 py-3 font-medium">Assigned to</th>
                     <th className="px-4 py-3 font-medium">Submitted</th>
                     <th className="px-4 py-3 font-medium">Updated</th>
-                    <th className="px-4 py-3"></th>
+                    <th className="relative px-4 py-3"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -193,7 +193,7 @@ export default function CaseList() {
                         </td>
                         <td className="px-4 py-3 text-gray-700">{c.exemptionType || '—'}</td>
                         <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
-                        <td className="px-4 py-3 text-gray-700">{c.assignedTo || <span className="text-gray-400">Unassigned</span>}</td>
+                        <td className="px-4 py-3 text-gray-700">{c.assignedTo || <span className="text-gray-600">Unassigned</span>}</td>
                         <td className="px-4 py-3 text-gray-700">{c.submittedAt ? new Date(c.submittedAt).toLocaleDateString() : '—'}</td>
                         <td className="px-4 py-3 text-gray-700">{new Date(c.updatedAt).toLocaleDateString()}</td>
                         <td className="px-4 py-3 text-right">

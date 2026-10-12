@@ -39,7 +39,7 @@ const LABELS = {
 };
 
 const inputClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white';
+  'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent';
 
 function who(log) {
   if (log.actorEmail) return log.actorEmail;
@@ -109,14 +109,14 @@ export default function AuditLog() {
     <div className="min-h-screen bg-gray-50">
       <AppNav title="Security Audit Log" subtitle="Every sign-in, refusal, data access, change and alert" />
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 focus:outline-none">
         <DemoEnvironmentBanner />
 
         {!staff ? (
           <div className="bg-white rounded-lg shadow-md p-6 text-gray-700">The audit log is available to case managers only.</div>
         ) : (
           <>
-            {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
+            {error && <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
 
             {stats && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

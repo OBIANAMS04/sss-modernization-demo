@@ -19,7 +19,7 @@ const ACTION_LABELS = {
 };
 
 const ACTION_STYLES = {
-  Approved: 'bg-green-600 hover:bg-green-700',
+  Approved: 'bg-green-700 hover:bg-green-800',
   Denied: 'bg-red-600 hover:bg-red-700',
   Appealed: 'bg-purple-600 hover:bg-purple-700',
 };
@@ -129,15 +129,15 @@ export default function CaseDetail() {
     <div className="min-h-screen bg-gray-50">
       <AppNav title="Exemption Case" subtitle="Status, timeline, and documents" />
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 focus:outline-none">
         <DemoEnvironmentBanner />
 
         <Link to={staff ? '/cases' : '/profile'} className="inline-block mb-4 text-blue-600 font-medium hover:text-blue-700">
           ← {staff ? 'All cases' : 'My profile'}
         </Link>
 
-        {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
-        {notice && <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">{notice}</div>}
+        {error && <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
+        {notice && <div role="status" className="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">{notice}</div>}
 
         {loading ? (
           <div className="text-center py-12">
@@ -243,7 +243,7 @@ export default function CaseDetail() {
                   {caseData.actions.canAssign && (
                     <section className="bg-white rounded-lg shadow-md p-6">
                       <h3 className="text-lg font-bold text-gray-900 mb-3">Assignment</h3>
-                      <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className={inputClass}>
+                      <select aria-label="Assigned case manager" value={assignee} onChange={(e) => setAssignee(e.target.value)} className={inputClass}>
                         <option value="">Unassigned</option>
                         {managers.map((m) => (
                           <option key={m.email} value={m.email}>{m.fullName} ({m.email})</option>
@@ -286,12 +286,13 @@ export default function CaseDetail() {
                     )}
                     {caseData.actions.canAddDocument && (
                       <form onSubmit={handleDocument} className="space-y-2">
-                        <select value={doc.type} onChange={(e) => setDoc((p) => ({ ...p, type: e.target.value }))} className={inputClass}>
+                        <select aria-label="Document type" value={doc.type} onChange={(e) => setDoc((p) => ({ ...p, type: e.target.value }))} className={inputClass}>
                           {caseData.documentTypes.map((t) => (
                             <option key={t} value={t}>{DOC_LABELS[t] || t}</option>
                           ))}
                         </select>
                         <input
+                          aria-label="Document link (URL)"
                           type="url"
                           required
                           placeholder="https://link-to-your-document"
@@ -320,7 +321,7 @@ export default function CaseDetail() {
                         ))}
                       </ul>
                       <form onSubmit={handleNote} className="space-y-2">
-                        <textarea rows={3} required maxLength={5000} value={note} onChange={(e) => setNote(e.target.value)} className={inputClass} placeholder="Add a note for the case team" />
+                        <textarea aria-label="New internal note" rows={3} required maxLength={5000} value={note} onChange={(e) => setNote(e.target.value)} className={inputClass} placeholder="Add a note for the case team" />
                         <button type="submit" disabled={busy} className="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-900 disabled:opacity-50">
                           Add note
                         </button>

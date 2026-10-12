@@ -2,16 +2,21 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { getUser, clearAuth } from '../../utils/tokenManager';
 import { isStaffUser } from '../../utils/roles';
 import { authService } from '../../services/authService';
+import usePageTitle from '../../utils/usePageTitle';
 
 const linkClass = ({ isActive }) =>
   `px-3 py-2 rounded-lg text-sm font-medium transition duration-200 ${
     isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-blue-700 hover:bg-gray-50'
   }`;
 
-/** Shared top navigation. The staff pages (cases, compliance, freshness, audit) only appear for case managers and admins. */
-export default function AppNav({ title, subtitle }) {
+/**
+ * Shared top navigation. The staff pages (cases, compliance, freshness, audit) only appear for case managers and admins.
+ * `pageTitle` names the browser tab when the heading is not a good name for it (the dashboard's is the app name).
+ */
+export default function AppNav({ title, subtitle, pageTitle }) {
   const navigate = useNavigate();
   const user = getUser();
+  usePageTitle(pageTitle || title);
 
   const handleLogout = () => {
     authService.logout(); // recorded in the audit log; sign-out does not wait for it
@@ -20,14 +25,20 @@ export default function AppNav({ title, subtitle }) {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b border-gray-200">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:text-blue-700 focus:font-medium focus:px-4 focus:py-2 focus:rounded-lg focus:ring-2 focus:ring-blue-600"
+      >
+        Skip to main content
+      </a>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex flex-wrap justify-between items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
             {subtitle && <p className="text-sm text-gray-600">{subtitle}</p>}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <nav aria-label="Main" className="flex flex-wrap items-center gap-2">
             <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
             <NavLink to="/profile" className={linkClass}>Profile &amp; Exemptions</NavLink>
             {isStaffUser(user) && (
@@ -44,9 +55,9 @@ export default function AppNav({ title, subtitle }) {
             >
               Logout
             </button>
-          </div>
+          </nav>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

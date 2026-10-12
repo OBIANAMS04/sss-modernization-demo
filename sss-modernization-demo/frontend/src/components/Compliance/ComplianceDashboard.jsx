@@ -44,7 +44,7 @@ export default function ComplianceDashboard() {
     <div className="min-h-screen bg-gray-50">
       <AppNav title="Compliance" subtitle="Every exemption decision checked against the decision controls" />
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 focus:outline-none">
         <DemoEnvironmentBanner />
 
         {!staff ? (
@@ -53,7 +53,7 @@ export default function ComplianceDashboard() {
           </div>
         ) : (
           <>
-            {error && <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
+            {error && <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
 
             <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
               <div className="flex gap-2" role="group" aria-label="Time window">
@@ -87,7 +87,7 @@ export default function ComplianceDashboard() {
                     </p>
                   </div>
                 ) : onTarget ? (
-                  <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
+                  <div role="status" className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
                     On target: every decision in the last {data.windowDays} days met the {data.target}% compliance target.
                   </div>
                 ) : (

@@ -36,9 +36,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppNav title="SSS Modernization" subtitle="Platform Dashboard" />
+      <AppNav title="SSS Modernization" subtitle="Platform Dashboard" pageTitle="Dashboard" />
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 focus:outline-none">
         <DemoEnvironmentBanner />
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -59,13 +59,13 @@ export default function Dashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-green-100">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="ml-4">
                 <p className="text-gray-600 text-sm">Status</p>
-                <p className="text-lg font-semibold text-green-600">Active</p>
+                <p className="text-lg font-semibold text-green-700">Active</p>
               </div>
             </div>
           </div>
@@ -132,7 +132,7 @@ export default function Dashboard() {
                       ) : (
                         n.message
                       )}
-                      <span className="block text-xs text-gray-500 mt-1">{new Date(n.createdAt).toLocaleString()}</span>
+                      <span className="block text-xs text-gray-600 mt-1">{new Date(n.createdAt).toLocaleString()}</span>
                     </li>
                   ))}
                 </ul>
@@ -146,7 +146,8 @@ export default function Dashboard() {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Dashboard Overview</h2>
                 <p className="text-gray-700 mb-4">
                   Welcome to the SSS Modernization Platform. Release One (R1) is in progress. Working in this demo today: exemption
-                  eligibility, case management, compliance validation, data freshness monitoring and a security audit log.
+                  eligibility, case management, compliance validation, data freshness monitoring, a security audit log, and screens
+                  checked for accessibility (Section 508).
                 </p>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
@@ -165,7 +166,7 @@ export default function Dashboard() {
                   </div>
                   <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
                     <p className="text-gray-600 text-sm">API Status</p>
-                    <p className="text-3xl font-bold text-green-600">✓</p>
+                    <p className="text-3xl font-bold text-green-700">✓</p>
                   </div>
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
                     <p className="text-gray-600 text-sm">Database</p>
@@ -173,7 +174,7 @@ export default function Dashboard() {
                   </div>
                   <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 border border-yellow-200">
                     <p className="text-gray-600 text-sm">Frontend</p>
-                    <p className="text-3xl font-bold text-yellow-600">✓</p>
+                    <p className="text-3xl font-bold text-yellow-700">✓</p>
                   </div>
                 </div>
               </div>
@@ -182,40 +183,44 @@ export default function Dashboard() {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Release Progress</h2>
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
                     R0: Secure registration and sign-in (hashed passwords and SSNs)
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
                     R0: Compliance guards (demo-data banner, masked SSN entry)
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
                     R0: Demo deployment online, with a managed database
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
                     R1: Profile update with compliance check, and exemption eligibility with reasons
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
                     R1: Case management: applications, review workflow, timeline, notifications, CSV export
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
                     R1: Compliance validation: every decision checked against 8 controls, with reviews and an audit log
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
                     R1: Data freshness: every update timed until it is readable, against a 30-second target
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
                     R1: Security audit log: every sign-in, refusal, data access and change, write-once
                   </li>
                   <li className="flex items-center">
-                    <span className="flex-shrink-0 h-5 w-5 text-blue-600 mr-2">→</span>
-                    R1 (next): Accessibility (Section 508), role-based dashboards
+                    <span className="flex-shrink-0 h-5 w-5 text-green-700 mr-2" role="img" aria-label="Done">✓</span>
+                    R1: Accessibility (Section 508): every page checked against WCAG 2.1 AA, by keyboard and screen reader
+                  </li>
+                  <li className="flex items-center">
+                    <span className="flex-shrink-0 h-5 w-5 text-blue-600 mr-2" aria-hidden="true">→</span>
+                    R1 (next): Role-based dashboards, API governance
                   </li>
                 </ul>
               </div>

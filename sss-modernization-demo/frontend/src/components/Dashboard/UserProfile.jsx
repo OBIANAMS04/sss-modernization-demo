@@ -9,7 +9,7 @@ export default function UserProfile({ user }) {
         </div>
       </div>
 
-      <h3 className="text-lg font-bold text-center mb-4">{user?.fullName || 'User'}</h3>
+      <h2 className="text-lg font-bold text-center mb-4">{user?.fullName || 'User'}</h2>
 
       <div className="space-y-4">
         <div className="border-b pb-3">

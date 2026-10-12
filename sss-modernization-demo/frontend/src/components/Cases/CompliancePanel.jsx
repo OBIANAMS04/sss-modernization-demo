@@ -9,7 +9,7 @@ function ControlList({ controls }) {
       {controls.map((c) => (
         <li key={c.controlId} className="text-sm">
           <p className="flex items-start gap-2">
-            <span className={`mt-0.5 shrink-0 font-bold ${c.passed ? 'text-green-600' : 'text-red-600'}`} aria-label={c.passed ? 'Passed' : 'Failed'}>
+            <span className={`mt-0.5 shrink-0 font-bold ${c.passed ? 'text-green-700' : 'text-red-600'}`} role="img" aria-label={c.passed ? 'Passed' : 'Failed'}>
               {c.passed ? '✓' : '✗'}
             </span>
             <span className={c.passed ? 'text-gray-800' : 'text-red-800 font-medium'}>
