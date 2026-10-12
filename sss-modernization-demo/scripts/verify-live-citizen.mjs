@@ -84,8 +84,8 @@ if (shotsDir) {
     await page.signIn(SITE, session);
     await page.goto(`${SITE}/dashboard`);
     await page.waitForText('Release Progress', 60_000);
-    check('live dashboard lists the latest shipped story (data freshness) as done', await page.hasText('R1: Data freshness'));
-    check('no staff links for a citizen', await page.evaluate(`!document.querySelector('a[href="/compliance"], a[href="/freshness"], a[href="/cases"]')`));
+    check('live dashboard lists the latest shipped story (security audit log) as done', await page.hasText('R1: Security audit log'));
+    check('no staff links for a citizen', await page.evaluate(`!document.querySelector('a[href="/compliance"], a[href="/freshness"], a[href="/cases"], a[href="/audit"]')`));
     await page.screenshot(join(shotsDir, 'live-01-citizen-dashboard.png'));
     await page.goto(`${SITE}/compliance`);
     await page.waitForText('available to case managers only', 60_000);
