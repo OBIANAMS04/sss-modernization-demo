@@ -7,6 +7,7 @@ import { complianceService } from '../../services/complianceService';
 import CompliancePanel from './CompliancePanel';
 import { isStaffUser } from '../../utils/roles';
 import AppNav from '../Common/AppNav';
+import ConfirmAction from '../Common/ConfirmAction';
 import StatusBadge from '../Common/StatusBadge';
 import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
@@ -22,6 +23,12 @@ const ACTION_STYLES = {
   Approved: 'bg-green-700 hover:bg-green-800',
   Denied: 'bg-red-600 hover:bg-red-700',
   Appealed: 'bg-purple-600 hover:bg-purple-700',
+};
+
+// STORY-011 (WCAG 3.3.4): the applicant's appeal has legal effect, so it is confirmed before it is sent. Staff decisions
+// are not: they can be reversed through the compliance review.
+const CONFIRMED_ACTIONS = {
+  Appealed: { question: 'Appeal this decision now? A case manager will review your case again.', confirmLabel: 'Confirm appeal' },
 };
 
 const DOC_LABELS = {
@@ -52,7 +59,7 @@ function describeEvent(event) {
 }
 
 const inputClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm';
+  'w-full px-3 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm';
 
 export default function CaseDetail() {
   const { id } = useParams();
@@ -226,16 +233,25 @@ export default function CaseDetail() {
                       </label>
                       <textarea id="reason" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={1000} className={inputClass} />
                       <div className="flex flex-wrap gap-2 mt-3">
-                        {caseData.actions.transitions.map((status) => (
-                          <button
-                            key={status}
-                            onClick={() => handleStatus(status)}
-                            disabled={busy}
-                            className={`text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition duration-200 ${ACTION_STYLES[status] || 'bg-blue-600 hover:bg-blue-700'}`}
-                          >
-                            {ACTION_LABELS[status] || status}
-                          </button>
-                        ))}
+                        {caseData.actions.transitions.map((status) => {
+                          const className = `text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition duration-200 ${ACTION_STYLES[status] || 'bg-blue-600 hover:bg-blue-700'}`;
+                          const confirmation = CONFIRMED_ACTIONS[status];
+                          return confirmation ? (
+                            <ConfirmAction
+                              key={status}
+                              label={ACTION_LABELS[status]}
+                              className={className}
+                              question={confirmation.question}
+                              confirmLabel={confirmation.confirmLabel}
+                              onConfirm={() => handleStatus(status)}
+                              disabled={busy}
+                            />
+                          ) : (
+                            <button key={status} onClick={() => handleStatus(status)} disabled={busy} className={className}>
+                              {ACTION_LABELS[status] || status}
+                            </button>
+                          );
+                        })}
                       </div>
                     </section>
                   )}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { setToken, setUser } from '../../utils/tokenManager';
 import { validateEmail, validatePassword } from '../../utils/validators';
@@ -15,6 +15,8 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionEnded = searchParams.get('expired') === '1'; // SessionTimer sends people here when their session ran out
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,6 +68,12 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">SSS Platform</h1>
           <p className="text-gray-600 text-center mb-6">Welcome back</p>
 
+          {sessionEnded && (
+            <div role="status" className="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
+              Your session ended. Please sign in again.
+            </div>
+          )}
+
           {errors.submit && (
             <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
               {errors.submit}
@@ -87,7 +95,7 @@ export default function Login() {
                 aria-invalid={errors.email ? 'true' : undefined}
                 aria-describedby={errors.email ? 'login-email-error' : undefined}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
+                  errors.email ? 'border-red-500' : 'border-gray-500'
                 }`}
               />
               {errors.email && <p id="login-email-error" className="text-red-700 text-xs mt-1">{errors.email}</p>}
@@ -107,7 +115,7 @@ export default function Login() {
                 aria-invalid={errors.password ? 'true' : undefined}
                 aria-describedby={errors.password ? 'login-password-error' : undefined}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                  errors.password ? 'border-red-500' : 'border-gray-300'
+                  errors.password ? 'border-red-500' : 'border-gray-500'
                 }`}
               />
               {errors.password && <p id="login-password-error" className="text-red-700 text-xs mt-1">{errors.password}</p>}

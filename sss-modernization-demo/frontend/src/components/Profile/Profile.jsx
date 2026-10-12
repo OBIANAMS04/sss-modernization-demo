@@ -6,6 +6,7 @@ import { profileService } from '../../services/profileService';
 import { exemptionService } from '../../services/exemptionService';
 import { caseService } from '../../services/caseService';
 import AppNav from '../Common/AppNav';
+import ConfirmAction from '../Common/ConfirmAction';
 import StatusBadge from '../Common/StatusBadge';
 import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
@@ -114,7 +115,7 @@ export default function Profile() {
   const caseByExemption = Object.fromEntries(cases.map((c) => [c.exemptionId, c]));
 
   const inputClass =
-    'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition';
+    'w-full px-4 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -246,13 +247,14 @@ export default function Profile() {
                                 </p>
                               ) : (
                                 e.status !== 'Not Eligible' && (
-                                  <button
-                                    onClick={() => handleApply(e)}
-                                    disabled={busy}
+                                  <ConfirmAction
+                                    label="Apply for this exemption"
                                     className="mt-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-                                  >
-                                    Apply for this exemption
-                                  </button>
+                                    question={`Submit an application for ${e.label} now? You can follow it, and appeal a decision, from its case page.`}
+                                    confirmLabel="Confirm application"
+                                    onConfirm={() => handleApply(e)}
+                                    disabled={busy}
+                                  />
                                 )
                               )}
                             </li>

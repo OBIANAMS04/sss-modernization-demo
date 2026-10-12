@@ -13,6 +13,7 @@ const RESOURCES = ['auth', 'users', 'mfa', 'exemptions', 'cases', 'compliance', 
 const LABELS = {
   USER_LOGIN: 'Sign-in',
   USER_LOGOUT: 'Sign-out',
+  SESSION_EXTEND: 'Session extended',
   USER_REGISTRATION: 'Registration',
   MFA_SETUP: 'MFA setup',
   MFA_ENABLE: 'MFA enabled',
@@ -39,7 +40,7 @@ const LABELS = {
 };
 
 const inputClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent';
+  'w-full px-3 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent';
 
 function who(log) {
   if (log.actorEmail) return log.actorEmail;

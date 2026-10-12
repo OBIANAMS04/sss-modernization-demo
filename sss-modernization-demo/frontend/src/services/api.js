@@ -25,8 +25,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // While signed in, a 401 means the session ended (expired, or past its 12-hour limit): say so on the sign-in page
+      const hadSession = !!getToken();
       removeToken();
-      window.location.href = '/login';
+      window.location.href = hadSession ? '/login?expired=1' : '/login';
     }
     return Promise.reject(error);
   }

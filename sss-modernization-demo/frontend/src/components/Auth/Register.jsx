@@ -125,7 +125,7 @@ export default function Register() {
                 aria-invalid={errors.email ? 'true' : undefined}
                 aria-describedby={errors.email ? 'register-email-error' : undefined}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent outline-none transition ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
+                  errors.email ? 'border-red-500' : 'border-gray-500'
                 }`}
               />
               {errors.email && <p id="register-email-error" className="text-red-700 text-xs mt-1">{errors.email}</p>}
@@ -145,7 +145,7 @@ export default function Register() {
                 aria-invalid={errors.full_name ? 'true' : undefined}
                 aria-describedby={errors.full_name ? 'register-fullName-error' : undefined}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent outline-none transition ${
-                  errors.full_name ? 'border-red-500' : 'border-gray-300'
+                  errors.full_name ? 'border-red-500' : 'border-gray-500'
                 }`}
               />
               {errors.full_name && <p id="register-fullName-error" className="text-red-700 text-xs mt-1">{errors.full_name}</p>}
@@ -167,7 +167,7 @@ export default function Register() {
                   aria-invalid={errors.ssn ? 'true' : undefined}
                   aria-describedby={errors.ssn ? 'register-ssn-error' : undefined}
                   className={`w-full px-4 py-2 pr-16 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition ${
-                    errors.ssn ? 'border-red-500' : 'border-gray-300'
+                    errors.ssn ? 'border-red-500' : 'border-gray-500'
                   }`}
                 />
                 <button
@@ -196,7 +196,7 @@ export default function Register() {
                 aria-invalid={errors.dob ? 'true' : undefined}
                 aria-describedby={errors.dob ? 'register-dob-error' : undefined}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent outline-none transition ${
-                  errors.dob ? 'border-red-500' : 'border-gray-300'
+                  errors.dob ? 'border-red-500' : 'border-gray-500'
                 }`}
               />
               {errors.dob && <p id="register-dob-error" className="text-red-700 text-xs mt-1">{errors.dob}</p>}
@@ -216,7 +216,7 @@ export default function Register() {
                 aria-invalid={errors.password ? 'true' : undefined}
                 aria-describedby={errors.password ? 'register-password-error' : 'register-password-hint'}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent outline-none transition ${
-                  errors.password ? 'border-red-500' : 'border-gray-300'
+                  errors.password ? 'border-red-500' : 'border-gray-500'
                 }`}
               />
               {errors.password ? (

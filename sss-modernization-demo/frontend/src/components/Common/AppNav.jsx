@@ -3,6 +3,7 @@ import { getUser, clearAuth } from '../../utils/tokenManager';
 import { isStaffUser } from '../../utils/roles';
 import { authService } from '../../services/authService';
 import usePageTitle from '../../utils/usePageTitle';
+import SessionTimer from './SessionTimer';
 
 const linkClass = ({ isActive }) =>
   `px-3 py-2 rounded-lg text-sm font-medium transition duration-200 ${
@@ -58,6 +59,7 @@ export default function AppNav({ title, subtitle, pageTitle }) {
           </nav>
         </div>
       </div>
+      <SessionTimer />
     </header>
   );
 }

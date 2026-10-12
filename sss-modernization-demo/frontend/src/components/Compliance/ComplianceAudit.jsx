@@ -11,7 +11,7 @@ const PAGE_SIZE = 50;
 const EMPTY = { from: '', to: '', user: '', decision: '', controlId: '', result: '' };
 
 const inputClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent';
+  'w-full px-3 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent';
 
 export default function ComplianceAudit() {
   const staff = isStaffUser(getUser());
