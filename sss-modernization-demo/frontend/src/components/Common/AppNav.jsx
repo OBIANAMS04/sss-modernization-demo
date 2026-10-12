@@ -7,7 +7,7 @@ const linkClass = ({ isActive }) =>
     isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-blue-700 hover:bg-gray-50'
   }`;
 
-/** Shared top navigation. "Case Management" and "Compliance" only appear for case managers and admins. */
+/** Shared top navigation. The staff pages (cases, compliance, freshness) only appear for case managers and admins. */
 export default function AppNav({ title, subtitle }) {
   const navigate = useNavigate();
   const user = getUser();
@@ -32,6 +32,7 @@ export default function AppNav({ title, subtitle }) {
               <>
                 <NavLink to="/cases" end className={linkClass}>Case Management</NavLink>
                 <NavLink to="/compliance" className={linkClass}>Compliance</NavLink>
+                <NavLink to="/freshness" className={linkClass}>Data Freshness</NavLink>
               </>
             )}
             <button

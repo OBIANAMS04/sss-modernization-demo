@@ -9,6 +9,7 @@ import CaseList from './components/Cases/CaseList';
 import CaseDetail from './components/Cases/CaseDetail';
 import ComplianceDashboard from './components/Compliance/ComplianceDashboard';
 import ComplianceAudit from './components/Compliance/ComplianceAudit';
+import FreshnessDashboard from './components/Freshness/FreshnessDashboard';
 import './App.css';
 
 function App() {
@@ -85,6 +86,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ComplianceAudit />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/freshness"
+          element={
+            <ProtectedRoute>
+              <FreshnessDashboard />
             </ProtectedRoute>
           }
         />

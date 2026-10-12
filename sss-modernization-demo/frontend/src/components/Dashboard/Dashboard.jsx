@@ -145,8 +145,8 @@ export default function Dashboard() {
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Dashboard Overview</h2>
                 <p className="text-gray-700 mb-4">
-                  Welcome to the SSS Modernization Platform. Release One (R1) is in progress: exemption eligibility, case management and
-                  compliance validation are live.
+                  Welcome to the SSS Modernization Platform. Release One (R1) is in progress. Working in this demo today: exemption
+                  eligibility, case management, compliance validation and data freshness monitoring.
                 </p>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
@@ -206,8 +206,12 @@ export default function Dashboard() {
                     R1: Compliance validation: every decision checked against 8 controls, with reviews and an audit log
                   </li>
                   <li className="flex items-center">
+                    <span className="flex-shrink-0 h-5 w-5 text-green-600 mr-2">✓</span>
+                    R1: Data freshness: every update timed until it is readable, against a 30-second target
+                  </li>
+                  <li className="flex items-center">
                     <span className="flex-shrink-0 h-5 w-5 text-blue-600 mr-2">→</span>
-                    R1 (next): Data freshness, audit logging, accessibility (Section 508), role-based dashboards
+                    R1 (next): Audit logging, accessibility (Section 508), role-based dashboards
                   </li>
                 </ul>
               </div>
