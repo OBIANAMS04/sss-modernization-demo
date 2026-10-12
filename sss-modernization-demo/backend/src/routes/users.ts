@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { getUserById, updateUserProfile } from '../services/userService';
 import { runEligibilityCheck } from '../services/exemptionService';
 import { trackWrite, versionOf } from '../services/freshnessService';
+import { AuditAction, recordAudit } from '../services/auditService';
 import { verifyToken } from '../utils/jwt';
 import { AppError } from '../utils/errors';
 
@@ -65,9 +66,12 @@ router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) =
     const changes = { phone, address, annualIncome, hasDocumentedHardship };
     const save = () => updateUserProfile(id, changes);
     // STORY-009: a save that changes nothing writes nothing, so only real updates are timed
-    const updatedUser = Object.values(changes).some((v) => v !== undefined)
-      ? await trackWrite('profile', 'update', () => versionOf.user(id), save)
-      : await save();
+    const changed = Object.keys(changes).filter((field) => changes[field as keyof typeof changes] !== undefined);
+    const updatedUser = changed.length ? await trackWrite('profile', 'update', () => versionOf.user(id), save) : await save();
+    if (changed.length) {
+      // STORY-010: which fields changed, never their values
+      recordAudit(AuditAction.PROFILE_UPDATE, 'users', 'success', { actor: id, actorEmail: req.user?.email, resourceId: id, details: { fields: changed } });
+    }
 
     // STORY-006: exemption eligibility is re-determined whenever the profile changes
     const eligibility = await trackWrite('eligibility', 'profile_update', () => versionOf.eligibility(id), () =>

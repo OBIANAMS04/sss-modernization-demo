@@ -1,5 +1,6 @@
 import { performance } from 'node:perf_hooks';
 import pool from '../database/connection';
+import { AuditAction, recordAudit } from './auditService';
 
 /**
  * STORY-009 data freshness: how long until a change is readable by the next request.
@@ -94,6 +95,10 @@ async function confirmAndRecord(
      VALUES ($1, $2, $3, $4, $5, $6)`,
     [type, operation, measurement.totalMs, measurement.writeMs, measurement.visibleMs, visible]
   );
+  // STORY-010: an update that misses the target is an alert, and alerts are audited
+  if (!visible || measurement.totalMs > FRESHNESS_TARGET_MS) {
+    recordAudit(AuditAction.ALERT_TRIGGERED, 'freshness', 'failure', { details: { ...measurement, targetMs: FRESHNESS_TARGET_MS } });
+  }
   return measurement;
 }
 

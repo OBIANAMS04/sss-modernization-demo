@@ -11,14 +11,22 @@ import freshnessRoutes from './routes/freshness';
 import auditRoutes from './routes/audit';
 import notificationRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
+import { auditDataAccess } from './middleware/auditAccess';
+import { requestContextMiddleware } from './utils/requestContext';
 import pool from './database/connection';
 
 dotenv.config();
 
 const app = express();
 
+// Render's load balancer sits on a private network in front of the app; trusting private-network
+// proxies makes req.ip the caller's address, which every audit entry records.
+app.set('trust proxy', 'loopback, linklocal, uniquelocal');
+
 // Middleware
 app.use(express.json());
+app.use(requestContextMiddleware);
+app.use(auditDataAccess);
 app.use(cors({
   origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,

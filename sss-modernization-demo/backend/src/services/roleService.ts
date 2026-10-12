@@ -1,4 +1,5 @@
 import pool from '../database/connection';
+import { AuditAction, logAuditEvent } from './auditService';
 
 export type Role = 'citizen' | 'case_manager' | 'admin';
 
@@ -22,11 +23,29 @@ export function roleForNewUser(email: string): Role {
  * Makes users.role match CASE_MANAGER_EMAILS: listed users become case managers and
  * case managers no longer listed revert to citizen. Admins are never changed here.
  * Runs at startup, so editing the variable on Render (which restarts the service) applies it.
+ * Every role it grants or removes is audited (STORY-010).
  */
 export async function syncCaseManagerRoles(): Promise<void> {
   const emails = caseManagerEmails();
-  await pool.query(`UPDATE users SET role = 'case_manager' WHERE role = 'citizen' AND lower(email) = ANY($1)`, [emails]);
-  await pool.query(`UPDATE users SET role = 'citizen' WHERE role = 'case_manager' AND NOT (lower(email) = ANY($1))`, [emails]);
+  const granted = await pool.query(
+    `UPDATE users SET role = 'case_manager' WHERE role = 'citizen' AND lower(email) = ANY($1) RETURNING id, email`,
+    [emails]
+  );
+  const revoked = await pool.query(
+    `UPDATE users SET role = 'citizen' WHERE role = 'case_manager' AND NOT (lower(email) = ANY($1)) RETURNING id, email`,
+    [emails]
+  );
+  for (const [rows, action, role] of [
+    [granted.rows, AuditAction.PERMISSION_GRANT, 'case_manager'],
+    [revoked.rows, AuditAction.PERMISSION_REVOKE, 'citizen'],
+  ] as const) {
+    for (const user of rows) {
+      await logAuditEvent(action, 'users', 'success', {
+        resourceId: user.id,
+        details: { email: user.email, role, via: 'CASE_MANAGER_EMAILS at startup' },
+      });
+    }
+  }
 }
 
 export async function getUserRole(userId: string): Promise<Role | null> {

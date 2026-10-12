@@ -1,6 +1,6 @@
 import pool from '../database/connection';
 import { AppError, NotFoundError, ValidationError } from '../utils/errors';
-import { AuditAction, logAuditEvent } from './auditService';
+import { AuditAction, logAuditEvent, recordAudit } from './auditService';
 import { Actor, inTransaction, notify, recordEvent } from './caseEvents';
 
 /**
@@ -270,6 +270,15 @@ export async function evaluateDecision(caseId: string, eventId: string, actor: A
       resourceId: caseId,
       details: { decision: ctx.decision, controls: results.length, failedControls: failed },
     });
+    if (failed.length > 0) {
+      // STORY-010: a review opening is an alert, and alerts are audited
+      recordAudit(AuditAction.COMPLIANCE_ALERT, 'cases', 'failure', {
+        actor: actor.id,
+        actorEmail: actor.email,
+        resourceId: caseId,
+        details: { decision: ctx.decision, failedControls: failed, reviewOpened: true },
+      });
+    }
     return { results, failedControls: failed };
   } catch (error) {
     console.error('Compliance evaluation failed', { caseId, eventId, message: (error as Error).message });
@@ -279,6 +288,12 @@ export async function evaluateDecision(caseId: string, eventId: string, actor: A
          VALUES ($1, $2, $3, ARRAY['EVALUATION-ERROR'])`,
         [caseId, eventId, actor.email]
       );
+      recordAudit(AuditAction.COMPLIANCE_ALERT, 'cases', 'failure', {
+        actor: actor.id,
+        actorEmail: actor.email,
+        resourceId: caseId,
+        details: { failedControls: ['EVALUATION-ERROR'], reviewOpened: true },
+      });
     } catch (inner) {
       console.error('Could not open a compliance review for the failed evaluation', (inner as Error).message);
     }

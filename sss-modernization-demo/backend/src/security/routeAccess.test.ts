@@ -1,10 +1,13 @@
+// Runs without a database: every protected route must reject a bad or missing token before it
+// reaches any query. The only database call allowed is the audit entry each refusal writes
+// (STORY-010), which the mock below records.
+jest.mock('../database/connection', () => ({ __esModule: true, default: { query: jest.fn().mockResolvedValue({ rows: [{}] }), on: jest.fn() } }));
+
 import request from 'supertest';
+import pool from '../database/connection';
 import app from '../app';
 import { listRoutes } from './listRoutes';
 import { ROUTE_ACCESS } from './routeAccess';
-
-// Runs without a database: every protected route must reject a bad or missing token
-// before it reaches any query.
 
 const AUTH_GUARDS = ['authMiddleware', 'authenticate'];
 const SIGNED_IN_RULES = ['signed-in', 'owner', 'owner-or-staff', 'staff'];
@@ -80,4 +83,15 @@ describe('route access rules', () => {
       expect(res.status).toBe(401);
     }
   );
+
+  it('writes an ACCESS_DENIED audit entry for each refusal (STORY-010)', async () => {
+    const query = pool.query as unknown as jest.Mock;
+    query.mockClear();
+    const route = protectedRoutes[0];
+    await call(route.method, route.path);
+    await new Promise((resolve) => setImmediate(resolve));
+    const audit = query.mock.calls.find(([sql]) => String(sql).startsWith('INSERT INTO audit_logs'));
+    expect(audit?.[1].slice(0, 4)).toEqual(['ACCESS_DENIED', null, null, route.path.split('/')[2]]);
+    expect(audit?.[1][5]).toBe('failure');
+  });
 });

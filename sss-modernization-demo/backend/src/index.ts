@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import app from './app';
 import { runMigrations } from './database/migrate';
 import { syncCaseManagerRoles } from './services/roleService';
+import { AuditAction, logAuditEvent } from './services/auditService';
 
 dotenv.config();
 
@@ -16,8 +17,12 @@ async function start() {
 
   // Bring the schema up to date before accepting traffic. If this fails the process
   // exits, so a Render deploy fails and the previous version keeps serving.
-  await runMigrations();
+  const migrationsApplied = await runMigrations();
   await syncCaseManagerRoles();
+  // STORY-010: each start of a release is an audited infrastructure event
+  await logAuditEvent(AuditAction.DEPLOYMENT, 'system', 'success', {
+    details: { commit: (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7), migrationsApplied },
+  });
 
   const server = app.listen(PORT, () => {
     console.log(`🚀 Backend server running on port ${PORT}`);
@@ -36,6 +41,7 @@ async function start() {
 }
 
 start().catch((err) => {
-  console.error('❌ Startup failed:', err.message);
+  // A refused database connection arrives as an AggregateError with an empty message
+  console.error('❌ Startup failed:', err.message || err.code || String(err), err.errors?.map((e: Error) => e.message) ?? '');
   process.exit(1);
 });

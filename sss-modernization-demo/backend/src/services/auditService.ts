@@ -1,4 +1,5 @@
 import pool from '../database/connection';
+import { getRequestContext } from '../utils/requestContext';
 
 export interface AuditLog {
   id: number;
@@ -17,8 +18,12 @@ export interface AuditLog {
 export interface AuditLogQuery {
   action?: string;
   actor?: string;
+  /** Part of the actor's email, case-insensitive. */
+  user?: string;
   resource?: string;
+  resourceId?: string;
   status?: 'success' | 'failure';
+  /** Dates as YYYY-MM-DD, inclusive. */
   startDate?: string;
   endDate?: string;
   limit?: number;
@@ -33,9 +38,15 @@ export enum AuditAction {
   USER_REGISTRATION = 'USER_REGISTRATION',
   PASSWORD_CHANGE = 'PASSWORD_CHANGE',
   PASSWORD_RESET = 'PASSWORD_RESET',
+  MFA_SETUP = 'MFA_SETUP',
   MFA_ENABLE = 'MFA_ENABLE',
   MFA_DISABLE = 'MFA_DISABLE',
   MFA_VERIFY_FAILED = 'MFA_VERIFY_FAILED',
+  MFA_VERIFIED = 'MFA_VERIFIED',
+
+  // Data access (STORY-010): every successful read of the API, and exports
+  DATA_READ = 'DATA_READ',
+  DATA_EXPORT = 'DATA_EXPORT',
 
   // User management
   USER_CREATE = 'USER_CREATE',
@@ -91,6 +102,8 @@ export async function logAuditEvent(
 ): Promise<AuditLog> {
   // Remove sensitive data from details before logging
   const sanitizedDetails = sanitizeDetails(options?.details);
+  // The caller's address and browser come from the request being handled, unless given
+  const context = getRequestContext();
 
   const result = await pool.query(
     `INSERT INTO audit_logs (action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent)
@@ -104,19 +117,40 @@ export async function logAuditEvent(
       options?.resourceId || null,
       status,
       sanitizedDetails ? JSON.stringify(sanitizedDetails) : null,
-      options?.ipAddress || null,
-      options?.userAgent || null,
+      options?.ipAddress || context?.ip || null,
+      options?.userAgent || context?.userAgent || null,
     ]
   );
 
   return mapRowToAuditLog(result.rows[0]);
 }
 
+/**
+ * Writes an audit entry without holding up the response (reads, denials, logins). A write that
+ * fails is reported on the server log; the action it describes has already happened.
+ */
+export function recordAudit(...args: Parameters<typeof logAuditEvent>): void {
+  logAuditEvent(...args).catch((error) =>
+    console.error('Audit entry not written', { action: args[0], resource: args[1], message: (error as Error).message })
+  );
+}
+
+/** True when the database itself refuses updates and deletes of audit entries (migration 015). */
+export async function auditLogIsWriteOnce(): Promise<boolean> {
+  const result = await pool.query(
+    `SELECT COUNT(*)::int AS n FROM pg_trigger
+     WHERE tgrelid = 'audit_logs'::regclass AND tgname IN ('audit_logs_no_update_delete', 'audit_logs_no_truncate') AND tgenabled <> 'D'`
+  );
+  return result.rows[0].n === 2;
+}
+
 export async function getAuditLogs(query: AuditLogQuery): Promise<{ logs: AuditLog[]; total: number }> {
   const {
     action,
     actor,
+    user,
     resource,
+    resourceId,
     status,
     startDate,
     endDate,
@@ -141,9 +175,23 @@ export async function getAuditLogs(query: AuditLogQuery): Promise<{ logs: AuditL
     paramCount++;
   }
 
+  // A person's whole trail: what they did, plus events about their address when nobody was
+  // signed in as them (failed sign-ins) or the system acted on them (role grants)
+  if (user) {
+    conditions.push(`(actor_email ILIKE $${paramCount} OR details->>'email' ILIKE $${paramCount})`);
+    params.push(`%${user}%`);
+    paramCount++;
+  }
+
   if (resource) {
     conditions.push(`resource = $${paramCount}`);
     params.push(resource);
+    paramCount++;
+  }
+
+  if (resourceId) {
+    conditions.push(`resource_id = $${paramCount}`);
+    params.push(resourceId);
     paramCount++;
   }
 
@@ -153,14 +201,15 @@ export async function getAuditLogs(query: AuditLogQuery): Promise<{ logs: AuditL
     paramCount++;
   }
 
+  // Whole days, inclusive: from the start of startDate to the end of endDate
   if (startDate) {
-    conditions.push(`timestamp >= $${paramCount}`);
+    conditions.push(`timestamp >= $${paramCount}::date`);
     params.push(startDate);
     paramCount++;
   }
 
   if (endDate) {
-    conditions.push(`timestamp <= $${paramCount}`);
+    conditions.push(`timestamp < $${paramCount}::date + 1`);
     params.push(endDate);
     paramCount++;
   }
@@ -262,18 +311,23 @@ function mapRowToAuditLog(row: any): AuditLog {
   };
 }
 
-function sanitizeDetails(details?: Record<string, any>): Record<string, any> | null {
+// Keys whose values never belong in the audit log, at any depth (password, passwordHash, ssn,
+// mfaSecret, token, authorization, cookie, ...), and SSN-shaped text anywhere in a value.
+const SENSITIVE_KEY = /^pass(word)?$|password|secret|token$|ssn(hash)?$|authorization|cookie|^totp/i;
+const SSN_TEXT = /\b\d{3}-\d{2}-\d{4}\b/g;
+
+/** Redacts sensitive keys and SSN-shaped text throughout the details, including nested objects and arrays. */
+export function sanitizeDetails(details?: Record<string, any>): Record<string, any> | null {
   if (!details) return null;
-
-  // Remove sensitive fields
-  const sensitiveFields = ['password', 'passwordHash', 'secret', 'token', 'ssn'];
-  const sanitized = { ...details };
-
-  for (const field of sensitiveFields) {
-    if (field in sanitized) {
-      sanitized[field] = '[REDACTED]';
+  const clean = (value: any): any => {
+    if (typeof value === 'string') return value.replace(SSN_TEXT, '[REDACTED]');
+    if (Array.isArray(value)) return value.map(clean);
+    if (value && typeof value === 'object' && !(value instanceof Date)) {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, v]) => [key, SENSITIVE_KEY.test(key) ? '[REDACTED]' : clean(v)])
+      );
     }
-  }
-
-  return sanitized;
+    return value;
+  };
+  return clean(details);
 }

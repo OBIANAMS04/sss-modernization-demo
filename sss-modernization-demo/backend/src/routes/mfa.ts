@@ -7,6 +7,16 @@ import {
 } from '../services/mfaService';
 import { verifyToken } from '../utils/jwt';
 import { AppError, ValidationError } from '../utils/errors';
+import { AuditAction, recordAudit } from '../services/auditService';
+
+// STORY-010: MFA setup, enabling and every failed code are audited; codes and secrets never are.
+const audit = (req: AuthRequest, action: AuditAction, status: 'success' | 'failure', details?: Record<string, unknown>) =>
+  recordAudit(action, 'mfa', status, { actor: req.user?.sub, actorEmail: req.user?.email, resourceId: req.user?.sub, details });
+const failedCode = (req: AuthRequest, error: unknown) => {
+  if (!(error instanceof AppError) || error.statusCode !== 401) {
+    audit(req, AuditAction.MFA_VERIFY_FAILED, 'failure', { reason: error instanceof AppError ? error.code : 'ERROR' });
+  }
+};
 
 const router = Router();
 
@@ -45,6 +55,7 @@ router.post('/setup', async (req: AuthRequest, res: Response, next: NextFunction
     }
 
     const { secret, qrCode } = await generateMFASecret(req.user.sub, req.user.email);
+    audit(req, AuditAction.MFA_SETUP, 'success');
 
     res.json({
       secret,
@@ -74,12 +85,14 @@ router.post('/verify', async (req: AuthRequest, res: Response, next: NextFunctio
     }
 
     await verifyAndEnableMFA(req.user.sub, secret, totpCode);
+    audit(req, AuditAction.MFA_ENABLE, 'success');
 
     res.json({
       success: true,
       message: 'MFA has been enabled on your account',
     });
   } catch (error) {
+    failedCode(req, error);
     next(error);
   }
 });
@@ -106,12 +119,14 @@ router.post('/verify-code', async (req: AuthRequest, res: Response, next: NextFu
     if (!isValid) {
       throw new ValidationError('Invalid authentication code');
     }
+    audit(req, AuditAction.MFA_VERIFIED, 'success');
 
     res.json({
       success: true,
       message: 'MFA code verified',
     });
   } catch (error) {
+    failedCode(req, error);
     next(error);
   }
 });

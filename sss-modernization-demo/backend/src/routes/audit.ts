@@ -8,8 +8,11 @@ import {
   getAuditLogsByUser,
   getAuditLogsByResource,
   getAuditStats,
+  auditLogIsWriteOnce,
   AuditLogQuery,
 } from '../services/auditService';
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 const router = Router();
 
@@ -47,7 +50,9 @@ router.get('/', requireStaff, async (req: any, res: Response, next: NextFunction
     const {
       action,
       actor,
+      user,
       resource,
+      resourceId,
       status,
       startDate,
       endDate,
@@ -55,17 +60,26 @@ router.get('/', requireStaff, async (req: any, res: Response, next: NextFunction
       offset = 0,
     } = req.query;
 
+    for (const [name, value] of [['startDate', startDate], ['endDate', endDate]]) {
+      if (value && !DATE.test(value)) throw new AppError(400, `${name} must be a date as YYYY-MM-DD`, 'VALIDATION_ERROR');
+    }
+    if (status && status !== 'success' && status !== 'failure') {
+      throw new AppError(400, 'status must be success or failure', 'VALIDATION_ERROR');
+    }
+
     // Validate limit
-    const parsedLimit = Math.min(parseInt(limit, 10) || 100, 1000);
-    const parsedOffset = parseInt(offset, 10) || 0;
+    const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 1000);
+    const parsedOffset = Math.max(parseInt(offset, 10) || 0, 0);
 
     const query: AuditLogQuery = {
-      action,
-      actor,
-      resource,
-      status,
-      startDate,
-      endDate,
+      action: action || undefined,
+      actor: actor || undefined,
+      user: user || undefined,
+      resource: resource || undefined,
+      resourceId: resourceId || undefined,
+      status: status || undefined,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
       limit: parsedLimit,
       offset: parsedOffset,
     };
@@ -131,12 +145,14 @@ router.get('/resource/:resource/:resourceId', requireStaff, async (req: any, res
 // GET /audit/stats - Get audit statistics (admin only)
 router.get('/stats', requireStaff, async (_req: any, res: Response, next: NextFunction) => {
   try {
-    const stats = await getAuditStats();
+    const [stats, writeOnce] = await Promise.all([getAuditStats(), auditLogIsWriteOnce()]);
 
     res.json({
       ...stats,
+      // Both are facts about the database, not labels: every entry carries retain_until (7 years
+      // after it was written), and the triggers that refuse updates and deletes are checked here.
       retention: '7 years',
-      immutable: true,
+      immutable: writeOnce,
       lastUpdated: new Date().toISOString(),
     });
   } catch (error) {
