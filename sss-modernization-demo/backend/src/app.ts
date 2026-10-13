@@ -10,6 +10,8 @@ import complianceRoutes from './routes/compliance';
 import freshnessRoutes from './routes/freshness';
 import auditRoutes from './routes/audit';
 import notificationRoutes from './routes/notifications';
+import dashboardRoutes from './routes/dashboards';
+import staffRoutes from './routes/staff';
 import { errorHandler } from './middleware/errorHandler';
 import { auditDataAccess } from './middleware/auditAccess';
 import { clientAddress, requestContextMiddleware } from './utils/requestContext';
@@ -48,6 +50,8 @@ app.use('/api/compliance', complianceRoutes);
 app.use('/api/freshness', freshnessRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/dashboards', dashboardRoutes);
+app.use('/api/staff', staffRoutes);
 
 // Health check. It used to answer "database: checking..." without checking anything; now it reports
 // what is actually true, plus the deployed commit so a deploy can be verified from outside.

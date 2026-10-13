@@ -11,7 +11,7 @@ const linkClass = ({ isActive }) =>
   }`;
 
 /**
- * Shared top navigation. The staff pages (cases, compliance, freshness, audit) only appear for case managers and admins.
+ * Shared top navigation. The staff pages (cases, compliance, freshness, audit, staff access) only appear for case managers and admins.
  * `pageTitle` names the browser tab when the heading is not a good name for it (the dashboard's is the app name).
  */
 export default function AppNav({ title, subtitle, pageTitle }) {
@@ -48,6 +48,7 @@ export default function AppNav({ title, subtitle, pageTitle }) {
                 <NavLink to="/compliance" className={linkClass}>Compliance</NavLink>
                 <NavLink to="/freshness" className={linkClass}>Data Freshness</NavLink>
                 <NavLink to="/audit" className={linkClass}>Audit Log</NavLink>
+                <NavLink to="/staff" className={linkClass}>Staff Access</NavLink>
               </>
             )}
             <button

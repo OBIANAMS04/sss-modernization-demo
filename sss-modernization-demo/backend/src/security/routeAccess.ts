@@ -72,7 +72,13 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'GET /api/audit/resource/:resource/:resourceId': 'staff',
   'GET /api/audit/stats': 'staff',
 
+  'GET /api/staff': 'staff',
+  'POST /api/staff/grant': 'staff',
+  'POST /api/staff/:id/revoke': 'staff',
+
   'GET /api/notifications': 'signed-in',
   'POST /api/notifications/read-all': 'signed-in',
   'POST /api/notifications/:id/read': 'signed-in',
+
+  'GET /api/dashboards/citizen': 'signed-in',
 };

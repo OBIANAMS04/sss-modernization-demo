@@ -55,6 +55,11 @@ function describe(log) {
     return `${d.route}${query ? `?${query}` : ''}`;
   }
   if (d.path) return `${d.method} ${d.path} → ${d.status}`;
+  // A role change leads with the person and the reason. Stored JSON does not keep key order, which put the reason last,
+  // and a long address or reason then cut it off.
+  if (log.action.startsWith('PERMISSION_') && d.email) {
+    return [d.email, d.reason && `reason: ${d.reason}`, d.role && `role: ${d.role}`, d.via && `via: ${d.via}`].filter(Boolean).join(' · ');
+  }
   // Lists of records read briefly, e.g. "Type A Eligible" (stored JSON does not keep key order)
   const item = (v) => {
     if (!v || typeof v !== 'object') return v;

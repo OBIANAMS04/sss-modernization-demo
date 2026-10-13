@@ -41,11 +41,12 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
     const ssnHash = await bcrypt.hash(input.ssn, 12);
 
     // Insert user
+    const role = await roleForNewUser(input.email);
     const result = await client.query(
       `INSERT INTO users (email, password_hash, full_name, ssn_hash, dob, role, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
        RETURNING id, email, full_name, role, created_at`,
-      [input.email, passwordHash, input.fullName, ssnHash, input.dob, roleForNewUser(input.email)]
+      [input.email, passwordHash, input.fullName, ssnHash, input.dob, role]
     );
 
     await client.query('COMMIT');

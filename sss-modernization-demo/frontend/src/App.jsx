@@ -12,6 +12,7 @@ import ComplianceDashboard from './components/Compliance/ComplianceDashboard';
 import ComplianceAudit from './components/Compliance/ComplianceAudit';
 import FreshnessDashboard from './components/Freshness/FreshnessDashboard';
 import AuditLog from './components/Audit/AuditLog';
+import StaffAccess from './components/Staff/StaffAccess';
 import './App.css';
 
 // A signed-in person is sent on to the dashboard. The check is made each time the route renders, not once when the app
@@ -109,6 +110,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AuditLog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute>
+              <StaffAccess />
             </ProtectedRoute>
           }
         />

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import app from './app';
 import { runMigrations } from './database/migrate';
-import { syncCaseManagerRoles } from './services/roleService';
+import { bootstrapStaffRoles } from './services/roleService';
 import { AuditAction, logAuditEvent } from './services/auditService';
 import { recordConfigChanges } from './services/configAuditService';
 
@@ -19,7 +19,8 @@ async function start() {
   // Bring the schema up to date before accepting traffic. If this fails the process
   // exits, so a Render deploy fails and the previous version keeps serving.
   const migrationsApplied = await runMigrations();
-  await syncCaseManagerRoles();
+  // Email addresses are not verified, so CASE_MANAGER_EMAILS only bootstraps a database with no staff; it never revokes
+  await bootstrapStaffRoles();
   // STORY-010: a setting changed since the previous start is an audited configuration change
   await recordConfigChanges();
   // STORY-010: each start of a release is an audited infrastructure event

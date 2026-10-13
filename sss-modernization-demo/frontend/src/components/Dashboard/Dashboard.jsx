@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { getUser } from '../../utils/tokenManager';
+import { isStaffUser } from '../../utils/roles';
 import { notificationService } from '../../services/notificationService';
+import CitizenDashboard from './CitizenDashboard';
+import NotificationsCard from './NotificationsCard';
 import UserProfile from './UserProfile';
 import AppNav from '../Common/AppNav';
 import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
+// STORY-012: a citizen gets their own dashboard. Staff keep this one until their dashboards are built.
 export default function Dashboard() {
+  return isStaffUser(getUser()) ? <StaffDashboard /> : <CitizenDashboard />;
+}
+
+function StaffDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [inbox, setInbox] = useState({ notifications: [], unread: 0 });
@@ -105,39 +112,7 @@ export default function Dashboard() {
           <div className="md:col-span-1 space-y-6">
             {user && <UserProfile user={user} />}
 
-            <section className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-3">
-                <h2 className="text-lg font-bold text-gray-900">
-                  Notifications
-                  {inbox.unread > 0 && (
-                    <span className="ml-2 inline-block bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full align-middle">
-                      {inbox.unread} new
-                    </span>
-                  )}
-                </h2>
-                {inbox.unread > 0 && (
-                  <button onClick={handleMarkAllRead} className="text-xs text-blue-600 hover:underline">
-                    Mark all read
-                  </button>
-                )}
-              </div>
-              {inbox.notifications.length === 0 ? (
-                <p className="text-sm text-gray-600">No notifications yet.</p>
-              ) : (
-                <ul className="space-y-3">
-                  {inbox.notifications.map((n) => (
-                    <li key={n.id} className={`text-sm rounded-lg p-3 ${n.read ? 'bg-gray-50 text-gray-600' : 'bg-blue-50 text-gray-900'}`}>
-                      {n.caseId ? (
-                        <Link to={`/cases/${n.caseId}`} className="hover:underline">{n.message}</Link>
-                      ) : (
-                        n.message
-                      )}
-                      <span className="block text-xs text-gray-600 mt-1">{new Date(n.createdAt).toLocaleString()}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+            <NotificationsCard inbox={inbox} onMarkAllRead={handleMarkAllRead} />
           </div>
 
           <div className="md:col-span-2">

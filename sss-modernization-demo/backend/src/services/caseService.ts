@@ -32,6 +32,10 @@ export function allowedTransitions(from: CaseStatus, actor: 'applicant' | 'staff
 
 export const DOCUMENT_TYPES = ['proof_of_age', 'income_statement', 'hardship_evidence', 'identity', 'other'];
 
+// STORY-012: what an applicant may see of a case's history. Notes, assignments and compliance reviews are
+// staff-only. The case page and the citizen dashboard both read this list, so they can never disagree.
+export const APPLICANT_EVENT_TYPES = ['created', 'status_change', 'document'];
+
 export type { Actor };
 
 export interface CaseSummary {
@@ -332,9 +336,9 @@ export async function getCaseDetail(caseId: string, viewerIsStaff: boolean) {
   const [events, docs, notes, exemption] = await Promise.all([
     pool.query(
       `SELECT id, event_type, from_status, to_status, actor_email, detail, created_at
-       FROM case_events WHERE case_id = $1 ${viewerIsStaff ? '' : `AND event_type IN ('created', 'status_change', 'document')`}
+       FROM case_events WHERE case_id = $1 ${viewerIsStaff ? '' : 'AND event_type = ANY($2)'}
        ORDER BY created_at ASC`,
-      [caseId]
+      viewerIsStaff ? [caseId] : [caseId, APPLICANT_EVENT_TYPES]
     ),
     pool.query(
       `SELECT id, case_id, document_type, document_url, uploaded_by, created_at

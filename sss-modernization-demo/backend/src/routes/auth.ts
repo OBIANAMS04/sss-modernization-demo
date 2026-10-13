@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { registerUser, loginUser } from '../services/authService';
 import { AuditAction, recordAudit } from '../services/auditService';
+import { BOOTSTRAP_VIA } from '../services/roleService';
 import { authenticate } from '../middleware/authenticate';
 import { extendToken, generateToken, MAX_SESSION_SECONDS } from '../utils/jwt';
 import { validateRegistrationInput } from '../utils/validators';
@@ -66,7 +67,7 @@ router.post('/register', async (req: RegisterRequest, res: Response, next: NextF
       recordAudit(AuditAction.PERMISSION_GRANT, 'users', 'success', {
         ...actor,
         resourceId: result.user.id,
-        details: { email: result.user.email, role: result.user.role, via: 'CASE_MANAGER_EMAILS at registration' },
+        details: { email: result.user.email, role: result.user.role, via: BOOTSTRAP_VIA },
       });
     }
 

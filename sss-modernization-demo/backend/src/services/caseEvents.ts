@@ -24,7 +24,8 @@ export async function recordEvent(
   return result.rows[0].id;
 }
 
-export async function notify(client: any, userId: string, caseId: string, message: string): Promise<void> {
+/** A notification about a case links to it; one that is not about a case (a role change) passes null. */
+export async function notify(client: any, userId: string, caseId: string | null, message: string): Promise<void> {
   await client.query('INSERT INTO notifications (user_id, case_id, message) VALUES ($1, $2, $3)', [userId, caseId, message]);
 }
 
