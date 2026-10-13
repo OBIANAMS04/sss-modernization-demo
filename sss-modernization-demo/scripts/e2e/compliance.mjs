@@ -1,5 +1,5 @@
 // STORY-008 decision compliance: controls, reviews, dashboard, audit log (local backend only; see lib.mjs).
-import { account, call, exemptionId, expect, MANAGER, REVIEWER, run, stamp } from './lib.mjs';
+import { account, call, exemptionId, expect, MANAGER, REVIEWER, run, stamp, staffAccount } from './lib.mjs';
 
 const lastDecision = async (token, caseId) => (await call('GET', `/compliance/cases/${caseId}`, token)).data.decisions[0];
 const failedOf = (d) => d.controls.filter((c) => !c.passed).map((c) => c.controlId);
@@ -7,8 +7,8 @@ const day = (offset) => new Date(Date.now() + offset * 86_400_000).toISOString()
 
 run(async () => {
   const a = await account(`compliance-applicant-${stamp}@example.com`, 'Compliance Applicant');
-  const m = await account(MANAGER, 'Manager Test');
-  const r = await account(REVIEWER, 'Reviewer Test');
+  const m = await staffAccount(MANAGER, 'Manager Test');
+  const r = await staffAccount(REVIEWER, 'Reviewer Test');
   expect('two case managers', [m.user.role, r.user.role], ['case_manager', 'case_manager']);
 
   // Qualifies for Type A (born 1950) and Type B (income below threshold)

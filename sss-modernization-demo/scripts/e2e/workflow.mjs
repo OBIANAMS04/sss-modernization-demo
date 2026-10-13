@@ -1,9 +1,9 @@
 // STORY-007 case workflow: apply, review, deny with reason, appeal, approve (local backend only; see lib.mjs).
-import { account, call, exemptionId, expect, MANAGER, run, stamp } from './lib.mjs';
+import { account, call, exemptionId, expect, MANAGER, run, stamp, staffAccount } from './lib.mjs';
 
 run(async () => {
   const a = await account(`applicant-${stamp}@example.com`, '=HYPERLINK("http://evil")');
-  const m = await account(MANAGER, 'Manager Test');
+  const m = await staffAccount(MANAGER, 'Manager Test');
 
   await call('POST', '/exemptions/check', a.token);
   const typeA = await exemptionId(a.token, 'Type A');

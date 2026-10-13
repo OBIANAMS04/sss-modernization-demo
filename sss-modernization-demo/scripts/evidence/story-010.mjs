@@ -10,7 +10,7 @@
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { account, call, exemptionId, expect, PASSWORD, run } from '../e2e/lib.mjs';
+import { account, call, exemptionId, expect, PASSWORD, run, staffAccount } from '../e2e/lib.mjs';
 import { launch } from './browser.mjs';
 
 const require = createRequire(new URL('../../backend/package.json', import.meta.url));
@@ -22,8 +22,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 run(async () => {
   mkdirSync(OUT, { recursive: true });
-  const dana = await account('dana.whitfield@example.com', 'Dana Whitfield');
-  const sam = await account('sam.ortiz@example.com', 'Sam Ortiz');
+  const dana = await staffAccount('dana.whitfield@example.com', 'Dana Whitfield');
+  const sam = await staffAccount('sam.ortiz@example.com', 'Sam Ortiz');
   expect('two case managers', [dana.user.role, sam.user.role], ['case_manager', 'case_manager']);
   if ((await call('GET', '/audit?action=CASE_STATUS_CHANGE', sam.token)).data.total !== 0) {
     throw new Error('Run this against a fresh database: decisions have already been recorded here.');

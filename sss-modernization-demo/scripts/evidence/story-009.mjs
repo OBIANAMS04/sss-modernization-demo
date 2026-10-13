@@ -9,7 +9,7 @@
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { account, call, exemptionId, expect, run } from '../e2e/lib.mjs';
+import { account, call, exemptionId, expect, run, staffAccount } from '../e2e/lib.mjs';
 import { launch } from './browser.mjs';
 
 const require = createRequire(new URL('../../backend/package.json', import.meta.url));
@@ -22,8 +22,8 @@ const apply = async (token, type) => (await call('POST', '/cases', token, { exem
 
 run(async () => {
   mkdirSync(OUT, { recursive: true });
-  const dana = await account('dana.whitfield@example.com', 'Dana Whitfield');
-  const sam = await account('sam.ortiz@example.com', 'Sam Ortiz');
+  const dana = await staffAccount('dana.whitfield@example.com', 'Dana Whitfield');
+  const sam = await staffAccount('sam.ortiz@example.com', 'Sam Ortiz');
   expect('two case managers', [dana.user.role, sam.user.role], ['case_manager', 'case_manager']);
   if ((await call('GET', '/freshness/dashboard', sam.token)).data.overall.count !== 0) {
     throw new Error('Run this against a fresh database: freshness has already been measured here.');

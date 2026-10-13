@@ -1,7 +1,7 @@
 // STORY-010 security audit log: sign-ins, refusals, data access and exports are recorded with who and
 // from where, without personal data, and the database refuses to change them (local backend only; see lib.mjs).
 import { createRequire } from 'node:module';
-import { account, call, expect, MANAGER, PASSWORD, run, stamp } from './lib.mjs';
+import { account, call, expect, MANAGER, PASSWORD, run, stamp, staffAccount } from './lib.mjs';
 
 const require = createRequire(new URL('../../backend/package.json', import.meta.url));
 const { Client } = require('pg');
@@ -9,7 +9,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const day = (offset) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
 
 run(async () => {
-  const m = await account(MANAGER, 'Manager Test');
+  const m = await staffAccount(MANAGER, 'Manager Test');
   const email = `audit-applicant-${stamp}@example.com`;
   const a = await account(email, 'Audit Applicant'); // registers with the synthetic SSN 900-00-0010
   const find = async (query) => (await call('GET', `/audit?${new URLSearchParams(query)}`, m.token)).data;

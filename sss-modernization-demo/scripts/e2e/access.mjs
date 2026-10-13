@@ -1,10 +1,10 @@
 // Who can reach what: citizen, other citizen, anonymous and case manager (local backend only; see lib.mjs).
-import { account, call, exemptionId, expect, MANAGER, run, stamp } from './lib.mjs';
+import { account, call, exemptionId, expect, MANAGER, run, stamp, staffAccount } from './lib.mjs';
 
 run(async () => {
   const a = await account(`citizen-a-${stamp}@example.com`, 'Citizen A');
   const b = await account(`citizen-b-${stamp}@example.com`, 'Citizen B');
-  const m = await account(MANAGER, 'Manager Test');
+  const m = await staffAccount(MANAGER, 'Manager Test');
   expect('citizen role on register', a.user.role, 'citizen');
   expect('listed email gets case_manager role', m.user.role, 'case_manager');
 

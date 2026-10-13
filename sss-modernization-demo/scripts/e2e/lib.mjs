@@ -4,6 +4,8 @@
 //   cd backend && CASE_MANAGER_EMAILS="manager-local-test@example.com,reviewer-local-test@example.com" npm start
 //   node scripts/e2e/access.mjs && node scripts/e2e/workflow.mjs && node scripts/e2e/compliance.mjs
 // Set E2E_BASE to point elsewhere, and E2E_ALLOW_REMOTE=1 to allow a non-local host on purpose.
+// The list only bootstraps staff: on a fresh database the first case manager of a run must be a listed address that
+// registers first (MANAGER, below); staffAccount() then grants the others the role through Staff Access.
 
 export const BASE = process.env.E2E_BASE || 'http://localhost:3001/api';
 const host = new URL(BASE).hostname;
@@ -45,6 +47,33 @@ export async function account(email, name, dob = '1950-06-01') {
   const r = await call('POST', '/auth/register', null, { email, password: PASSWORD, fullName: name, ssn: '900-00-0010', dob });
   if (r.status !== 201) throw new Error(`register ${email}: ${r.status} ${JSON.stringify(r.data)}`);
   return r.data;
+}
+
+const STAFF_ROLES = ['case_manager', 'admin'];
+let firstStaff = null; // the first case manager session of this run; it grants the role to the others
+
+/**
+ * Like account(), for a case manager. Registering no longer grants the role once anyone has staff access (Staff
+ * Access), so the run's first case manager is the listed address that registers first on a fresh database, and each
+ * later one is granted the role through the API by that first session, with a reason that lands in the audit log.
+ */
+export async function staffAccount(email, name) {
+  const session = await account(email, name);
+  if (STAFF_ROLES.includes(session.user.role)) {
+    firstStaff ??= session;
+    return session;
+  }
+  if (!firstStaff) {
+    throw new Error(
+      `${email} is not a case manager, and no case manager has signed in yet in this run to grant the role. ` +
+        'On a fresh database the first case manager must be an address listed in CASE_MANAGER_EMAILS that registers first ' +
+        '(the list only bootstraps a database with no staff). Create that account before this one.'
+    );
+  }
+  const granted = await call('POST', '/staff/grant', firstStaff.token, { email, reason: 'Test setup: case manager for this run' });
+  if (granted.status !== 200) throw new Error(`grant case-manager access to ${email}: ${granted.status} ${JSON.stringify(granted.data)}`);
+  session.user.role = 'case_manager';
+  return session;
 }
 
 export const exemptionId = async (token, type) =>

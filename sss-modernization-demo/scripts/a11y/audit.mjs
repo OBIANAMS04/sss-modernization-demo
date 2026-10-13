@@ -56,12 +56,12 @@ async function setup() {
       { role: 'Applicant', path: '/profile', session: citizen },
     ];
   }
-  const { account, call, exemptionId } = await import('../e2e/lib.mjs');
+  const { account, call, exemptionId, staffAccount } = await import('../e2e/lib.mjs');
   const applicant = await account(`a11y-applicant-${Date.now()}@example.com`, 'Avery Lane', '1950-03-14');
   await call('PUT', `/users/${applicant.user.id}`, applicant.token, { phone: '555-0111', address: '12 Elm Street, Dayton, OH' });
   const caseId = (await call('POST', '/cases', applicant.token, { exemptionId: await exemptionId(applicant.token, 'Type A') })).data.id;
-  const dana = await account('dana.whitfield@example.com', 'Dana Whitfield');
-  const sam = await account('sam.ortiz@example.com', 'Sam Ortiz');
+  const dana = await staffAccount('dana.whitfield@example.com', 'Dana Whitfield');
+  const sam = await staffAccount('sam.ortiz@example.com', 'Sam Ortiz');
   await call('PUT', `/cases/${caseId}/assignment`, dana.token, { assignedTo: dana.user.email });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'In Review' });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'Approved' }); // no proof of age on file: a review opens for Sam
@@ -71,7 +71,7 @@ async function setup() {
     { role: 'Applicant', path: '/dashboard', session: applicant },
     { role: 'Applicant', path: '/profile', session: applicant },
     { role: 'Applicant', path: `/cases/${caseId}`, label: '/cases/:id', session: applicant, reflowShot: true },
-    ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit'].map((path) => ({
+    ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit', '/staff'].map((path) => ({
       role: 'Case manager',
       path,
       label: path.startsWith('/cases/') ? '/cases/:id' : path,

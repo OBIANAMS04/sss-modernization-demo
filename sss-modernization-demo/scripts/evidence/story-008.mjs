@@ -12,7 +12,7 @@
 // Screenshots land in docs/evidence/story-008/.
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { account, call, exemptionId, expect, run } from '../e2e/lib.mjs';
+import { account, call, exemptionId, expect, run, staffAccount } from '../e2e/lib.mjs';
 import { launch } from './browser.mjs';
 
 const SITE = process.env.EVIDENCE_SITE || 'http://localhost:4173';
@@ -23,8 +23,8 @@ const setStatus = (token, caseId, status, reason) => call('POST', `/cases/${case
 
 run(async () => {
   mkdirSync(OUT, { recursive: true });
-  const dana = await account('dana.whitfield@example.com', 'Dana Whitfield');
-  const sam = await account('sam.ortiz@example.com', 'Sam Ortiz');
+  const dana = await staffAccount('dana.whitfield@example.com', 'Dana Whitfield');
+  const sam = await staffAccount('sam.ortiz@example.com', 'Sam Ortiz');
   expect('two case managers', [dana.user.role, sam.user.role], ['case_manager', 'case_manager']);
   if ((await call('GET', '/compliance/dashboard?days=30', sam.token)).data.totalDecisions !== 0) {
     throw new Error('Run this against a fresh database: the dashboard already has decisions.');

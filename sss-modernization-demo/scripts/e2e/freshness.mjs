@@ -1,13 +1,13 @@
 // STORY-009 data freshness: tracked writes are timed until readable, staff dashboard, end-to-end check
 // (local backend only; see lib.mjs).
-import { account, call, exemptionId, expect, MANAGER, run, stamp } from './lib.mjs';
+import { account, call, exemptionId, expect, MANAGER, run, stamp, staffAccount } from './lib.mjs';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const dashboard = async (token) => (await call('GET', '/freshness/dashboard?hours=1', token)).data;
 const countOf = (d, type) => d.types.find((t) => t.type === type).count;
 
 run(async () => {
-  const m = await account(MANAGER, 'Manager Test');
+  const m = await staffAccount(MANAGER, 'Manager Test');
   await sleep(1500); // let measurements from earlier activity finish recording
   const before = await dashboard(m.token);
   expect('dashboard lists the five data types', before.types.map((t) => t.type), ['profile', 'eligibility', 'application', 'case_status', 'probe']);
