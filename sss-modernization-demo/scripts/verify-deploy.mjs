@@ -66,7 +66,7 @@ while (Date.now() < deadline) {
 // The site's CDN caches the page served for each deep link (s-maxage=300), so for a few minutes after a
 // deploy a path can still return the previous index.html and its old bundle while /version.json is new.
 // A deploy is only verified once every page path serves the same bundle as the freshly fetched root.
-const PAGE_PATHS = ['/login', '/register', '/dashboard', '/profile', '/cases', '/compliance', '/compliance/audit', '/freshness'];
+const PAGE_PATHS = ['/login', '/register', '/dashboard', '/profile', '/cases', '/compliance', '/compliance/audit', '/freshness', '/audit'];
 const bundleOf = async (url) => {
   try {
     const html = await (await fetch(url, { signal: AbortSignal.timeout(60_000) })).text();
@@ -107,13 +107,23 @@ async function liveAccessSweep() {
   return { routes, checked: paths.length, open };
 }
 
+// The audit log must record the visitor's own address, not a proxy's. Cloudflare, in front of Render, reports the
+// address it sees for this machine at /cdn-cgi/trace; the API's /health reports the address it would record.
+async function callerAddressCheck() {
+  const trace = await fetch(`${API}/cdn-cgi/trace`, { signal: AbortSignal.timeout(30_000) }).then((r) => (r.ok ? r.text() : ''), () => '');
+  const seen = trace.match(/^ip=(.+)$/m)?.[1]?.trim() ?? null;
+  const recorded = (await getJson(`${API}/health`))?.callerAddress ?? null;
+  return { seenByCloudflare: seen, recordedByApi: recorded, ok: Boolean(seen) && seen === recorded };
+}
+
 const access = apiOk ? await liveAccessSweep() : null;
+const address = apiOk ? await callerAddressCheck() : null;
 const pages = siteOk ? await waitForCurrentPages() : null;
-const ok = apiOk && siteOk && api?.database === 'ok' && access?.open.length === 0 && pages?.stale.length === 0;
-console.log(JSON.stringify({ target, required, api, site, access, pages }, null, 2));
+const ok = apiOk && siteOk && api?.database === 'ok' && access?.open.length === 0 && pages?.stale.length === 0 && address?.ok;
+console.log(JSON.stringify({ target, required, api, site, access, pages, address }, null, 2));
 console.log(
   ok
-    ? `VERIFIED: API serves ${api.commit} and site serves ${site.commit}, each including its latest change; all ${PAGE_PATHS.length} page paths serve the current build; database ok; ${api.migrations?.applied} migrations applied (latest ${api.migrations?.latest}); ${access.routes} routes in the access table; all ${access.checked} protected GET routes refuse requests without a token.`
-    : 'NOT VERIFIED: see the served and required commits, stale page paths and any open routes above.'
+    ? `VERIFIED: API serves ${api.commit} and site serves ${site.commit}, each including its latest change; all ${PAGE_PATHS.length} page paths serve the current build; database ok; ${api.migrations?.applied} migrations applied (latest ${api.migrations?.latest}); ${access.routes} routes in the access table; all ${access.checked} protected GET routes refuse requests without a token; the audit log records the caller's own address (${address.recordedByApi}).`
+    : 'NOT VERIFIED: see the served and required commits, stale page paths, any open routes and the caller address above.'
 );
 process.exit(ok ? 0 : 1);

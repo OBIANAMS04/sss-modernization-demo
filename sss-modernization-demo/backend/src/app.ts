@@ -12,7 +12,7 @@ import auditRoutes from './routes/audit';
 import notificationRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
 import { auditDataAccess } from './middleware/auditAccess';
-import { requestContextMiddleware } from './utils/requestContext';
+import { clientAddress, requestContextMiddleware } from './utils/requestContext';
 import pool from './database/connection';
 
 dotenv.config();
@@ -51,7 +51,7 @@ app.use('/api/notifications', notificationRoutes);
 
 // Health check. It used to answer "database: checking..." without checking anything; now it reports
 // what is actually true, plus the deployed commit so a deploy can be verified from outside.
-app.get('/health', async (_req, res) => {
+app.get('/health', async (req, res) => {
   let timer: NodeJS.Timeout | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error('timeout')), 3000);
@@ -76,6 +76,8 @@ app.get('/health', async (_req, res) => {
     commit: (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7),
     database,
     migrations,
+    // The address the audit log records for this caller, so a deploy check can confirm it is the caller's own
+    callerAddress: clientAddress(req),
   });
 });
 
