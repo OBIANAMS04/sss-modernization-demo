@@ -1,0 +1,17 @@
+{
+  "out": "story-012-screens.jpg",
+  "maxKb": 650,
+  "title": "STORY-012 Citizen Dashboard and Staff Access - demonstrated on the synthetic demo deployment",
+  "columns": 2,
+  "tileWidth": 960,
+  "tiles": [
+    { "file": "01-citizen-dashboard.png", "label": "1. Jordan's dashboard: status, next step, history", "top": 0, "height": 1500 },
+    { "file": "02-new-applicant.png", "label": "2. A new registrant: what to do first", "top": 0, "height": 1233 },
+    { "file": "03-staff-access-confirm.png", "label": "3. Dana gives Sam access, with a reason", "top": 0, "height": 900 },
+    { "file": "04-access-granted.png", "label": "4. Access granted; never your own, never the last", "top": 0, "height": 990 },
+    { "file": "05-role-changes-audit.png", "label": "5. Every role change in the audit log", "top": 0, "height": 900 },
+    { "file": "06-a11y-report.png", "label": "6. New pages pass the WCAG 2.1 AA audit", "top": 0, "height": 1000 },
+    { "file": "live-01-citizen-dashboard.png", "label": "7. Demo site: the citizen dashboard", "top": 0, "height": 1100 },
+    { "file": "live-a11y-report.png", "label": "8. Demo site: the audit passes after the deploy", "top": 0, "height": 900 }
+  ]
+}

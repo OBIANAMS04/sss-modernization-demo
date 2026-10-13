@@ -1,0 +1,78 @@
+# STORY-012 Citizen Dashboard, with Staff Access: evidence
+
+STORY-012 works on the demo deployment, with synthetic data; it is not operating in production. A registrant now has one dashboard with each application, its status and the next step; their exemption eligibility with reasons, and what their profile is missing; the latest events across their cases; and notifications. It shows only their own data. Internal notes, assignments and compliance reviews stay with staff, through the same rule the case page uses.
+
+Staff Access, the owner's decision of October 12: case-manager access is now granted in the app by an existing case manager, never by registering. An address on the CASE_MANAGER_EMAILS list used to become staff for whoever registered it first; the list now only sets up an empty system and never removes anyone. A grant or removal needs a reason. It cannot be applied to yourself or to the last case manager, it is recorded in the Security Audit Log in the same transaction as the change, and the person is notified. A database lock stops two managers removing each other at the same moment; the work found that race and showed it could leave no case managers at all.
+
+Fixed along the way: the Security Audit Log recorded a Cloudflare address for every visitor, because the demo API is reached through Cloudflare. The owner's screenshot showed several Cloudflare addresses for one visitor within seconds. The log now records the visitor's own address, and the deploy check compares it with the address Cloudflare reports for the checking machine.
+
+Screens 1 to 6 come from an automated run against a local copy of the deployed code, because the demo site has no test case-manager accounts. Screens 7 and 8 are the deployed demo site.
+
+## Checks
+
+- Demo deployment (scripts/verify-deploy.mjs): the API and the site serve 68e0274; all 10 page paths (now including /staff) serve the current build; database ok; 16 migrations applied; 46 routes in the access table (42 before this story: Staff Access adds 3, the citizen dashboard 1); all 24 protected GET routes answer 401 without a token; the audit log records the caller’s own address (18.89.140.134, the address Cloudflare reports for the checking machine).
+- On the demo deployment, signed in as a synthetic citizen (scripts/verify-live-citizen.mjs): all 14 staff GET routes answer 403 (now including GET /api/staff), no staff links show (now including Staff Access), and the dashboard lists the citizen dashboard as done.
+- Accessibility audit on the demo deployment (scripts/a11y/audit.mjs --live, signed out and as the synthetic citizen, creating no records): 4 of 4 pages pass every check with 0 axe WCAG A/AA issues, including the new citizen dashboard; both form checks pass.
+- Evidence run, local (scripts/evidence/story-012.mjs), 21 checks passed. On an empty system, Dana bootstraps as the first case manager. Sam is on the email list but registers as a citizen and is refused the staff pages. The dashboard lists both of Jordan's applications, the decisions and unread notifications. The internal note and the SSN never reach the applicant, and another applicant sees only their own dashboard. Dana grants Sam access on Staff Access, with a reason and an in-place confirmation. Sam can then open the staff pages and is told who granted access, but cannot remove his own access. The audit log shows both grants, with who, why and how.
+- Accessibility audit, local (scripts/a11y/audit.mjs): 13 of 13 page and role combinations pass WCAG 2.1 AA checks, adding /staff; the citizen dashboard is the applicant's /dashboard. Both forms, the session warning and the UI sign-out check also pass.
+- Unit tests: 258 passed, including 35 new for the Staff Access rules and 26 for the dashboard. They were checked by breaking the code: registration ignoring existing staff, the bootstrap ignoring staff, the lock removed, self-removal allowed, staff events leaking to the dashboard. API end to end, local (scripts/e2e): 169 checks passed: access 33, case workflow 26, compliance 30, freshness 16, audit 30, staff 34.
+
+## Screens
+
+### 1. Jordan Rivera's dashboard
+
+Two applications: Type A approved ('Exemption granted. Nothing more to do.') and Type B appealed after a denial ('Your appeal is waiting for review.'). Below them: eligibility with reasons, recent activity across both cases, and notifications. The internal note a case manager added to Type B is not on the page.
+
+![Jordan Rivera's dashboard](01-citizen-dashboard.png)
+
+### 2. A new registrant
+
+Taylor Brooks has just registered: no applications yet, what the profile is missing before eligibility can be checked, and where to start.
+
+![A new registrant](02-new-applicant.png)
+
+### 3. Giving case-manager access
+
+Dana Whitfield, a case manager, gives Sam Ortiz case-manager access on Staff Access with a required reason, and confirms in place. Sam is on the old email list, but registering no longer made him staff.
+
+![Giving case-manager access](03-staff-access-confirm.png)
+
+### 4. Access granted
+
+The change is confirmed and Sam joins the list. Nobody can remove their own access, and the last case manager cannot be removed.
+
+![Access granted](04-access-granted.png)
+
+### 5. Every role change in the audit log
+
+Filtered to Role granted: the bootstrap that made Dana the first case manager of the empty system, and Dana's grant to Sam with its reason, recorded as via Staff Access.
+
+![Every role change in the audit log](05-role-changes-audit.png)
+
+### 6. The new pages pass the accessibility audit
+
+13 of 13 page and role combinations pass the WCAG 2.1 AA checks, including the citizen dashboard and Staff Access. The forms, the session warning and the UI sign-out check pass too.
+
+![The new pages pass the accessibility audit](06-a11y-report.png)
+
+### 7. Demo site: the citizen dashboard
+
+The deployed demo site after the deploy, signed in as the synthetic citizen used by the checks: the new dashboard (this account has no applications) and no staff links.
+
+![Demo site: the citizen dashboard](live-01-citizen-dashboard.png)
+
+### 8. Demo site: the audit passes
+
+The accessibility audit on the deployed demo site after the deploy, signed out and as the synthetic citizen: sign-in, registration, the citizen dashboard and the profile all pass.
+
+![Demo site: the audit passes](live-a11y-report.png)
+
+## Notes
+
+- A person granted access must sign in again to see the staff pages; the API applies the change at once. The notification says so.
+- As decided, a case manager can grant case-manager access to others. A production system would keep that to an administrator or require a second approver; meanwhile every grant is in the audit log with who, why and when.
+- On the demo site, an address on the old email list that has not registered yet (Ali's, if he has not) will register as a citizen until a case manager grants access on Staff Access.
+- The case manager, admin and leadership dashboards are STORY-013 to STORY-015.
+- All data shown is synthetic.
+
+_Built by `scripts/evidence/report.mjs` from `evidence.json`. Screenshots by `scripts/evidence/story-012.mjs (screens 1-5) and scripts/a11y/audit.mjs (screen 6) on a local copy of the deployed code; scripts/verify-live-citizen.mjs (screen 7) and scripts/a11y/audit.mjs --live (screen 8) on the demo deployment`._

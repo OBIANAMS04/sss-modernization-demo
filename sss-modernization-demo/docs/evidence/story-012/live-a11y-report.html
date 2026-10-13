@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Accessibility audit · SSS Modernization Demo</title><style>
+body{font-family:Segoe UI,Arial,sans-serif;color:#15202f;margin:32px;background:#fff}h1{font-size:28px;margin:0 0 4px}p{margin:4px 0 14px;color:#45526a}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:12px 0 20px}th,td{border:1px solid #cdd6e2;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#e9eef5}.ok{background:#e7f6ec;color:#14532d;font-weight:600}.bad{background:#fde8e8;color:#7f1d1d;font-weight:700}h2{font-size:18px;margin:18px 0 6px}
+.num{text-align:right}code{font-size:13px}</style></head><body>
+<h1>Accessibility audit: 4 of 4 pages pass WCAG 2.1 AA checks</h1>
+<p>https://sss-demo-frontend.onrender.com · 2026-10-13 03:01 UTC · axe-core 4.10.2 (rules tagged wcag2a, wcag2aa, wcag21a, wcag21aa) in Chrome, plus keyboard, title, structure and 320 px reflow checks. Synthetic data.</p>
+<table><tr><th>Signed in as</th><th>Page</th><th class="num">axe A/AA issues</th><th class="num">Tab stops</th><th>WCAG A/AA rules</th><th>Every control reached by Tab</th><th>Focus always visible</th><th>Descriptive title</th><th>One h1 and one main</th><th>Skip link first</th><th>Reflow at 320 px</th></tr>
+<tr><td>Signed out</td><td><code>/login</code></td><td class="num">0</td><td class="num">4 of 4</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td></tr>
+<tr><td>Signed out</td><td><code>/register</code></td><td class="num">0</td><td class="num">8 of 8</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td></tr>
+<tr><td>Applicant</td><td><code>/dashboard</code></td><td class="num">0</td><td class="num">6 of 6</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td></tr>
+<tr><td>Applicant</td><td><code>/profile</code></td><td class="num">0</td><td class="num">10 of 10</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td><td class="ok">Pass</td></tr>
+</table>
+<h2>Failed submits</h2>
+<table><tr><th>Form</th><th>Announced alert</th><th class="num">Invalid fields</th><th class="num">Described by their message</th><th>Focus on first invalid field</th><th class="num">axe issues</th><th>Result</th></tr>
+<tr><td>Sign in, empty</td><td>none</td><td class="num">2</td><td class="num">2</td><td>yes</td><td class="num">0</td><td class="ok">Pass</td></tr>
+<tr><td>Registration, empty</td><td>none</td><td class="num">5</td><td class="num">5</td><td>yes</td><td class="num">0</td><td class="ok">Pass</td></tr>
+</table>
+
+
+<h2>What a screen reader is told about the registration form after an empty submit</h2>
+<table><tr><th>Role</th><th>Accessible name</th><th>Description</th><th>Required</th><th>Invalid</th></tr>
+<tr><td>textbox</td><td>Email Address</td><td>Email is required</td><td>yes</td><td>yes</td></tr>
+<tr><td>textbox</td><td>Full Name</td><td>Full name is required</td><td>yes</td><td>yes</td></tr>
+<tr><td>textbox</td><td>Password</td><td>Password is required</td><td>yes</td><td>yes</td></tr>
+<tr><td>button</td><td>Create Account</td><td></td><td></td><td></td></tr>
+<tr><td>textbox</td><td>Social Security Number</td><td>SSN is required</td><td>yes</td><td>yes</td></tr>
+<tr><td>button</td><td>Show</td><td></td><td></td><td></td></tr>
+<tr><td>button</td><td>Show date picker Show date picker</td><td>Date of birth is required</td><td></td><td></td></tr>
+</table>
+
+<h2>Best-practice advisories (not WCAG failures)</h2><p>None.</p>
+</body></html>

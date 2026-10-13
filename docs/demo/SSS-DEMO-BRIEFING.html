@@ -120,7 +120,7 @@
     <div class="facts">
       <span>Demo site <strong><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></strong></span>
       <span>Status as of <strong>October 12, 2026</strong></span>
-      <span>Working in the demo <strong>2 of 5 R0 stories, 6 of 11 R1 stories</strong></span>
+      <span>Working in the demo <strong>2 of 5 R0 stories, 7 of 11 R1 stories</strong></span>
     </div>
     <p class="notice">Everything described here is demonstrated on a synthetic demo deployment; none of it is operating in production. Synthetic data only. The exemption types shown (A senior, B income, C hardship) are illustrative rules built to exercise the workflow. They are not Selective Service policy.</p>
   </header>
@@ -195,7 +195,7 @@
 
   <section id="walkthrough" aria-labelledby="walkthrough-h">
     <p class="eyebrow">Demo walkthrough</p>
-    <h2 id="walkthrough-h">Eleven scenes, about fourteen minutes</h2>
+    <h2 id="walkthrough-h">Twelve scenes, about fifteen minutes</h2>
     <ol class="scenes">
       <li class="scene">
         <h3>A registrant creates an account</h3>
@@ -254,12 +254,12 @@
         <figure><img src="screens/tour-08-audit-log.png" width="1280" height="900" alt="Compliance audit log filtered to failed checks" loading="lazy"><figcaption>The audit log filtered to failures: the two controls the first decision missed.</figcaption></figure>
       </li>
       <li class="scene">
-        <h3>The applicant stays informed</h3>
+        <h3>The applicant sees everything in one place</h3>
         <ul>
-          <li>Each status change arrives as a notification with a link to the case.</li>
-          <li>Applicants never see internal notes or compliance details. The compliance pages and their data return "access denied" to them.</li>
+          <li>The dashboard lists each application with its status and the next step, the eligibility result for each exemption with its reason, the latest events across all cases, and notifications.</li>
+          <li>Applicants never see internal notes, assignments or compliance details; the dashboard and the case page share one rule for what an applicant may see.</li>
         </ul>
-        <figure><img src="screens/tour-02-citizen-dashboard.png" width="1280" height="1221" alt="Applicant dashboard with notifications about the case" loading="lazy"><figcaption>Jordan Rivera's dashboard: every step of the case as a notification, newest first, including the reopening and the final approval.</figcaption></figure>
+        <figure><img src="screens/tour-02-citizen-dashboard.png" width="1280" height="1500" alt="Citizen dashboard with two applications, their status and next steps, and eligibility" loading="lazy"><figcaption>Jordan Rivera's dashboard: Type A approved, Type B appealed after a denial, each with its next step, and eligibility with reasons.</figcaption></figure>
       </li>
       <li class="scene">
         <h3>Every change is timed until it is readable</h3>
@@ -286,6 +286,14 @@
           <li>An automated audit checks every page against WCAG 2.1 AA in Chrome. Run on the code before this work, it failed every page; now all twelve pass.</li>
         </ul>
         <figure><img src="screens/tour-13-form-errors.png" width="1280" height="948" alt="Registration form after an empty submit, with each error under its field" loading="lazy"><figcaption>Registration after an empty submit: each field is marked invalid and described by its message, and focus is on the first one.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Staff access is granted, never claimed</h3>
+        <ul>
+          <li>Case-manager access is given in the app by an existing case manager, with a required reason. Registering an address no longer makes anyone staff.</li>
+          <li>Nobody can remove their own access or the last case manager's. Every change is recorded in the Security Audit Log, and the person is notified.</li>
+        </ul>
+        <figure><img src="screens/tour-16-staff-access.png" width="1280" height="990" alt="Staff Access page listing the case managers, with the form to give access" loading="lazy"><figcaption>Dana Whitfield has given Sam Ortiz case-manager access, with a reason; the change is in the audit log.</figcaption></figure>
       </li>
     </ol>
   </section>
@@ -317,6 +325,7 @@
       <li><strong>Protected identity data.</strong> Passwords and SSNs are stored as bcrypt hashes. The SSN is never returned by the API, never written to logs and left out of every export.</li>
       <li><strong>Access decided per endpoint.</strong> Each route declares whether it is public, for signed-in users, for the record's owner or for staff. A test fails the build when a route is missing its rule or its check.</li>
       <li><strong>Separation of duties.</strong> Case managers cannot decide their own cases or clear reviews of their own decisions.</li>
+      <li><strong>Staff access granted, not claimed.</strong> Case-manager access is given in the app by an existing case manager with a reason, never by registering an address; nobody can change their own access, and every change is in the audit log.</li>
       <li><strong>Accessible by design.</strong> Every page is checked against WCAG 2.1 AA (Section 508) for each kind of user: keyboard, screen-reader names and errors, contrast, reflow at 320 pixels, a session warning, and confirmation before an application is sent.</li>
       <li><strong>Write-once audit trail.</strong> Every sign-in, refusal, data read, export, change, role grant, deployment and configuration change is recorded with who, when and from where, alongside every compliance result. The database refuses edits and deletions, entries are kept seven years, and no SSN, password or secret is written to the log.</li>
       <li><strong>Verified releases.</strong> After each deploy the team checks the demo deployment automatically: the running version, the database, all protected routes refusing anonymous requests, and every staff route refusing an ordinary registrant. Each story ships with screenshots and a written conclusion.</li>
@@ -335,9 +344,9 @@
       </div>
       <div class="release">
         <h3>R1 · Core services</h3>
-        <div class="meter" role="img" aria-label="6 of 11 working in the demo"><span style="width:55%"></span></div>
-        <p class="count">6 of 11 in the demo</p>
-        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness, security audit logging, accessibility (Section 508). Next: role dashboards, API governance.</p>
+        <div class="meter" role="img" aria-label="7 of 11 working in the demo"><span style="width:64%"></span></div>
+        <p class="count">7 of 11 in the demo</p>
+        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness, security audit logging, accessibility (Section 508), the citizen dashboard. Next: case manager, admin and leadership dashboards, API governance.</p>
       </div>
       <div class="release">
         <h3>R2 · AI and governance</h3>
@@ -370,6 +379,7 @@
       <li>Current data: every change timed against a 30-second target, with an alert (scene 9)</li>
       <li>On the record: every sign-in, refusal, read and change in a write-once log (scene 10)</li>
       <li>Everyone can use it: WCAG 2.1 AA on every page, keyboard and screen readers (scene 11)</li>
+      <li>Who can work cases: staff access granted in the app, never claimed (scene 12)</li>
       <li>Security and trust: protected SSNs, per-endpoint access, verified releases</li>
       <li>Status and roadmap: what works in the demo today and what comes next</li>
     </ol>
