@@ -64,7 +64,7 @@ The SSS Modernization Platform uses a modern, cloud-native microservices archite
 - `POST /api/auth/login` - Authenticate user
 - `GET /api/users/:id` - Get profile
 - `PUT /api/users/:id` - Update profile
-- `GET/POST /api/mfa/*` - MFA operations (stubbed)
+- `/api/mfa/*` - MFA setup, confirm, turn off (signed in); `POST /api/auth/mfa/verify` - the code step of sign-in
 - `GET /health` - Health check
 
 **Middleware Stack:**
@@ -77,7 +77,7 @@ The SSS Modernization Platform uses a modern, cloud-native microservices archite
 **Services Layer:**
 - `authService.ts` - User registration & login
 - `userService.ts` - Profile management
-- `mfaService.ts` - MFA operations (Phase 5)
+- `mfaService.ts` - TOTP keys, code checks (one-step window, a code works once, 5 tries)
 
 **Utilities:**
 - `jwt.ts` - generateToken(), verifyToken()

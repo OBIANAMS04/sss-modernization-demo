@@ -77,6 +77,34 @@ Authenticate user and get JWT token.
 { "error": { "message": "Invalid email or password", "code": "INVALID_CREDENTIALS" } }
 ```
 
+**Success when the account has two-step verification (200):** the password was right, but there is no session yet.
+```json
+{ "mfaRequired": true, "pendingToken": "eyJhbGciOiJIUzI1NiIs...", "expiresIn": 300 }
+```
+The pending token lasts 5 minutes and carries `purpose: "mfa"`. It is not a session: every endpoint that takes
+`Authorization: Bearer` (including `POST /api/auth/refresh`) answers 401 to it. Its only use is the next endpoint.
+
+---
+
+### POST /api/auth/mfa/verify
+
+The second step of sign-in. No `Authorization` header: the pending token goes in the body.
+
+**Request:**
+```json
+{ "pendingToken": "eyJhbGciOiJIUzI1NiIs...", "code": "123456" }
+```
+
+**Success (200):** the same shape as a password login, with a new session token.
+```json
+{ "user": { "id": "uuid", "email": "...", "fullName": "...", "createdAt": "...", "role": "citizen" }, "token": "eyJhbGciOiJIUzI1NiIs..." }
+```
+
+**Errors:** 400 `VALIDATION_ERROR` (no token, or a code that is not 6 digits; not counted as a try); 400 `INVALID_CODE`
+(wrong code; the message says how many of the 5 tries are left); 400 `CODE_ALREADY_USED` (a code is accepted once);
+401 `UNAUTHORIZED` (pending token expired, invalid, or not a pending token); 429 `TOO_MANY_ATTEMPTS` (5 tries used up:
+the pending token is finished and the person signs in again). Codes are accepted one 30-second step either side of now.
+
 ---
 
 ## User Endpoints
@@ -120,16 +148,39 @@ Update user profile (requires authentication).
 
 ---
 
-## MFA Endpoints (Stubbed - Phase 5)
+## MFA Endpoints (STORY-003)
 
-### GET /api/mfa/setup
+Time-based one-time codes (RFC 6238: 6 digits, 30 seconds) for an authenticator app such as Google Authenticator, Authy or
+Microsoft Authenticator. These endpoints need a session token. Wrong codes are counted per signed-in session (5 tries,
+then 429 `TOO_MANY_ATTEMPTS`; signing in again starts a new count).
+
 ### POST /api/mfa/setup
+
+Starts a setup and returns the key. The response is the only time the key is sent, and is not cached.
+
+**Success (200):**
+```json
+{ "secret": "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP", "otpauthUrl": "otpauth://totp/...", "qrCode": "data:image/png;base64,..." }
+```
+409 `CONFLICT` while two-step verification is already on.
+
 ### POST /api/mfa/verify
 
-**Response (501):**
-```json
-{ "error": { "message": "MFA not yet available - coming in Phase 5", "code": "NOT_IMPLEMENTED" } }
-```
+Confirms the setup with a code from the app; this stores the device as verified and turns two-step verification on.
+The key is the one stored at setup (a key in the request is ignored).
+
+**Request:** `{ "totpCode": "123456" }` **Success (200):** `{ "success": true, "message": "..." }`
+
+### POST /api/mfa/disable
+
+Turns two-step verification off. Needs a current code. **Request:** `{ "totpCode": "123456" }`. 409 if it is not on.
+
+### GET /api/mfa/status
+
+**Success (200):** `{ "mfaEnabled": true }`
+
+Every setup, enabling, code request, accepted code, refused code (with its reason and try number, never the code) and turning
+off is written to the audit log as `MFA_SETUP`, `MFA_ENABLE`, `MFA_CHALLENGE`, `MFA_VERIFIED`, `MFA_VERIFY_FAILED` or `MFA_DISABLE`.
 
 ---
 
@@ -158,9 +209,9 @@ Update user profile (requires authentication).
 | 401 | Unauthorized (invalid token/credentials) |
 | 403 | Forbidden (cannot update another user) |
 | 404 | Not found |
-| 409 | Conflict (duplicate email) |
+| 409 | Conflict (duplicate email; two-step verification already on) |
+| 429 | Too many wrong authentication codes |
 | 500 | Server error |
-| 501 | Not implemented (MFA) |
 
 ---
 
