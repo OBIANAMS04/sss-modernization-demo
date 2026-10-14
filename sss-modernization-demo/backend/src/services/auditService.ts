@@ -74,6 +74,8 @@ export enum AuditAction {
   ACCESS_DENIED = 'ACCESS_DENIED',
   PERMISSION_GRANT = 'PERMISSION_GRANT',
   PERMISSION_REVOKE = 'PERMISSION_REVOKE',
+  // STORY-016: an administrator changed the access policy (a rule switched, a route limited to fewer roles)
+  POLICY_CHANGE = 'POLICY_CHANGE',
 
   // Admin actions
   ADMIN_ACTION = 'ADMIN_ACTION',

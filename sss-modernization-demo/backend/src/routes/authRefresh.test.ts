@@ -1,7 +1,13 @@
 // STORY-011 (WCAG 2.2.1): a person warned that their session is about to end can extend it.
-// Runs without a database: the only database call is the audit entry each request may write,
-// which the mock below records.
-jest.mock('../database/connection', () => ({ __esModule: true, default: { query: jest.fn().mockResolvedValue({ rows: [{}] }), on: jest.fn() } }));
+// Runs without a database: the database calls are the audit entry each request may write, which the mock below records, and
+// the role lookup of the access policy (STORY-016), which it answers with a citizen.
+jest.mock('../database/connection', () => ({
+  __esModule: true,
+  default: {
+    query: jest.fn(async (sql: string) => ({ rows: [String(sql).startsWith('SELECT role FROM users WHERE id') ? { role: 'citizen' } : {}] })),
+    on: jest.fn(),
+  },
+}));
 
 import jwt from 'jsonwebtoken';
 import request from 'supertest';

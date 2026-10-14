@@ -16,5 +16,5 @@
     "moduleResolution": "node"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/routes/analytics.ts", "src/routes/governance.ts", "src/services/apiGovernanceService.ts"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/routes/analytics.ts"]
 }

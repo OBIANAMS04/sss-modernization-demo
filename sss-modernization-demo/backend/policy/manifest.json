@@ -1,0 +1,6 @@
+{
+  "opaVersion": "1.21.0",
+  "entrypoint": "sss/authz/decision",
+  "regoSha256": "6b13097b5e10ee02cf3f5b1a18ba56ac445310266b41217801630526afa70760",
+  "wasmSha256": "3ad8ff8be8434daee3b94be3200732bde6f375ff9547b0a78408208366220807"
+}

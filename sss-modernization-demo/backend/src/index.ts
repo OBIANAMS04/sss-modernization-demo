@@ -4,6 +4,7 @@ import { runMigrations } from './database/migrate';
 import { bootstrapStaffRoles } from './services/roleService';
 import { recordServerStart } from './services/auditService';
 import { recordConfigChanges } from './services/configAuditService';
+import { startPolicy } from './services/policyService';
 
 dotenv.config();
 
@@ -21,6 +22,9 @@ async function start() {
   const migrationsApplied = await runMigrations();
   // Email addresses are not verified, so CASE_MANAGER_EMAILS only bootstraps a database with no staff; it never revokes
   await bootstrapStaffRoles();
+  // STORY-016: load the access policy (the compiled rules and the newest saved version) before accepting traffic; if it cannot
+  // load the process exits, like a failed migration, and the previous version keeps serving
+  await startPolicy();
   // STORY-010: a setting changed since the previous start is an audited configuration change
   await recordConfigChanges();
   // STORY-010: a new release is an audited infrastructure event; a restart of the same release is recorded as one

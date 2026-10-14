@@ -9,6 +9,10 @@
  * entry no longer matches a route, when a route lacks the middleware its rule requires, or when a
  * protected route answers anything but 401 without a valid token. Adding a route therefore means
  * deciding its rule here, in the same change.
+ *
+ * STORY-016: the rule also sets the roles the access policy (Open Policy Agent, see accessPolicy.ts) lets
+ * through for the route, so a route is covered by the policy as soon as it is declared here. An administrator
+ * can narrow those roles without a deploy; nothing can widen them.
  */
 export type Access =
   /** Anyone, no sign-in. */
@@ -91,4 +95,8 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'GET /api/dashboards/case-manager': 'staff',
   'GET /api/dashboards/admin': 'admin',
   'GET /api/dashboards/leadership': 'leadership',
+
+  // STORY-016: the access policy itself, changed by admins and applied without a deploy
+  'GET /api/policies': 'admin',
+  'PUT /api/policies': 'admin',
 };

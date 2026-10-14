@@ -160,8 +160,8 @@ export async function listStaff(): Promise<StaffMember[]> {
   return result.rows.map((row: any) => ({ ...toStaffUser(row), createdAt: row.created_at }));
 }
 
-/** A role change always says why; the reason is kept in the audit log. */
-function cleanReason(reason: unknown): string {
+/** A role change always says why; the reason is kept in the audit log. (STORY-016: a policy change says why in the same way.) */
+export function cleanReason(reason: unknown): string {
   const text = typeof reason === 'string' ? reason.trim() : '';
   if (!text) throw new ValidationError('A reason is required. It is kept in the audit log.');
   if (text.length > MAX_REASON_LENGTH) throw new ValidationError(`The reason must be ${MAX_REASON_LENGTH} characters or less.`);

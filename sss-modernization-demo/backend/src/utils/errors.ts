@@ -1,4 +1,7 @@
 export class AppError extends Error {
+  /** STORY-016: set when the access policy refused the request, so the audit entry names the rule and the policy version. */
+  policy?: { rule: string; reason: string; policyVersion: number };
+
   constructor(
     public statusCode: number,
     message: string,

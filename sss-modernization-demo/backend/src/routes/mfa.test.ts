@@ -64,7 +64,9 @@ beforeEach(() => {
   query.mockReset().mockImplementation(async (sql: string) =>
     String(sql).startsWith('SELECT id, email, password_hash')
       ? { rows: [{ id: USER.id, email: USER.email, password_hash: PASSWORD_HASH, full_name: 'Person One', role: 'citizen', mfa_enabled: account.mfa_enabled, created_at: '2026-10-01T09:00:00.000Z' }] }
-      : { rows: [{}] }
+      : String(sql).startsWith('SELECT role FROM users WHERE id') // the access policy (STORY-016) reads the caller's role on every request
+        ? { rows: [{ role: 'citizen' }] }
+        : { rows: [{}] }
   );
   [generateMFASecret, verifyAndEnableMFA, verifyMFACode, verifySignInCode, disableMFA, isMFAEnabled].forEach((fn) => asMock(fn).mockReset());
 });

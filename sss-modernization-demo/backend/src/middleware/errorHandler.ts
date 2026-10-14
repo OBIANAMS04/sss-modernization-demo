@@ -18,7 +18,8 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
       recordAudit(AuditAction.ACCESS_DENIED, path.split('/')[2] || 'api', 'failure', {
         actor: user?.sub,
         actorEmail: user?.email,
-        details: { method: req.method, path, status: err.statusCode, code: err.code },
+        // STORY-016: a refusal by the access policy also says which rule decided, why, and which version of the policy it was
+        details: { method: req.method, path, status: err.statusCode, code: err.code, ...err.policy },
       });
     }
 

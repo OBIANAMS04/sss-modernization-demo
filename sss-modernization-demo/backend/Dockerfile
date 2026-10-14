@@ -21,6 +21,8 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 COPY --from=builder /app/dist ./dist
+# STORY-016: the compiled access policy (read from ../../policy relative to dist/services)
+COPY --from=builder /app/policy ./policy
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nodejs -u 1001

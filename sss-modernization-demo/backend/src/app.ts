@@ -12,6 +12,8 @@ import auditRoutes from './routes/audit';
 import notificationRoutes from './routes/notifications';
 import dashboardRoutes from './routes/dashboards';
 import staffRoutes from './routes/staff';
+import policyRoutes from './routes/policies';
+import { enforcePolicy } from './middleware/enforcePolicy';
 import { errorHandler } from './middleware/errorHandler';
 import { auditDataAccess } from './middleware/auditAccess';
 import { clientAddress, requestContextMiddleware } from './utils/requestContext';
@@ -40,6 +42,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// STORY-016: the access policy decides every request before any router sees it. The guards on the routes stay as a second layer.
+app.use(enforcePolicy);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
@@ -52,6 +57,7 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboards', dashboardRoutes);
 app.use('/api/staff', staffRoutes);
+app.use('/api/policies', policyRoutes);
 
 // Health check. It used to answer "database: checking..." without checking anything; now it reports
 // what is actually true, plus the deployed commit so a deploy can be verified from outside.
