@@ -12,7 +12,8 @@ const RELEASE_PROGRESS = [
   { done: true, text: 'R1: Case manager dashboard: my cases, cases waiting on me, overdue, search' },
   { done: true, text: 'R1: Admin dashboard: all cases, team performance, system health' },
   { done: true, text: 'R1: Leadership dashboard: KPIs, trends, bottlenecks, team performance' },
-  { done: false, text: 'R1 (next): API access policies' },
+  { done: true, text: 'R1: API access policies (OPA): rules checked on every request, changeable without a deploy' },
+  { done: false, text: 'R2 (next): AI and governance' },
 ];
 
 // Shared by the citizen and admin dashboards. `className` sets the spacing around the card.

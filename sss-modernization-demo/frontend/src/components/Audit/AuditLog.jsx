@@ -8,7 +8,7 @@ import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
 const PAGE_SIZE = 50;
 const EMPTY = { startDate: '', endDate: '', user: '', action: '', resource: '', status: '' };
-const RESOURCES = ['auth', 'users', 'mfa', 'exemptions', 'cases', 'compliance', 'freshness', 'audit', 'notifications', 'system'];
+const RESOURCES = ['auth', 'users', 'mfa', 'exemptions', 'cases', 'compliance', 'freshness', 'audit', 'notifications', 'policies', 'system'];
 
 const LABELS = {
   USER_LOGIN: 'Sign-in',
@@ -24,6 +24,7 @@ const LABELS = {
   ACCESS_DENIED: 'Access denied',
   PERMISSION_GRANT: 'Role granted',
   PERMISSION_REVOKE: 'Role removed',
+  POLICY_CHANGE: 'Access policy changed',
   PROFILE_UPDATE: 'Profile update',
   DATA_READ: 'Data read',
   DATA_EXPORT: 'Data export',
@@ -57,7 +58,13 @@ function describe(log) {
     const query = Object.entries(d.query || {}).map(([k, v]) => `${k}=${v}`).join('&');
     return `${d.route}${query ? `?${query}` : ''}`;
   }
-  if (d.path) return `${d.method} ${d.path} → ${d.status}`;
+  // STORY-016: a request the access policy refused also says which rule decided, why, and which version of the policy it was
+  if (d.path) {
+    const refusal = d.rule ? ` · rule: ${d.rule} · ${d.reason}${d.policyVersion !== undefined ? ` (policy version ${d.policyVersion})` : ''}` : '';
+    return `${d.method} ${d.path} → ${d.status}${refusal}`;
+  }
+  // A policy change leads with what changed and why (stored JSON does not keep key order)
+  if (log.action === 'POLICY_CHANGE' && d.summary) return `version ${d.version}: ${d.summary}${d.reason ? ` · reason: ${d.reason}` : ''}`;
   // A role change leads with the person and the reason. Stored JSON does not keep key order, which put the reason last,
   // and a long address or reason then cut it off.
   if (log.action.startsWith('PERMISSION_') && d.email) {

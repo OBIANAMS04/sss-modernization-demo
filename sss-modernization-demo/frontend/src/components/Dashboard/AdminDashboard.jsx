@@ -69,6 +69,13 @@ function healthChecks(health) {
       detail: `${plural(staff.case_manager, 'case manager')}, ${staff.leadership} leadership, ${plural(staff.admin, 'administrator')}.`,
       link: ['/staff', 'Staff Access'],
     },
+    // STORY-016: not a reading, a pointer: the policy is checked on every request, and administrators change it on its own page
+    {
+      name: 'Access policy',
+      result: ['Checked on every request', NEUTRAL],
+      detail: 'Open Policy Agent decides each request by role and by who owns or is assigned the record. Rules and routes can be changed without a deploy.',
+      link: ['/admin/policies', 'Access Policies'],
+    },
   ];
 }
 

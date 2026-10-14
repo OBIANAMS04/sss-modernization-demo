@@ -12,7 +12,7 @@ const linkClass = ({ isActive }) =>
 
 /**
  * Shared top navigation. The staff pages (cases, compliance, freshness, audit, staff access) only appear for case managers and admins.
- * A case manager's Dashboard is My Work, so only admins get a separate My Work link; Leadership is for leadership and admins, Admin for admins.
+ * A case manager's Dashboard is My Work, so only admins get a separate My Work link; Leadership is for leadership and admins, Admin and Access Policies for admins.
  * `pageTitle` names the browser tab when the heading is not a good name for it (the dashboard's is the app name).
  */
 export default function AppNav({ title, subtitle, pageTitle }) {
@@ -55,7 +55,8 @@ export default function AppNav({ title, subtitle, pageTitle }) {
               </>
             )}
             {isLeadershipUser(user) && <NavLink to="/leadership" className={linkClass}>Leadership</NavLink>}
-            {isAdminUser(user) && <NavLink to="/admin" className={linkClass}>Admin</NavLink>}
+            {isAdminUser(user) && <NavLink to="/admin" end className={linkClass}>Admin</NavLink>}
+            {isAdminUser(user) && <NavLink to="/admin/policies" className={linkClass}>Access Policies</NavLink>}
             <button
               onClick={handleLogout}
               className="ml-2 bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition duration-200"
