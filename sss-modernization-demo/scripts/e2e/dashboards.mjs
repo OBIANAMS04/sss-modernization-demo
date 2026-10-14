@@ -56,7 +56,8 @@ run(async () => {
     (await call('GET', '/staff', lead.token)).status,
     (await call('GET', '/audit', lead.token)).status,
   ], [403, 403, 403, 403]);
-  expect('the refusal says which role is needed', (await call('GET', '/dashboards/admin', m.token)).data.error?.message, 'Access requires the administrator role');
+  // STORY-016: the access policy refuses first, and says who can use the route (requireRole's own message is the second layer)
+  expect('the refusal says which role is needed', (await call('GET', '/dashboards/admin', m.token)).data.error?.message, 'Access denied: Only administrators can use this route');
 
   // 2. How things stand before this run's cases
   const before = {

@@ -90,7 +90,7 @@ async function setup() {
       label: path.startsWith('/cases/') ? '/cases/:id' : path,
       session: sam,
     })),
-    ...['/dashboard', '/my-work', '/leadership', '/admin'].map((path) => ({ role: 'Admin', path, session: morgan })),
+    ...['/dashboard', '/my-work', '/leadership', '/admin', '/admin/policies'].map((path) => ({ role: 'Admin', path, session: morgan })),
     { role: 'Leadership', path: '/dashboard', session: riley },
   ];
 }

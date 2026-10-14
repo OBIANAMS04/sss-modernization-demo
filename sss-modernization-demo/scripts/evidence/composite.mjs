@@ -1,7 +1,7 @@
 // Combines several screenshots into one labelled JPEG under a size budget, so a Basecamp post can carry
 // many screens in its one attachment (Colaberry accepts about 700 KB per file).
 //   node scripts/evidence/composite.mjs <spec.json>
-// spec.json: { "out": "path.jpg", "maxKb": 650, "title": "…", "columns": 2, "tileWidth": 960,
+// spec.json: { "out": "path.jpg", "maxKb": 650, "title": "…", "columns": 2, "tileWidth": 960, "packs": ["../story-0NN"],
 //              "tiles": [{ "file": "path.png", "label": "…", "top": 0, "height": 900, "natural": false }] }
 // Paths are relative to the spec file. top/height crop each screenshot before it is scaled to tileWidth.
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -14,9 +14,21 @@ const base = dirname(specPath);
 
 // Ali, 2026-10-12: the image attached to a post must carry every screen in the evidence pack, or the thread
 // and the pack disagree. Next to an evidence.json, refuse to build while any of its screens is left out.
-const evidence = resolve(base, 'evidence.json');
-if (existsSync(evidence)) {
-  const missing = JSON.parse(readFileSync(evidence, 'utf8')).shots.map((s) => s.file).filter((f) => !spec.tiles.some((t) => t.file === f));
+// A milestone post covers several stories: "packs" lists their evidence folders (relative to the spec), and
+// every screen of every listed pack must be in the image.
+const tileFiles = spec.tiles.map((t) => resolve(base, t.file).toLowerCase());
+for (const pack of spec.packs ?? ['.']) {
+  const evidence = resolve(base, pack, 'evidence.json');
+  if (!existsSync(evidence)) {
+    if (spec.packs) {
+      console.error(`No evidence.json in ${resolve(base, pack)}.`);
+      process.exit(1);
+    }
+    continue;
+  }
+  const missing = JSON.parse(readFileSync(evidence, 'utf8'))
+    .shots.map((s) => resolve(base, pack, s.file))
+    .filter((f) => !tileFiles.includes(f.toLowerCase()));
   if (missing.length) {
     console.error(`The composite leaves out evidence screens: ${missing.join(', ')}. Add a tile for each.`);
     process.exit(1);
