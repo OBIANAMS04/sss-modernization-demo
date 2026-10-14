@@ -1,0 +1,13 @@
+<section id="policies" data-transition="fade" style="background:#F5F7FA;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 16</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Access rules change without a release</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>Open Policy Agent decides every request.</li>
+<li>Admins switch rules, with a reason.</li>
+<li>Refusals are logged with the rule.</li>
+</ul>
+</div>
+<img src="/_blob/ff47fba7e8426cb4e8b4b787843e975e" alt="Access Policies page: the policy in force and the rules with their on and off switches" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 16, API access policies (STORY-016). Every request is decided by Open Policy Agent before it reaches the application: the rules check the role, the kind of record, the action and the record's owner or assignee, such as 'case managers can view and work cases assigned to them'. An administrator changes a rule here with a reason; it applies at once, every version is kept, and each refusal is in the audit log with the rule behind it. The policy can only narrow what the application allows. We also found that an earlier 'governance' component claimed to enforce such policies but never called OPA; it was removed.</aside>
+</section>

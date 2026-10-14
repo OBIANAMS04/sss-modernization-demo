@@ -119,8 +119,8 @@
     <p class="lede">A working platform for the Selective Service System's registrant services: online accounts, exemption eligibility, case management with appeals, and automatic compliance checks on every decision.</p>
     <div class="facts">
       <span>Demo site <strong><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></strong></span>
-      <span>Status as of <strong>October 12, 2026</strong></span>
-      <span>Working in the demo <strong>2 of 5 R0 stories, 7 of 11 R1 stories</strong></span>
+      <span>Status as of <strong>October 14, 2026</strong></span>
+      <span>Working in the demo <strong>3 of 5 R0 stories, 11 of 11 R1 stories</strong></span>
     </div>
     <p class="notice">Everything described here is demonstrated on a synthetic demo deployment; none of it is operating in production. Synthetic data only. The exemption types shown (A senior, B income, C hardship) are illustrative rules built to exercise the workflow. They are not Selective Service policy.</p>
   </header>
@@ -137,11 +137,11 @@
       </div>
       <div class="role">
         <h3>Case managers</h3>
-        <p>Work a queue of applications, take ownership, decide with a stated reason, keep internal notes, and export case lists for reporting.</p>
+        <p>Start from a work list of their own cases, take ownership, decide with a stated reason, keep internal notes, and export case lists for reporting.</p>
       </div>
       <div class="role">
-        <h3>Compliance and leadership</h3>
-        <p>See whether decisions follow the rules, review any that do not, and search two audit logs: every control result, and every sign-in, refusal, data access and change.</p>
+        <h3>Compliance, administrators and leadership</h3>
+        <p>See whether decisions follow the rules, review any that do not, and search two audit logs. Administrators see the whole operation and set access rules; leadership sees program numbers with no applicant data.</p>
       </div>
     </div>
   </section>
@@ -186,8 +186,23 @@
         <span class="pill live">In the demo</span>
       </div>
       <div class="problem">
+        <div><h3>A stolen password is enough to sign in</h3><p class="need">Staff and registrants need a second proof of identity.</p></div>
+        <p>Two-step verification with an authenticator app: after the password, a 6-digit code that changes every 30 seconds, never works twice and gets five tries per sign-in. Every step is audited without the key or the code.</p>
+        <span class="pill live">In the demo</span>
+      </div>
+      <div class="problem">
+        <div><h3>Managers and leaders can't see the work</h3><p class="need">Each role needs the numbers that match its job, and no more.</p></div>
+        <p>Case managers get a work list with what is waiting on them and what is overdue. Administrators see every case by status and type, team performance and system health. Leadership sees approval rate, processing time and bottlenecks, with no applicant data.</p>
+        <span class="pill live">In the demo</span>
+      </div>
+      <div class="problem">
+        <div><h3>Access rules buried in code</h3><p class="need">Who may see or do what must be explicit, testable and changeable without a release.</p></div>
+        <p>Open Policy Agent decides every API request before any route runs, from role, resource, action and owner. Administrators change the rules on a page, with a reason, and every change and refusal is audited.</p>
+        <span class="pill live">In the demo</span>
+      </div>
+      <div class="problem">
         <div><h3>Hosting that meets federal requirements</h3><p class="need">Production must run on FedRAMP-authorized cloud with multi-factor sign-in.</p></div>
-        <p>The demo runs on commercial hosting today. AWS GovCloud infrastructure (STORY-004) waits on approval, and multi-factor sign-in has its server side built with screens to come.</p>
+        <p>The demo runs on commercial hosting today. AWS GovCloud infrastructure (STORY-004) waits on approval. Multi-factor sign-in is already in the demo (scene 13).</p>
         <span class="pill plan">Planned</span>
       </div>
     </div>
@@ -195,7 +210,7 @@
 
   <section id="walkthrough" aria-labelledby="walkthrough-h">
     <p class="eyebrow">Demo walkthrough</p>
-    <h2 id="walkthrough-h">Twelve scenes, about fifteen minutes</h2>
+    <h2 id="walkthrough-h">Seventeen scenes, about twenty minutes</h2>
     <ol class="scenes">
       <li class="scene">
         <h3>A registrant creates an account</h3>
@@ -290,10 +305,53 @@
       <li class="scene">
         <h3>Staff access is granted, never claimed</h3>
         <ul>
-          <li>Case-manager access is given in the app by an existing case manager, with a required reason. Registering an address no longer makes anyone staff.</li>
-          <li>Nobody can remove their own access or the last case manager's. Every change is recorded in the Security Audit Log, and the person is notified.</li>
+          <li>Access is given in the app, with a required reason, by an existing case manager (case-manager access only) or an administrator (any staff role). Registering an address no longer makes anyone staff.</li>
+          <li>Nobody can remove their own access, the last case manager's or the last administrator's. Every change is recorded in the Security Audit Log, and the person is notified.</li>
         </ul>
         <figure><img src="screens/tour-16-staff-access.png" width="1280" height="990" alt="Staff Access page listing the case managers, with the form to give access" loading="lazy"><figcaption>Dana Whitfield has given Sam Ortiz case-manager access, with a reason; the change is in the audit log.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Sign-in asks for a second step</h3>
+        <ul>
+          <li>Under Sign-in security, a person scans a QR code with an authenticator app (Google Authenticator, Authy or Microsoft Authenticator) or types the key. The key is shown once.</li>
+          <li>After the password, the person gets a pending sign-in that every page and route refuses, and has five minutes to enter the 6-digit code. A code works once, five wrong tries end the sign-in, and turning the second step off needs a code.</li>
+          <li>Every step is in the audit log without the key or the code. Our own review found a pending sign-in could be redeemed twice; it is now single use, and an end-to-end check that reproduced the gap failed on the old code.</li>
+        </ul>
+        <figure><img src="screens/tour-18-sign-in-code.png" width="1280" height="900" alt="Two-step verification asking for a 6-digit code, with the number of tries left after a wrong code" loading="lazy"><figcaption>A wrong code is refused and the page shows the tries left.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>A case manager's day starts with their work list</h3>
+        <ul>
+          <li>My Work shows the manager's open cases, what is waiting on them (cases to start, cases to decide, compliance reviews of other managers' decisions), the unassigned queue and anything overdue, meaning no update for more than 5 days.</li>
+          <li>Recent decisions are listed below. A search opens the case list already filtered, with the filters in the address so the view can be shared.</li>
+        </ul>
+        <figure><img src="screens/tour-19-case-manager-dashboard.png" width="1280" height="2284" alt="My Work page with open cases, waiting on me, overdue cases, the unassigned queue and a search" loading="lazy"><figcaption>Dana Whitfield's work list: four open cases, five waiting on her, two overdue, two unassigned.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Administrators see the whole operation</h3>
+        <ul>
+          <li>All cases by status and type in charts and tables, and team performance: open cases, decided cases, median days to decide and compliance pass rate for each case manager.</li>
+          <li>System health sits on the same page: database and migrations, the deployed commit, freshness against 30 seconds, compliance against 99%, refusals in the last 24 hours and staff by role. Administrators also give and remove staff access, never their own and never the last administrator.</li>
+        </ul>
+        <figure><img src="screens/tour-20-admin-dashboard.png" width="1280" height="2910" alt="Admin dashboard with cases by status and type, team performance and system health" loading="lazy"><figcaption>The administrator's dashboard: cases, team performance and system health in one place.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Leadership sees the program, not the people</h3>
+        <ul>
+          <li>Total applications, approval rate, average processing time, open cases and appeal rate, with 12-week trends.</li>
+          <li>Bottlenecks by stage show the average days in each and how many cases are stuck for more than 5 days. The page holds aggregates only, no applicant data, and leadership does no case work.</li>
+        </ul>
+        <figure><img src="screens/tour-21-leadership-dashboard.png" width="1280" height="2124" alt="Leadership dashboard with KPIs, 12-week trends and bottlenecks by stage" loading="lazy"><figcaption>Program numbers for leadership, with no names or applicant records.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Access rules that change without a release</h3>
+        <ul>
+          <li>Open Policy Agent decides every API request before any route runs, from the person's role, the kind of record, the action and who owns or is assigned the case. One rule is the story's own example: case managers can view and work cases assigned to them.</li>
+          <li>Here a case manager opens a case assigned to someone else and is refused, with the rule named. The refusal is in the audit log with the rule and the policy version. The policy can refuse what the code allows, never allow what the code refuses.</li>
+          <li>Administrators change the rules on an Access Policies page, without a deploy: switch a rule off or on, narrow the routes it covers, give a reason. Each version is kept and cannot be edited, each change is audited, and it applies at once. Sign-in, health and the policy pages are locked so administrators cannot lock themselves out.</li>
+          <li>The earlier "API governance" service claimed to enforce OPA but never called it. We found that in our own archive and removed it.</li>
+        </ul>
+        <figure><img src="screens/tour-22-policy-refusal.png" width="1280" height="900" alt="Access denied message: no rule lets a case manager view a case assigned to someone else" loading="lazy"><figcaption>The refusal names the rule: no rule lets a case manager view a case assigned to someone else.</figcaption></figure>
       </li>
     </ol>
   </section>
@@ -325,7 +383,9 @@
       <li><strong>Protected identity data.</strong> Passwords and SSNs are stored as bcrypt hashes. The SSN is never returned by the API, never written to logs and left out of every export.</li>
       <li><strong>Access decided per endpoint.</strong> Each route declares whether it is public, for signed-in users, for the record's owner or for staff. A test fails the build when a route is missing its rule or its check.</li>
       <li><strong>Separation of duties.</strong> Case managers cannot decide their own cases or clear reviews of their own decisions.</li>
-      <li><strong>Staff access granted, not claimed.</strong> Case-manager access is given in the app by an existing case manager with a reason, never by registering an address; nobody can change their own access, and every change is in the audit log.</li>
+      <li><strong>Staff access granted, not claimed.</strong> Access is given in the app, with a reason, by an existing case manager or an administrator, never by registering an address; nobody can change their own access, and every change is in the audit log.</li>
+      <li><strong>Two steps to sign in.</strong> An authenticator app supplies a 6-digit code after the password. The pending sign-in is refused everywhere, each code works once, and the key and codes never enter the log.</li>
+      <li><strong>A policy decides every request.</strong> Open Policy Agent, compiled to WebAssembly inside the API, decides each request before any route and can only narrow what the code allows. Administrators change the rules without a deploy, and every version, change and refusal is on the record.</li>
       <li><strong>Accessible by design.</strong> Every page is checked against WCAG 2.1 AA (Section 508) for each kind of user: keyboard, screen-reader names and errors, contrast, reflow at 320 pixels, a session warning, and confirmation before an application is sent.</li>
       <li><strong>Write-once audit trail.</strong> Every sign-in, refusal, data read, export, change, role grant, deployment and configuration change is recorded with who, when and from where, alongside every compliance result. The database refuses edits and deletions, entries are kept seven years, and no SSN, password or secret is written to the log.</li>
       <li><strong>Verified releases.</strong> After each deploy the team checks the demo deployment automatically: the running version, the database, all protected routes refusing anonymous requests, and every staff route refusing an ordinary registrant. Each story ships with screenshots and a written conclusion.</li>
@@ -338,15 +398,15 @@
     <div class="releases">
       <div class="release">
         <h3>R0 · Walking skeleton</h3>
-        <div class="meter" role="img" aria-label="2 of 5 working in the demo"><span style="width:40%"></span></div>
-        <p class="count">2 of 5 in the demo</p>
-        <p>Secure registration and sign-in, profile and compliance check. Multi-factor sign-in and the data pipeline are partly built; cloud infrastructure waits on AWS approval.</p>
+        <div class="meter" role="img" aria-label="3 of 5 working in the demo"><span style="width:60%"></span></div>
+        <p class="count">3 of 5 in the demo</p>
+        <p>Secure registration and sign-in, profile and compliance check, two-step verification. The data pipeline is partly built; cloud infrastructure waits on AWS approval.</p>
       </div>
       <div class="release">
         <h3>R1 · Core services</h3>
-        <div class="meter" role="img" aria-label="7 of 11 working in the demo"><span style="width:64%"></span></div>
-        <p class="count">7 of 11 in the demo</p>
-        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness, security audit logging, accessibility (Section 508), the citizen dashboard. Next: case manager, admin and leadership dashboards, API governance.</p>
+        <div class="meter" role="img" aria-label="11 of 11 working in the demo"><span style="width:100%"></span></div>
+        <p class="count">11 of 11 in the demo (complete)</p>
+        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness, security audit logging, accessibility (Section 508), the citizen, case manager, admin and leadership dashboards, and API access policies with Open Policy Agent. Next: R2.</p>
       </div>
       <div class="release">
         <h3>R2 · AI and governance</h3>
@@ -370,8 +430,8 @@
     <ol class="outline">
       <li>Title: SSS Modernization Demo, Colaberry, solicitation 90MC26R0004</li>
       <li>Why it matters: the registry, who depends on accurate registration status</li>
-      <li>The problems: eight challenges and how the platform answers each</li>
-      <li>Who uses it: registrants, case managers, compliance and leadership</li>
+      <li>The problems: eleven challenges and how the platform answers each</li>
+      <li>Who uses it: registrants, case managers, compliance, administrators and leadership</li>
       <li>Registrant journey: account, eligibility with reasons, apply, follow the case (scenes 1, 2 and 8)</li>
       <li>Case management: one queue, decisions with reasons, appeals (scenes 3 and 4)</li>
       <li>Compliance by design: 8 controls on every decision, dashboard and target (scene 5 and the control table)</li>
@@ -380,6 +440,9 @@
       <li>On the record: every sign-in, refusal, read and change in a write-once log (scene 10)</li>
       <li>Everyone can use it: WCAG 2.1 AA on every page, keyboard and screen readers (scene 11)</li>
       <li>Who can work cases: staff access granted in the app, never claimed (scene 12)</li>
+      <li>Two steps to sign in: authenticator app, one-time codes, a pending sign-in nothing accepts (scene 13)</li>
+      <li>Each role's view: case manager work list, administrator operations, leadership program numbers (scenes 14 to 16)</li>
+      <li>Access rules that change without a release: Open Policy Agent decides every request (scene 17)</li>
       <li>Security and trust: protected SSNs, per-endpoint access, verified releases</li>
       <li>Status and roadmap: what works in the demo today and what comes next</li>
     </ol>

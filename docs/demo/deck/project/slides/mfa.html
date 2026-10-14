@@ -1,0 +1,13 @@
+<section id="mfa" data-transition="fade" style="background:#F5F7FA;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 13</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Sign-in asks for a second step</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>An authenticator app adds a 6-digit code.</li>
+<li>A password alone never gives a session.</li>
+<li>Five tries, each code once, every step logged.</li>
+</ul>
+</div>
+<img src="/_blob/715430a27e1d9288006edeee21725131" alt="Two-step verification setup with a QR code, the key as text and the code field" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 13, two-step verification (STORY-003). On Sign-in security a person scans a QR code with Google Authenticator, Authy or Microsoft Authenticator, or types the key, and confirms with a 6-digit code. From then on, a correct password earns only a five-minute pending token that every page and the session refresh refuse; the code completes the sign-in. Five tries per sign-in, each code accepted once, and every step is in the audit log without the key or the code. Our own review found that a pending sign-in could be used twice to get a second session; it was fixed before shipping, and a test that reproduces it guards it.</aside>
+</section>

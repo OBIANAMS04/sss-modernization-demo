@@ -2,7 +2,7 @@
 
 **Client opportunity:** U.S. Selective Service System (SSS) business-systems modernization (RFP)
 **Bidder:** Colaberry · **Owner:** Obi Anamelechi Kingsley · **Decision makers:** Ali Muwwakkil (Managing Director), Ram Katamaraja
-**Last updated:** 2026-10-12 · Updated after every milestone (see "How this document is maintained")
+**Last updated:** 2026-10-14 · Updated after every milestone (see "How this document is maintained")
 
 > "In the demo" means working on the synthetic demo deployment. Nothing here is operating in production (Ali, 2026-10-07).
 
@@ -45,8 +45,8 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 
 | Release | Stories | Status |
 |---|---|---|
-| **R0 Walking Skeleton** | 001 Registration & login · 002 Profile & compliance · 003 MFA · 004 Cloud infra (AWS, L5) · 005 Data pipeline (L2) | 001 ✅ in the demo (+ Ali's guards) · 002 ✅ in the demo · 003 backend only, no UI · 004 🚩 blocked on Ram's AWS approval (demo runs on Render) · 005 backend only, unverified |
-| **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API governance (OPA) | 006 ✅ · 007 ✅ (both approved by Ali, 2026-10-02) · 008 ✅ 2026-10-06 (reviewed by Ali 2026-10-07) · 009 ✅ and 010 ✅ 2026-10-12 (both accepted by Ali, 2026-10-12) · 011 ✅ 2026-10-12 (posted) · 012 ✅ 2026-10-12 (posted) · **013 next** (case manager dashboard), then 014–015 |
+| **R0 Walking Skeleton** | 001 Registration & login · 002 Profile & compliance · 003 Two-step sign-in (MFA) · 004 Cloud infra (AWS, L5) · 005 Data pipeline (L2) | 001 ✅ in the demo (+ Ali's guards) · 002 ✅ in the demo · 003 ✅ 2026-10-14 in the demo (two-step sign-in) · 004 🚩 blocked on Ram's AWS approval (demo runs on Render) · 005 backend only, unverified |
+| **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API access policies (OPA) | 006 ✅ · 007 ✅ (both approved by Ali, 2026-10-02) · 008 ✅ 2026-10-06 (reviewed by Ali 2026-10-07) · 009 ✅ and 010 ✅ 2026-10-12 (both accepted by Ali, 2026-10-12) · 011 ✅ 2026-10-12 (posted) · 012 ✅ 2026-10-12 (posted) · 013 ✅, 014 ✅, 015 ✅ and 016 ✅ 2026-10-14 (posted). **R1 is complete: 11 of 11 in the demo.** **Next: R2 (STORY-017 onward)** |
 | **R2 AI & Governance** | 017–020 RAG policy Q&A · 021 drift · 022 hallucination monitoring · 023 HITL ladder · 024 override tracking · 025 bias testing · 026–029 observability | Not started |
 | **R3 Scale & Launch** | 030–032 load testing · 033 performance · 034 failover · 035 training · 036 monitoring · 037 incident playbook · 038–040 docs · 041 pen test · 042 accessibility audit · 043–046 go-live review | Not started |
 
@@ -60,10 +60,15 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 - Security audit log: every registration, sign-in (failed ones under the address tried, never the password), sign-out, MFA step, refusal (401/403), successful API read, export, profile change (field names only), decision, override, role grant or removal, deployment, configuration change between server starts (secrets named, never their values) and alert is recorded with who, when and the caller's address. The database refuses UPDATE, DELETE and TRUNCATE on the log (triggers, migration 015); each entry has a retain-until date 7 years on; SSNs, passwords, codes, tokens and secrets are removed before writing. Staff search it on a Security Audit Log page by date, user, event, area and result.
 - Accessibility (Section 508): every page passes WCAG 2.1 AA checks for each role in an automated Chrome audit (axe-core rules, keyboard with a skip link and visible focus, titles and landmarks, nothing lost at 320 px, announced form errors); a warning two minutes before a session ends with Stay signed in (sessions end 12 hours after sign-in); 4.8:1 field borders; applications and appeals confirmed before they are sent.
 - Citizen dashboard: each application with its status and the next step, eligibility with reasons and what the profile is missing, the 10 latest case events (applicant-visible only, one rule shared with the case page), notifications.
-- Roles and Staff Access: citizen / case manager / admin. Case-manager access is given or removed in the app (Staff Access, `/staff`) by an existing case manager with a reason: never your own, never the last case manager; recorded in the same transaction as the change; the person is notified. `CASE_MANAGER_EMAILS` only sets up an empty system.
+- Two-step verification at sign-in (STORY-003): a QR code and key set up an authenticator app (Google Authenticator, Authy, Microsoft Authenticator). After the password, the person gets a 5-minute pending token that every route refuses, then enters a 6-digit code (RFC 6238, one 30-second step either side; the same code never works twice; 5 tries per sign-in). Turning it off needs a code; the key is shown once; every step is audited without the key or code. Our own review found that a pending sign-in could be redeemed twice; it is now single use, decided in one statement, and an end-to-end check reproduces the gap and failed on the old code.
+- Case manager dashboard (STORY-013, "My Work"): my open cases; waiting on me (cases to start, to decide, and compliance reviews of other managers' decisions); the unassigned queue; overdue cases (more than 5 days without an update); recent decisions; and a search that opens the case list already filtered (the filters are in the address).
+- Admin dashboard (STORY-014): all cases by status and type (charts and tables), team performance (open, decided, median days to decide, compliance pass rate), and system health (database and migrations, deployed commit, freshness against 30 s, compliance against 99%, refusals in 24 hours, staff by role).
+- Leadership dashboard (STORY-015): KPIs (total applications, approval rate, average processing time, open cases, appeal rate), 12-week trends, bottlenecks by stage (average days, cases stuck more than 5 days) and team performance. Aggregates only, no applicant data; leadership does no case work.
+- Roles and Staff Access: citizen / case manager / leadership / administrator. Administrators give or remove case manager, leadership and administrator access in the app (Staff Access, `/staff`); case managers can only give case-manager access. Always with a reason; never your own, never the last case manager, never the last administrator; recorded in the same transaction as the change; the person is notified. `ADMIN_EMAILS` sets up the first administrator from existing case managers only; on 2026-10-14 the owner set it on Render and his case-manager account became the demo's administrator. `CASE_MANAGER_EMAILS` only sets up an empty system.
+- Access policies (STORY-016): every API request is decided by Open Policy Agent before any route runs. The Rego policy has OPA's own tests and is compiled by OPA 1.21.0 to WebAssembly and evaluated inside the API. Rules use role, resource type, action and owner or assignee, including the story's example, "case managers can view and work cases assigned to them". Administrators change rules without a deploy on an Access Policies page (switch rules, narrow routes; a reason is required; versions are write-once; each change is audited as a policy change and applies at once). Refusals are audited with the rule and policy version. The policy can refuse what the code allows, never allow what the code refuses (the route guards stay). Sign-in, health and the policy pages are locked so administrators cannot be locked out. Our own review found that the earlier "API governance" service claimed to enforce OPA but never called it and was never wired in; it was removed.
 - The audit log records each visitor's own address (on Render, the address Cloudflare passes on); every deploy check confirms it.
 
-### Screens (2026-10-12)
+### Screens (2026-10-14)
 Captured from the demo application running the deployed code, with synthetic data. Full sets with captions are in each story's evidence pack.
 
 | | |
@@ -75,6 +80,10 @@ Captured from the demo application running the deployed code, with synthetic dat
 | **STORY-010 · Security audit log** ![One applicant's whole trail in the Security Audit Log](demo/screens/tour-11-audit-trail.png) | **STORY-010 · Configuration change** ![A changed setting shown with old and new value, a secret only named](demo/screens/tour-12-config-change.png) |
 | **STORY-011 · Errors announced** ![Registration after an empty submit, each field invalid with its message](demo/screens/tour-13-form-errors.png) | **STORY-011 · Session warning** ![Warning two minutes before a session ends, with Stay signed in](demo/screens/tour-14-session-warning.png) |
 | **STORY-012 · Citizen dashboard** ![Citizen dashboard with two applications, their status and next steps](demo/screens/tour-02-citizen-dashboard.png) | **STORY-012 · Staff Access** ![Staff Access page listing the case managers, with the form to give access](demo/screens/tour-16-staff-access.png) |
+| **STORY-003 · Two-step setup** ![Authenticator setup with a QR code and key](demo/screens/tour-17-mfa-setup.png) | **STORY-003 · Sign-in code** ![Two-step verification asking for a 6-digit code, with tries left after a wrong code](demo/screens/tour-18-sign-in-code.png) |
+| **STORY-013 · Case manager dashboard** ![My Work: open cases, waiting on me, overdue, unassigned queue and search](demo/screens/tour-19-case-manager-dashboard.png) | **STORY-014 · Admin dashboard** ![Admin dashboard with cases by status and type, team performance and system health](demo/screens/tour-20-admin-dashboard.png) |
+| **STORY-015 · Leadership dashboard** ![Leadership dashboard with KPIs, 12-week trends and bottlenecks, no applicant data](demo/screens/tour-21-leadership-dashboard.png) | **STORY-016 · Policy refusal** ![Access denied: no rule lets a case manager view a case assigned to someone else](demo/screens/tour-22-policy-refusal.png) |
+| **STORY-016 · Access policies** ![Access Policies page where administrators switch rules and narrow routes](demo/screens/tour-23-access-policies.png) | |
 
 ---
 
@@ -84,11 +93,11 @@ Captured from the demo application running the deployed code, with synthetic dat
 |---|---|
 | Frontend | React 18 + Vite + Tailwind v4 → Render static site `sss-demo-frontend` |
 | Backend | Node + Express + TypeScript → Render web service `sss-demo-backend` (free tier, sleeps when idle) |
-| Database | Render PostgreSQL `sss-demo-db` (Oregon); migrations 001–016 apply automatically on startup |
+| Database | Render PostgreSQL `sss-demo-db` (Oregon); migrations 001–019 apply automatically on startup |
 | Source | https://github.com/OBIANAMS04/sss-modernization-demo (Render auto-deploys on push to master) |
-| Access table | 46 routes, each with its access rule; a test fails the build if a route has none |
+| Access table | 52 routes, each with its access rule; a test fails the build if a route has none. Open Policy Agent (Rego policy compiled to WebAssembly, in the API) decides every request before any route runs and can only narrow what the code allows |
 | Workflow | Claude commits and pushes each change; Render deploys; Claude verifies the demo deployment itself and posts the conclusion with screenshots to the BUILD ticket (one post per milestone, one composite image of several screens per post) |
-| Verification | `scripts/verify-deploy.mjs`: served commits on every page path, database, migrations, and every protected route refuses requests without a token · `scripts/verify-live-citizen.mjs`: every staff route refuses a signed-in citizen · `scripts/evidence/<story>.mjs`: drives the UI in headless Chrome and captures the evidence pack in `docs/evidence/<story>/` · `scripts/evidence/composite.mjs`: the Basecamp image (refuses to leave out any evidence screen) · `scripts/a11y/audit.mjs`: WCAG 2.1 AA, keyboard, reflow and session checks on every page (`--live` for the demo site) |
+| Verification | `scripts/verify-deploy.mjs`: served commits on every page path, database, migrations, and every protected route refuses requests without a token · `scripts/verify-live-citizen.mjs`: every staff route refuses a signed-in citizen · `scripts/evidence/<story>.mjs`: drives the UI in headless Chrome and captures the evidence pack in `docs/evidence/<story>/` · `scripts/evidence/composite.mjs`: the Basecamp image (refuses to leave out any evidence screen) · `scripts/e2e/policy.mjs`: the access policy end to end (23 checks) · `scripts/opa/build.mjs`: OPA's own tests, then the policy compiled to WebAssembly · `scripts/a11y/audit.mjs`: WCAG 2.1 AA, keyboard, reflow and session checks on every page (`--live` for the demo site) |
 
 ---
 
@@ -112,6 +121,10 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-12 | Model choice: Opus 5.5 (Max) for design, debugging, verification and Ali-facing wording; Sonnet 5.5 (Max) helper agents for well-specified routine work | Obi |
 | 2026-10-12 | Staff identity: admin-assigned roles. An existing case manager gives or removes case-manager access in the app (Staff Access) with a reason; CASE_MANAGER_EMAILS only sets up an empty system | Obi |
 | 2026-10-12 | The Colaberry 10 MB upload request is repeated, to Ali and Ram, in every Basecamp post until they answer | Obi |
+| 2026-10-13 | Milestones handle 5 to 10 stories | Obi |
+| 2026-10-14 | OPA design (STORY-016): the policy decides every request first and can only narrow what the code allows; rules are data that administrators change, with write-once versions | Obi |
+| 2026-10-14 | Effort level Medium for both Opus and Sonnet, one helper agent at a time | Obi |
+| 2026-10-14 | The owner made his own case-manager account the demo's administrator through ADMIN_EMAILS | Obi |
 
 ---
 
@@ -134,8 +147,10 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-12 | **Ali accepts STORY-009 and STORY-010**; asks that post images match the evidence pack and that the route count stays visible |
 | 2026-10-12 | **STORY-011 in the demo**: every page passes WCAG 2.1 AA checks (0 of 12 before, 12 of 12 after), session warning, confirmations; found and fixed a STORY-010 bug (UI sign-outs logged as refusals); verified on the demo deployment (42 routes, 22 protected routes refuse anonymous, 13 staff routes refuse a citizen, live audit passes); posted with screenshots `#__recording_10397764209` |
 | 2026-10-12 | **STORY-012 in the demo**: citizen dashboard; Staff Access replaces email-list roles; the audit log records visitors' own addresses (it recorded Cloudflare's); verified on the demo deployment (46 routes, 24 protected routes refuse anonymous, 14 staff routes refuse a citizen, caller address checked); posted with screenshots `#__recording_10398133067` |
+| 2026-10-13 | Audit-log fixes: server restarts are no longer recorded as deployments; signing out with no session no longer sends a request |
+| 2026-10-14 | **STORY-003, 013, 014, 015 and 016 in the demo; R1 complete (11 of 11)**: two-step sign-in, case manager, admin and leadership dashboards with the administrator role, and API access policies with Open Policy Agent; verified on the demo deployment (commit a40a63c): 52 routes in the access table, 19 migrations, all 28 protected GET routes refuse requests without a token, all 15 staff routes refuse a signed-in citizen, 719 unit tests, 351 end-to-end API checks in 9 suites, 22 of 22 page and role combinations pass WCAG 2.1 AA; posted with screenshots `#__recording_10404013551` |
 
-Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_10355304599` · STORY-006 `#__recording_10362153151` · STORY-007 `#__recording_10363503258` · Ali's approval `#__recording_10365688982` · Ali's access `#__recording_10375070502` · STORY-008 `#__recording_10375183698` · STORY-009 `#__recording_10395976909` · STORY-010 `#__recording_10396171859` · STORY-011 `#__recording_10397764209` · STORY-012 `#__recording_10398133067` (BUILD ticket https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172)
+Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_10355304599` · STORY-006 `#__recording_10362153151` · STORY-007 `#__recording_10363503258` · Ali's approval `#__recording_10365688982` · Ali's access `#__recording_10375070502` · STORY-008 `#__recording_10375183698` · STORY-009 `#__recording_10395976909` · STORY-010 `#__recording_10396171859` · STORY-011 `#__recording_10397764209` · STORY-012 `#__recording_10398133067` · milestone STORY-003, 013–016 `#__recording_10404013551` (BUILD ticket https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172)
 
 ---
 
@@ -148,14 +163,17 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 | Render DB password and JWT secret were shared in chat (2026-09-17) | Must not hold real PII as-is | Rotate both before any real data |
 | `npm audit` (2026-10-06): 44 findings, but only 3 in runtime dependencies after the non-breaking patch update (Express 4.22.3, proxy-addr, qs, body-parser) | Remaining critical (`tar`) runs only while bcrypt installs, never on requests; the rest are jest/eslint tooling | Dependency upgrade pass before go-live (consider bcryptjs to drop tar) |
 | Render free tier sleeps | ~50 s first load | Warm the site before demos, or upgrade |
-| No frontend unit tests; 8 old backend route-test suites are stale (they need a `sss_demo_test` database), and `apiGovernanceService` imports a missing logger | Regressions caught late | The UI is checked end to end by the evidence scripts; repair or retire the stale suites |
+| No frontend unit tests; 8 old backend route-test suites are stale (they need a `sss_demo_test` database) | Regressions caught late | The UI is checked end to end by the evidence scripts; repair or retire the stale suites |
 | Case managers can give case-manager access to others (decided 2026-10-12; the email-list hole is closed) | A case manager could make a second account staff | Every grant is in the audit log with who and why; production should keep grants to an administrator or a second approver |
-| Colaberry's upload endpoint refuses requests over ~1 MB (nginx 413), although its tools say 10 MB | Whole evidence PDFs can't be attached to Basecamp | Raised with Ali in the STORY-009 post and with Ali and Ram in the STORY-011 and STORY-012 posts; not yet answered, so every post repeats it; meanwhile each post attaches one composite image and links the full pack |
+| Colaberry's upload endpoint refuses requests over ~1 MB (nginx 413), although its tools say 10 MB | Whole evidence PDFs can't be attached to Basecamp | Raised with Ali in the STORY-009 post and with Ali and Ram in the STORY-011 and STORY-012 posts, and repeated in the STORY-003 to 016 milestone post; not yet answered, so every post repeats it; meanwhile each post attaches one composite image and links the full pack |
 | No one has used the app with JAWS, NVDA or VoiceOver yet | Automated checks cover only part of WCAG | Hands-on screen-reader audit and a VPAT/ACR with STORY-042 (R3) |
 | The audit log's write-once rule is enforced by database triggers, which a database superuser could disable | Not enough on its own for production | Copy every entry to append-only storage (CloudWatch Logs or S3 Object Lock) with STORY-004 |
 | Sign-out is logged but a sign-in token stays valid until it expires (1 hour) | A copied token keeps working after sign-out | Server-side deny list before production |
 | For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page | A reviewer opening a deep link right after a deploy can see the previous version | verify-deploy waits until every page path serves the current build; a Render header rule could shorten it |
 | Norton HTTPS scanning on Obi's laptop corrupts some connectors | Colaberry works via local bridge; others fail | Optional Norton exclusion |
+| No MFA recovery codes yet | A person who loses their authenticator cannot sign in | Production needs recovery codes or a verified reset |
+| A stale Render service, `sss-modernization-platform`, fails its build on every push and has no running instance | Noise in Render and failed-deploy emails | Obi to delete it in the Render dashboard |
+| The repo now lives under OneDrive\Documents, since OneDrive folder backup moved Documents on 2026-10-13 | OneDrive syncing `node_modules` and `.git` can slow builds or lock files | Consider moving the repo out of OneDrive, or pause sync while building |
 
 ---
 
@@ -167,8 +185,15 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 - STORY-010 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-010
 - STORY-011 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-011
 - STORY-012 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-012
+- STORY-003 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-003
+- STORY-013 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-013
+- STORY-014 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-014
+- STORY-015 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-015
+- STORY-016 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-016
+- Milestone evidence pack (STORY-003 to 016): https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/milestone-003-016
+- Milestone post (Basecamp): https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10404013551
 - Demo briefing (purpose, problems solved, walkthrough; source for the NotebookLM deck): artifact https://claude.ai/artifact/7uX47ceMBSxM2uVJK8smwo · PDF `docs/demo/SSS-Modernization-Demo-Briefing.pdf`
-- Demo slide deck (19 slides with speaker notes; downloads as PowerPoint or PDF): https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W · source `docs/demo/deck/`
+- Demo slide deck (23 slides with speaker notes; downloads as PowerPoint or PDF): https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W · source `docs/demo/deck/`
 - Render: https://dashboard.render.com
 - Basecamp BUILD ticket: https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172
 

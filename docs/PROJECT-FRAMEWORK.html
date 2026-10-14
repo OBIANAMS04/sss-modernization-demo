@@ -170,7 +170,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <h1>SSS Modernization Framework</h1>
     <p class="lede">Modernizing the U.S. Selective Service System's business systems: online registration, registrant records, compliance verification, exemption and appeal case management, and reporting. Two tracks, the proposal and the working demo, meet at submission.</p>
     <div class="meta">
-      <span>Last updated <strong>October 12, 2026</strong></span>
+      <span>Last updated <strong>October 14, 2026</strong></span>
       <span>Owner <strong>Obi Anamelechi Kingsley</strong></span>
       <span>Decision makers <strong>Ali Muwwakkil, Ram Katamaraja</strong></span>
     </div>
@@ -199,18 +199,18 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       </div>
       <div class="cell">
         <span class="label">BUILD · R0</span>
-        <span class="value">2 of 5 in the demo</span>
-        <span class="note">MFA and pipeline are backend only; AWS waits on Ram</span>
+        <span class="value">3 of 5 in the demo</span>
+        <span class="note">Two-step sign-in shipped Oct 14; the data pipeline is backend only; AWS waits on Ram</span>
       </div>
       <div class="cell">
         <span class="label">BUILD · R1</span>
-        <span class="value">7 of 11 in the demo</span>
-        <span class="note">Citizen dashboard and accessibility shipped Oct 12; Ali accepted data freshness and the audit log Oct 12, reviewed compliance validation Oct 7 and approved 006 and 007 Oct 2</span>
+        <span class="value">11 of 11 in the demo</span>
+        <span class="note">R1 complete. Case manager, admin and leadership dashboards and API access policies shipped Oct 14; citizen dashboard and accessibility Oct 12; Ali accepted data freshness and the audit log Oct 12, reviewed compliance validation Oct 7 and approved 006 and 007 Oct 2</span>
       </div>
       <div class="cell">
         <span class="label">Next</span>
-        <span class="value">STORY-013</span>
-        <span class="note">Case manager dashboard: my cases, cases waiting on me, overdue</span>
+        <span class="value">R2</span>
+        <span class="note">AI and governance, from STORY-017</span>
       </div>
     </div>
     <p class="sub">"In the demo" means working on the synthetic demo deployment. Nothing here is operating in production (Ali, Oct 7).</p>
@@ -249,19 +249,19 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <div class="releases">
       <article class="release">
         <div class="release-head"><h3>R0 · Walking Skeleton</h3><span class="range">STORY-001 – 005</span></div>
-        <div class="bar" role="img" aria-label="2 of 5 in the demo, 2 partial"><span class="done" style="width:40%"></span><span class="partial" style="width:40%"></span></div>
+        <div class="bar" role="img" aria-label="3 of 5 in the demo, 1 partial"><span class="done" style="width:60%"></span><span class="partial" style="width:20%"></span></div>
         <ul class="stories">
           <li><span class="id">STORY-001</span><span class="name">Registration and login<small>Plus Ali's guards: SSN hashed and never logged, demo-data banner, masked SSN entry</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-002</span><span class="name">Profile update and compliance check<small>Shipped with STORY-006</small></span><span class="pill ok">In demo</span></li>
-          <li><span class="id">STORY-003</span><span class="name">Multi-factor authentication<small>Backend endpoints exist; no screens yet</small></span><span class="pill warn">Partial</span></li>
+          <li><span class="id">STORY-003</span><span class="name">Two-step verification at sign-in (MFA)<small>Authenticator app (QR code and key), 6-digit code after the password, 5-minute pending token, one use per code, 5 tries; every step audited. Posted Oct 14</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-004</span><span class="name">Cloud infrastructure and security controls (L5)<small>Waits on Ram's AWS approval; the demo runs on Render</small></span><span class="pill bad">Blocked</span></li>
           <li><span class="id">STORY-005</span><span class="name">Real-time data pipeline (L2)<small>Backend code exists; not yet verified</small></span><span class="pill warn">Partial</span></li>
         </ul>
       </article>
 
       <article class="release">
-        <div class="release-head"><h3>R1 · Core</h3><span class="range">STORY-006 – 016</span></div>
-        <div class="bar" role="img" aria-label="7 of 11 in the demo"><span class="done" style="width:64%"></span></div>
+        <div class="release-head"><h3>R1 · Core</h3><span class="range">STORY-006 – 016 · complete</span></div>
+        <div class="bar" role="img" aria-label="11 of 11 in the demo"><span class="done" style="width:100%"></span></div>
         <ul class="stories">
           <li><span class="id">STORY-006</span><span class="name">Exemption eligibility<small>Types A, B and C, each with a status and a reason; audit-logged. Approved by Ali Oct 2</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-007</span><span class="name">Case management<small>Apply, review, deny with reason, appeal; timeline, notifications, CSV export. Approved by Ali Oct 2</small></span><span class="pill ok">In demo</span></li>
@@ -270,8 +270,10 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <li><span class="id">STORY-010</span><span class="name">Security audit logging, 100% coverage<small>Every sign-in, refusal, read, change, deployment and configuration change; write-once in the database, kept 7 years, no personal data. Accepted by Ali Oct 12</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-011</span><span class="name">Accessibility testing (Section 508)<small>Every page passes WCAG 2.1 AA checks for each role (0 of 12 before, 12 of 12 after); session warning; confirmations. Posted Oct 12</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-012</span><span class="name">Citizen dashboard<small>Applications with status and next step, eligibility, history, notifications; Staff Access replaces email-list roles. Posted Oct 12</small></span><span class="pill ok">In demo</span></li>
-          <li><span class="id">STORY-013–015</span><span class="name">Case manager, admin and leadership dashboards<small>Next: STORY-013</small></span><span class="pill info">Next</span></li>
-          <li><span class="id">STORY-016</span><span class="name">API governance layer (OPA/ABAC)<small>Draft code exists but is not built or deployed</small></span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-013</span><span class="name">Case manager dashboard<small>My Work: open cases, waiting on me, unassigned queue, overdue (over 5 days), recent decisions, search that opens the filtered case list. Posted Oct 14</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-014</span><span class="name">Admin dashboard<small>Cases by status and type, team performance, system health; administrator role and Staff Access for case manager, leadership and administrator. Posted Oct 14</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-015</span><span class="name">Leadership dashboard<small>KPIs, 12-week trends, bottlenecks by stage, team performance; aggregates only, no applicant data. Posted Oct 14</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-016</span><span class="name">API access policies (OPA/ABAC)<small>Open Policy Agent decides every request before any route; rules changed by administrators without a deploy, write-once versions, refusals audited. Posted Oct 14</small></span><span class="pill ok">In demo</span></li>
         </ul>
       </article>
 
@@ -314,14 +316,19 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><strong>Security audit log</strong>Every sign-in, refusal, read, export, change, role grant, deployment and configuration change, with who, when and from where; the database refuses edits and deletions; kept 7 years; no SSNs, passwords or secrets</li>
       <li><strong>Accessibility</strong>Every page passes WCAG 2.1 AA checks for each role: keyboard and skip link, screen-reader names and errors, contrast, 320 px reflow; a warning before a session ends; confirmation before applying or appealing</li>
       <li><strong>Citizen dashboard</strong>Each application with its status and next step, eligibility with reasons, recent activity and notifications; only your own</li>
-      <li><strong>Staff Access</strong>Case-manager access given in the app by a case manager with a reason, never by registering; never your own, never the last; every change logged</li>
+      <li><strong>Roles and Staff Access</strong>Citizen, case manager, leadership and administrator. Administrators give or remove case manager, leadership and administrator access; case managers only case-manager access. Always with a reason; never your own, never the last case manager or administrator; every change logged. ADMIN_EMAILS sets up the first administrator from existing case managers; on Oct 14 the owner's case-manager account became the demo's administrator</li>
+      <li><strong>Two-step sign-in</strong>QR code and key for an authenticator app; after the password a 5-minute pending token that every route refuses, then a 6-digit code (one 30-second step either side, never the same code twice, 5 tries); turning it off needs a code; the key is shown once; every step audited without the key or code. A double-redeem gap found in our own review was fixed before shipping</li>
+      <li><strong>Case manager dashboard</strong>My open cases, waiting on me (to start, to decide, compliance reviews of others' decisions), unassigned queue, overdue (over 5 days without an update), recent decisions, and a search that opens the filtered case list</li>
+      <li><strong>Admin dashboard</strong>All cases by status and type, team performance (open, decided, median days to decide, compliance pass rate), system health (database and migrations, deployed commit, freshness against 30 s, compliance against 99%, refusals in 24 hours, staff by role)</li>
+      <li><strong>Leadership dashboard</strong>Total applications, approval rate, average processing time, open cases, appeal rate, 12-week trends, bottlenecks by stage and team performance; aggregates only, no applicant data</li>
+      <li><strong>Access policies</strong>Open Policy Agent decides every API request before any route: role, resource type, action and owner or assignee. Administrators change rules without a deploy (reason required, write-once versions, audited, applies at once). The policy can refuse what the code allows, never allow what it refuses; sign-in, health and the policy pages are locked so administrators cannot be locked out. The earlier "API governance" service never called OPA and was removed</li>
     </ul>
   </section>
 
   <section id="screens" aria-labelledby="screens-h">
     <header>
       <h2 id="screens-h">Screens</h2>
-      <p class="sub">The latest screen for each shipped story, captured from the demo application running the deployed code with synthetic data (October 12, 2026). Full sets with captions are in each story's evidence pack on GitHub.</p>
+      <p class="sub">The latest screen for each shipped story, captured from the demo application running the deployed code with synthetic data (October 14, 2026). Full sets with captions are in each story's evidence pack on GitHub.</p>
     </header>
     <div class="shots">
       <figure><img src="demo/screens/tour-01-register.png" width="1280" height="900" alt="Registration form with the demo-data banner and a masked SSN field" loading="lazy"><figcaption><strong>STORY-001 · Registration</strong>Masked SSN entry and a synthetic-data banner; SSNs are stored as one-way hashes.</figcaption></figure>
@@ -338,13 +345,20 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <figure><img src="demo/screens/tour-14-session-warning.png" width="1280" height="1365" alt="Warning two minutes before a session ends, with Stay signed in and Sign out" loading="lazy"><figcaption><strong>STORY-011 · Session warning</strong>Two minutes before the session ends: Stay signed in or Sign out, with focus kept inside.</figcaption></figure>
       <figure><img src="demo/screens/tour-02-citizen-dashboard.png" width="1280" height="1500" alt="Citizen dashboard with two applications, their status and next steps, and eligibility" loading="lazy"><figcaption><strong>STORY-012 · Citizen dashboard</strong>Each application with its status and next step, eligibility with reasons, recent activity and notifications.</figcaption></figure>
       <figure><img src="demo/screens/tour-16-staff-access.png" width="1280" height="990" alt="Staff Access page listing the case managers, with the form to give access" loading="lazy"><figcaption><strong>STORY-012 · Staff Access</strong>Case-manager access given in the app with a reason; never your own, never the last; every change logged.</figcaption></figure>
+      <figure><img src="demo/screens/tour-17-mfa-setup.png" width="1280" height="1182" alt="Authenticator setup with a QR code and key" loading="lazy"><figcaption><strong>STORY-003 · Two-step setup</strong>A QR code and key for an authenticator app; the key is shown once.</figcaption></figure>
+      <figure><img src="demo/screens/tour-18-sign-in-code.png" width="1280" height="900" alt="Two-step verification asking for a 6-digit code, with tries left after a wrong code" loading="lazy"><figcaption><strong>STORY-003 · Sign-in code</strong>After the password, a 6-digit code; a wrong code shows the tries left (5 per sign-in).</figcaption></figure>
+      <figure><img src="demo/screens/tour-19-case-manager-dashboard.png" width="1280" height="2284" alt="My Work: open cases, waiting on me, overdue, unassigned queue and search" loading="lazy"><figcaption><strong>STORY-013 · Case manager dashboard</strong>My open cases, what is waiting on me, overdue cases, the unassigned queue and a search.</figcaption></figure>
+      <figure><img src="demo/screens/tour-20-admin-dashboard.png" width="1280" height="2910" alt="Admin dashboard with cases by status and type, team performance and system health" loading="lazy"><figcaption><strong>STORY-014 · Admin dashboard</strong>All cases by status and type, team performance and system health.</figcaption></figure>
+      <figure><img src="demo/screens/tour-21-leadership-dashboard.png" width="1280" height="2124" alt="Leadership dashboard with KPIs, 12-week trends and bottlenecks" loading="lazy"><figcaption><strong>STORY-015 · Leadership dashboard</strong>KPIs, 12-week trends and bottlenecks by stage; aggregates only, no applicant data.</figcaption></figure>
+      <figure><img src="demo/screens/tour-22-policy-refusal.png" width="1280" height="900" alt="Access denied: no rule lets a case manager view a case assigned to someone else" loading="lazy"><figcaption><strong>STORY-016 · Policy refusal</strong>Open Policy Agent refuses a case manager opening a case assigned to someone else, naming the rule.</figcaption></figure>
+      <figure><img src="demo/screens/tour-23-access-policies.png" width="1280" height="4225" alt="Access Policies page where administrators switch rules and narrow routes" loading="lazy"><figcaption><strong>STORY-016 · Access policies</strong>Administrators switch rules and narrow routes without a deploy; a reason is required and each version is kept.</figcaption></figure>
     </div>
   </section>
 
   <section id="platform" aria-labelledby="platform-h">
     <header>
       <h2 id="platform-h">Platform</h2>
-      <p class="sub">Claude commits and pushes each change, and Render deploys automatically. Claude then verifies the demo deployment itself: the commits served on every page path, the database and migrations, every protected route refusing requests without a token or from a citizen, and screenshots. Database changes apply on startup through tracked migrations (001–016).</p>
+      <p class="sub">Claude commits and pushes each change, and Render deploys automatically. Claude then verifies the demo deployment itself: the commits served on every page path, the database and migrations, every protected route refusing requests without a token or from a citizen, and screenshots. Database changes apply on startup through tracked migrations (001–019). Open Policy Agent decides every API request before any route runs; the access table lists 52 routes. The policy is checked end to end by <span class="mono">scripts/e2e/policy.mjs</span> and built by <span class="mono">scripts/opa/build.mjs</span>.</p>
     </header>
     <div class="flow">
       <div class="node"><span class="k">Source</span><span class="v">GitHub</span><span class="m">OBIANAMS04/sss-modernization-demo</span></div>
@@ -379,6 +393,10 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td class="num">2026-10-12</td><td>Model choice: Opus 5.5 (Max) for design, debugging, verification and Ali-facing wording; Sonnet 5.5 (Max) helper agents for well-specified routine work</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-12</td><td>Staff identity: admin-assigned roles. An existing case manager gives or removes case-manager access in the app (Staff Access) with a reason; CASE_MANAGER_EMAILS only sets up an empty system</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-12</td><td>The Colaberry 10 MB upload request is repeated, to Ali and Ram, in every Basecamp post until they answer</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-13</td><td>Milestones handle 5 to 10 stories</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-14</td><td>OPA design (STORY-016): the policy decides every request first and can only narrow what the code allows; rules are data that administrators change, with write-once versions</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-14</td><td>Effort level Medium for both Opus and Sonnet, one helper agent at a time</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-14</td><td>The owner made his own case-manager account the demo's administrator through ADMIN_EMAILS</td><td>Obi</td></tr>
         </tbody>
       </table>
     </div>
@@ -403,6 +421,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><time datetime="2026-10-12">Oct 12, 2026</time><span class="big">Ali accepts STORY-009 and STORY-010</span></li>
       <li><time datetime="2026-10-12">Oct 12, 2026</time><span class="big">STORY-011 accessibility in the demo: every page passes WCAG 2.1 AA checks (0 of 12 before, 12 of 12 after); verified on the demo deployment, posted with screenshots</span></li>
       <li><time datetime="2026-10-12">Oct 12, 2026</time><span class="big">STORY-012 citizen dashboard and Staff Access in the demo; the audit log now records visitors' own addresses; verified on the demo deployment, posted with screenshots</span></li>
+      <li><time datetime="2026-10-13">Oct 13, 2026</time><span>Audit-log fixes: server restarts are no longer recorded as deployments; signing out with no session no longer sends a request</span></li>
+      <li><time datetime="2026-10-14">Oct 14, 2026</time><span class="big">STORY-003, 013, 014, 015 and 016 in the demo; R1 complete (11 of 11). Verified on the demo deployment (commit a40a63c): 52 routes in the access table, 19 migrations, all 28 protected GET routes refuse requests without a token, all 15 staff routes refuse a signed-in citizen, 719 unit tests, 351 end-to-end API checks in 9 suites, 22 of 22 page and role combinations pass WCAG 2.1 AA; posted with screenshots</span></li>
     </ol>
   </section>
 
@@ -421,9 +441,12 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td><span class="pill idle">Low</span></td><td>Sign-out is logged, but a sign-in token stays valid until it expires (1 hour)</td><td>Server-side deny list before production</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>Free hosting sleeps when idle</td><td>Open the site a minute before a demo</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>No frontend unit tests (the UI is now checked end to end by the evidence scripts); older backend route tests are stale</td><td>Repair or retire the stale suites</td><td>Obi</td></tr>
-          <tr><td><span class="pill idle">Low</span></td><td>Colaberry's upload endpoint refuses files over about 1 MB, although its tools allow 10 MB</td><td>Raised with Ali in the STORY-009 post and with Ali and Ram in the STORY-011 and STORY-012 posts; not yet answered, so every post repeats it; meanwhile each post attaches one composite image and links the full evidence pack</td><td>Ali, Ram (Colaberry)</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>Colaberry's upload endpoint refuses files over about 1 MB, although its tools allow 10 MB</td><td>Raised with Ali in the STORY-009 post and with Ali and Ram in the STORY-011 and STORY-012 posts, and repeated in the STORY-003 to 016 milestone post; not yet answered, so every post repeats it; meanwhile each post attaches one composite image and links the full evidence pack</td><td>Ali, Ram (Colaberry)</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>No one has used the app with JAWS, NVDA or VoiceOver yet; automated checks cover only part of WCAG</td><td>Hands-on screen-reader audit and a VPAT/ACR with STORY-042 (R3)</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page</td><td>verify-deploy waits until every page path serves the current build; a Render header rule could shorten it</td><td>Obi</td></tr>
+          <tr><td><span class="pill warn">Medium</span></td><td>No MFA recovery codes yet</td><td>Production needs recovery codes or a verified reset</td><td>Obi</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>A stale Render service, sss-modernization-platform, fails its build on every push and has no running instance</td><td>Delete it in the Render dashboard</td><td>Obi</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>The repo now lives under OneDrive\Documents (OneDrive folder backup moved Documents on Oct 13); syncing node_modules and .git can slow builds or lock files</td><td>Consider moving the repo out of OneDrive, or pause sync while building</td><td>Obi</td></tr>
         </tbody>
       </table>
     </div>
@@ -434,7 +457,14 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <ul class="links">
       <li><span class="k">Demo site</span><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></li>
       <li><span class="k">Basecamp BUILD ticket</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172">Selective Service Modernization – BUILD</a></li>
-      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10398133067">STORY-012 Citizen Dashboard and Staff Access</a></li>
+      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10404013551">STORY-003, 013, 014, 015 and 016: R1 complete</a></li>
+      <li><span class="k">Milestone evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/milestone-003-016">Screenshots and checks, STORY-003 to 016</a></li>
+      <li><span class="k">STORY-016 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-016">Screenshots and checks</a></li>
+      <li><span class="k">STORY-015 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-015">Screenshots and checks</a></li>
+      <li><span class="k">STORY-014 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-014">Screenshots and checks</a></li>
+      <li><span class="k">STORY-013 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-013">Screenshots and checks</a></li>
+      <li><span class="k">STORY-003 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-003">Screenshots and checks</a></li>
+      <li><span class="k">STORY-012 post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10398133067">STORY-012 Citizen Dashboard and Staff Access</a></li>
       <li><span class="k">STORY-012 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-012">Screenshots and checks</a></li>
       <li><span class="k">STORY-011 post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10397764209">STORY-011 Accessibility Testing</a></li>
       <li><span class="k">STORY-011 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-011">Screenshots and checks</a></li>
@@ -443,7 +473,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><span class="k">STORY-009 post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10395976909">STORY-009 Data Freshness Monitoring</a></li>
       <li><span class="k">STORY-009 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-009">Screenshots and checks</a></li>
       <li><span class="k">Demo briefing</span><a href="https://claude.ai/artifact/7uX47ceMBSxM2uVJK8smwo">Purpose, problems solved and walkthrough</a></li>
-      <li><span class="k">Demo slide deck</span><a href="https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W">19 slides with speaker notes</a></li>
+      <li><span class="k">Demo slide deck</span><a href="https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W">23 slides with speaker notes</a></li>
       <li><span class="k">STORY-008 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-008">Screenshots and checks</a></li>
       <li><span class="k">Ali's approval</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10365688982">R0 and R1 review, Oct 2</a></li>
       <li><span class="k">Security rules</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/blob/master/docs/SECURITY-RULES.md">docs/SECURITY-RULES.md</a></li>
