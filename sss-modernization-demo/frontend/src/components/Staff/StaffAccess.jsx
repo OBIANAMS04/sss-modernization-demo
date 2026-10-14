@@ -2,23 +2,31 @@ import { useState, useEffect, useCallback, useId, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getUser } from '../../utils/tokenManager';
 import { getApiErrorMessage } from '../../utils/apiError';
-import { isStaffUser } from '../../utils/roles';
+import { isAdminUser, isStaffUser } from '../../utils/roles';
 import { staffService } from '../../services/staffService';
 import AppNav from '../Common/AppNav';
 import ConfirmAction from '../Common/ConfirmAction';
 import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
-const ROLE_LABELS = { case_manager: 'Case manager', admin: 'Administrator' };
+const ROLE_LABELS = { case_manager: 'Case manager', leadership: 'Leadership', admin: 'Administrator' };
+// How a role reads in a sentence: "case-manager access"
+const ACCESS_NAMES = { case_manager: 'case-manager', leadership: 'leadership', admin: 'administrator' };
+// What an administrator can give. A case manager gives case-manager access only, so they get no choice.
+const ROLE_OPTIONS = [
+  { value: 'case_manager', label: 'Case manager' },
+  { value: 'leadership', label: 'Leadership' },
+  { value: 'admin', label: 'Admin' },
+];
 const MAX_REASON = 500; // the API's limit
 
 const inputClass =
   'w-full px-3 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white';
 
 /**
- * One person with staff access. Removing it opens a row below with a required reason, then confirms in place before
- * anything is sent. Who cannot be removed is said in words rather than hidden.
+ * One person with a staff role. Removing it opens a row below with a required reason, then confirms in place before
+ * anything is sent. Who cannot be removed, and why (`blocked`), is said in words rather than hidden.
  */
-function StaffRow({ member, isYou, onlyOne, busy, onRemove }) {
+function StaffRow({ member, isYou, blocked, busy, onRemove }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const panelId = useId();
@@ -31,9 +39,7 @@ function StaffRow({ member, isYou, onlyOne, busy, onRemove }) {
 
   const role = ROLE_LABELS[member.role] || member.role;
   let action;
-  if (member.role === 'admin') action = 'Administrator access is not changed here.';
-  else if (onlyOne) action = 'At least one case manager must keep access.';
-  else if (isYou) action = 'You cannot remove your own access.';
+  if (blocked) action = blocked;
   else {
     action = (
       <button
@@ -86,7 +92,7 @@ function StaffRow({ member, isYou, onlyOne, busy, onRemove }) {
             <ConfirmAction
               label="Remove access"
               className="mt-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
-              question={`Confirm: remove case-manager access for ${member.email}?`}
+              question={`Confirm: remove ${ACCESS_NAMES[member.role]} access for ${member.email}?`}
               confirmLabel="Confirm removal"
               onConfirm={() => onRemove(member, reason.trim())}
               disabled={busy || !reason.trim()}
@@ -101,14 +107,16 @@ function StaffRow({ member, isYou, onlyOne, busy, onRemove }) {
 export default function StaffAccess() {
   const user = getUser();
   const staff = isStaffUser(user);
+  const admin = isAdminUser(user);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [grant, setGrant] = useState({ email: '', reason: '' });
+  const [grant, setGrant] = useState({ email: '', role: 'case_manager', reason: '' });
   const listHeadingId = useId();
   const grantHeadingId = useId();
+  const roleHintId = useId();
   const reasonHintId = useId();
   const listHeadingRef = useRef(null);
   const errorRef = useRef(null);
@@ -152,17 +160,28 @@ export default function StaffAccess() {
 
   const handleGrant = async () => {
     const done = await change(
-      () => staffService.grant(grant.email.trim(), grant.reason.trim()),
-      (changed) => `${changed.email} now has case-manager access.`
+      () => staffService.grant(grant.email.trim(), grant.reason.trim(), grant.role),
+      (changed) => `${changed.email} now has ${ACCESS_NAMES[changed.role]} access.`
     );
-    if (done) setGrant({ email: '', reason: '' });
+    if (done) setGrant((prev) => ({ ...prev, email: '', reason: '' }));
   };
 
   const handleRemove = (member, reason) =>
     change(
       () => staffService.revoke(member.id, reason),
-      (changed) => `${changed.email} no longer has case-manager access.`
+      () => `${member.email} no longer has ${ACCESS_NAMES[member.role]} access.`
     );
+
+  // Why this person's access cannot be removed by the signed-in user, or null. The API refuses the same cases.
+  const staffCount = members.filter(isStaffUser).length;
+  const adminCount = members.filter(isAdminUser).length;
+  const whyNotRemovable = (member) => {
+    if (member.id === user?.id) return 'You cannot remove your own access.';
+    if (member.role !== 'case_manager' && !admin) return 'Only an administrator can change this access.';
+    if (member.role === 'admin' && adminCount <= 1) return 'At least one administrator must keep access.';
+    if (isStaffUser(member) && staffCount <= 1) return 'At least one case manager must keep access.';
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -172,7 +191,7 @@ export default function StaffAccess() {
         <DemoEnvironmentBanner />
 
         {!staff ? (
-          <div className="bg-white rounded-lg shadow-md p-6 text-gray-700">Staff Access is available to case managers only.</div>
+          <div className="bg-white rounded-lg shadow-md p-6 text-gray-700">Staff Access is available to case managers and administrators only.</div>
         ) : (
           <>
             {error && (
@@ -183,7 +202,8 @@ export default function StaffAccess() {
             {notice && <div role="status" className="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm wrap-anywhere">{notice}</div>}
 
             <p className="mb-6 text-sm text-gray-700">
-              Case-manager access is granted here by an existing case manager, never by registering. Every change is recorded in the{' '}
+              Access is granted here by an existing case manager or administrator, never by registering. Case managers give and remove
+              case-manager access; administrators also give and remove leadership and administrator access. Every change is recorded in the{' '}
               <Link to="/audit" className="text-blue-700 underline hover:text-blue-800 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
                 Security Audit Log
               </Link>
@@ -215,7 +235,7 @@ export default function StaffAccess() {
                           key={member.id}
                           member={member}
                           isYou={member.id === user?.id}
-                          onlyOne={members.length <= 1}
+                          blocked={whyNotRemovable(member)}
                           busy={busy}
                           onRemove={handleRemove}
                         />
@@ -227,7 +247,7 @@ export default function StaffAccess() {
             </section>
 
             <section className="bg-white rounded-lg shadow-md p-6">
-              <h2 id={grantHeadingId} className="text-xl font-bold text-gray-900">Give case-manager access</h2>
+              <h2 id={grantHeadingId} className="text-xl font-bold text-gray-900">{admin ? 'Give access' : 'Give case-manager access'}</h2>
               <p className="text-sm text-gray-600 mt-1 mb-4">The person needs an account first. Case managers review and decide cases, so give access only to people who need it.</p>
               <form onSubmit={(e) => e.preventDefault()} aria-labelledby={grantHeadingId} className="space-y-4 max-w-xl">
                 <div>
@@ -242,6 +262,27 @@ export default function StaffAccess() {
                     className={inputClass}
                   />
                 </div>
+                {admin && (
+                  <div>
+                    <label htmlFor="grant-role" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                    <select
+                      id="grant-role"
+                      aria-describedby={roleHintId}
+                      value={grant.role}
+                      onChange={(e) => setGrant((prev) => ({ ...prev, role: e.target.value }))}
+                      className={inputClass}
+                    >
+                      {ROLE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                    <p id={roleHintId} className="text-xs text-gray-600 mt-1">
+                      Case managers work cases. Leadership sees totals and trends, never an applicant&apos;s details. Admins do both and manage
+                      access. To change someone from one role to another, remove their access first; a case manager or leadership person can
+                      be made an admin directly.
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label htmlFor="grant-reason" className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
                   <textarea
@@ -260,7 +301,7 @@ export default function StaffAccess() {
                   <ConfirmAction
                     label="Give access"
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
-                    question={`Confirm: give ${grant.email.trim()} case-manager access?`}
+                    question={`Confirm: give ${grant.email.trim()} ${ACCESS_NAMES[grant.role]} access?`}
                     confirmLabel="Confirm access"
                     onConfirm={handleGrant}
                     disabled={busy || !grant.email.trim() || !grant.reason.trim()}

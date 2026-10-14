@@ -3,8 +3,13 @@ import { useAuth } from './hooks/useAuth';
 import { isAuthenticated } from './utils/tokenManager';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import MfaSetup from './components/Auth/MfaSetup';
+import MfaVerify from './components/Auth/MfaVerify';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Dashboard from './components/Dashboard/Dashboard';
+import CaseManagerDashboard from './components/Dashboard/CaseManagerDashboard';
+import LeadershipDashboard from './components/Dashboard/LeadershipDashboard';
+import AdminDashboard from './components/Dashboard/AdminDashboard';
 import Profile from './components/Profile/Profile';
 import CaseList from './components/Cases/CaseList';
 import CaseDetail from './components/Cases/CaseDetail';
@@ -50,6 +55,10 @@ function App() {
           element={<SignedOutOnly><Register /></SignedOutOnly>}
         />
         <Route
+          path="/mfa/verify"
+          element={<SignedOutOnly><MfaVerify /></SignedOutOnly>}
+        />
+        <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
@@ -62,6 +71,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mfa"
+          element={
+            <ProtectedRoute>
+              <MfaSetup />
             </ProtectedRoute>
           }
         />
@@ -118,6 +135,30 @@ function App() {
           element={
             <ProtectedRoute>
               <StaffAccess />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-work"
+          element={
+            <ProtectedRoute>
+              <CaseManagerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leadership"
+          element={
+            <ProtectedRoute>
+              <LeadershipDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

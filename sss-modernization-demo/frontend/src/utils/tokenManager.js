@@ -22,3 +22,14 @@ export const clearAuth = () => {
   removeToken();
   removeUser();
 };
+
+// STORY-003: after a correct password, an account with two-step verification gets a pending token, not a session. It
+// lasts five minutes, opens nothing but the code check, and stays in this tab only (sessionStorage), so it is never
+// mistaken for the session in localStorage.
+const PENDING_KEY = 'mfa_pending_token';
+
+export const getPendingMfaToken = () => sessionStorage.getItem(PENDING_KEY);
+
+export const setPendingMfaToken = (token) => sessionStorage.setItem(PENDING_KEY, token);
+
+export const clearPendingMfaToken = () => sessionStorage.removeItem(PENDING_KEY);

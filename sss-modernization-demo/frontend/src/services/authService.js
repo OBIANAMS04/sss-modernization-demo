@@ -21,6 +21,13 @@ export const authService = {
     return response.data;
   },
 
+  // STORY-003: the second step of sign-in for an account with two-step verification. The pending token from the password
+  // step goes in the body (there is no session yet); the response is the same { user, token } as login.
+  verifyMfa: async (pendingToken, code) => {
+    const response = await api.post('/auth/mfa/verify', { pendingToken, code });
+    return response.data;
+  },
+
   // STORY-011 (WCAG 2.2.1): extends the session; the response carries the replacement token
   refresh: async () => {
     const response = await api.post('/auth/refresh');

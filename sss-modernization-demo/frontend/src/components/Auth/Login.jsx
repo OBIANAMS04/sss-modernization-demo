@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../../services/authService';
-import { setToken, setUser } from '../../utils/tokenManager';
+import { setPendingMfaToken, setToken, setUser } from '../../utils/tokenManager';
 import { validateEmail, validatePassword } from '../../utils/validators';
 import { getApiErrorMessage } from '../../utils/apiError';
 import usePageTitle from '../../utils/usePageTitle';
@@ -17,6 +17,8 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionEnded = searchParams.get('expired') === '1'; // SessionTimer sends people here when their session ran out
+  const location = useLocation();
+  const [mfaEnded, setMfaEnded] = useState(location.state?.mfaEnded); // STORY-003: the code step sends people back here: 'attempts' (five wrong codes) or 'expired'
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,9 +50,16 @@ export default function Login() {
     e.preventDefault();
     if (!validateForm()) return;
 
+    setMfaEnded(null); // a new attempt: the reason the last one ended no longer applies
     setLoading(true);
     try {
       const response = await authService.login(formData.email, formData.password);
+      if (response.mfaRequired) {
+        // STORY-003: the password was right, but the session starts only after the authentication code
+        setPendingMfaToken(response.pendingToken);
+        navigate('/mfa/verify');
+        return;
+      }
       setToken(response.token);
       setUser(response.user);
       navigate('/dashboard');
@@ -71,6 +80,18 @@ export default function Login() {
           {sessionEnded && (
             <div role="status" className="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
               Your session ended. Please sign in again.
+            </div>
+          )}
+
+          {mfaEnded === 'attempts' && (
+            <div role="alert" className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              Too many incorrect codes. Please sign in again.
+            </div>
+          )}
+
+          {mfaEnded === 'expired' && (
+            <div role="status" className="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-sm">
+              Your sign-in timed out before the code was entered. Please sign in again.
             </div>
           )}
 

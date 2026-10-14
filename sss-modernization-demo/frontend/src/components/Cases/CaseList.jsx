@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getUser } from '../../utils/tokenManager';
 import { getApiErrorMessage } from '../../utils/apiError';
 import { caseService } from '../../services/caseService';
@@ -17,12 +17,27 @@ const EMPTY_FILTERS = { status: '', exemptionType: '', assignedTo: '', applicant
 const inputClass =
   'w-full px-3 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm bg-white';
 
+// STORY-013: the My Work search form opens this page with its filters in the address (/cases?status=In%20Review&assignedTo=unassigned).
+// The page starts from them, and starts again whenever the address changes: following another such link, or Case Management in the menu.
+const filtersFromQuery = (query) => ({
+  status: query.get('status') || '',
+  exemptionType: query.get('exemptionType') || '',
+  assignedTo: query.get('assignedTo') || '',
+  applicant: query.get('applicant') || '',
+  openOnly: query.get('openOnly') !== 'false',
+});
+
 export default function CaseList() {
+  const [query] = useSearchParams();
+  return <CaseListPage key={query.toString()} initialFilters={filtersFromQuery(query)} />;
+}
+
+function CaseListPage({ initialFilters }) {
   const user = getUser();
   const staff = isStaffUser(user);
 
-  const [filters, setFilters] = useState(EMPTY_FILTERS);
-  const [applicantInput, setApplicantInput] = useState('');
+  const [filters, setFilters] = useState(initialFilters);
+  const [applicantInput, setApplicantInput] = useState(initialFilters.applicant);
   const [page, setPage] = useState(1);
   const [result, setResult] = useState({ cases: [], total: 0 });
   const [stats, setStats] = useState(null);

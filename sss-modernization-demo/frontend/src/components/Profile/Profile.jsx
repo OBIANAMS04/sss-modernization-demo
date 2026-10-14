@@ -295,6 +295,23 @@ export default function Profile() {
                   </ul>
                 )}
               </section>
+
+              {/* STORY-003: where two-step verification is switched on or off */}
+              <section aria-labelledby="profile-security-heading" className="bg-white rounded-lg shadow-md p-6 mt-6">
+                <h2 id="profile-security-heading" className="text-xl font-bold text-gray-900 mb-2">Sign-in security</h2>
+                <p className="text-gray-700 text-sm">
+                  Two-step verification is <strong>{profile.mfaEnabled ? 'on' : 'off'}</strong>.{' '}
+                  {profile.mfaEnabled
+                    ? 'After your password, sign-in asks for a code from your authenticator app.'
+                    : 'Add a code from an authenticator app to protect your account if your password is ever stolen.'}
+                </p>
+                <Link
+                  to="/mfa"
+                  className="inline-block mt-3 text-blue-600 text-sm font-medium underline hover:text-blue-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {profile.mfaEnabled ? 'Manage two-step verification' : 'Set up two-step verification'}
+                </Link>
+              </section>
             </>
           )
         )}
