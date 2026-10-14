@@ -70,8 +70,9 @@ The SSS Modernization Platform uses a modern, cloud-native microservices archite
 **Middleware Stack:**
 - CORS (restricted origins)
 - JSON body parser
-- JWT authentication (on protected routes)
 - Request logging
+- Access policy (OPA), before every router (see Access policies below)
+- JWT authentication (on protected routes)
 - Error handler (centralized)
 
 **Services Layer:**
@@ -156,6 +157,43 @@ CREATE INDEX idx_mfa_user_id ON mfa_devices(user_id);
 - **Username**: 3+ characters, alphanumeric + underscore
 - **Full Name**: 2+ characters
 - **Prevention**: Parameterized queries (SQL injection)
+
+---
+
+## Access policies (OPA)
+
+STORY-016, demonstrated on a synthetic demo deployment. Every API request is decided by an access policy written in Rego and
+run by the real Open Policy Agent (OPA 1.21.0). The policy checks the caller's role, the kind of record the route is about,
+the action (read or write) and who owns or is assigned the record. Example rule: "Case managers can view cases assigned to them".
+
+- **Rego to WebAssembly.** The policy is `backend/policy/sss_authz.rego` (`package sss.authz`, entry point `sss/authz/decision`,
+  which answers `{allow, rule, reason}`), tested by `backend/policy/sss_authz_test.rego` (`opa test`). `scripts/opa/build.mjs`
+  downloads the OPA tool once to `~/.cache/sss-opa/` (outside the repo, SHA-256 verified before each use), runs `opa check` and
+  `opa test`, compiles the policy to WebAssembly, and writes `backend/policy/sss_authz.wasm` and `manifest.json` (OPA version,
+  entry point, SHA-256 of the .rego and of the .wasm). Both are committed, because the deployment has no OPA tool. The API loads
+  the .wasm in-process with `@open-policy-agent/opa-wasm` (no OPA server to run) and refuses to start if it is not the file the
+  manifest names. A jest test fails when the .rego was edited without rebuilding.
+- **Data from code and the database.** The policy is given `data.routes` (the roles each route accepts, from the access table
+  `security/routeAccess.ts`, and the kind of record it is about) and `data.rules` (the nine attribute rules in
+  `security/accessPolicy.ts`). On top, the newest row of `access_policy_versions` (migration 019, write-once like the audit
+  log) is applied: which rules are switched off, and which routes are limited to fewer roles. Only those changes are stored, so a
+  deploy that adds or changes routes needs no data migration. A limit can only narrow what the code allows, and sign-in, the
+  health check and the policy pages themselves are locked, so an administrator cannot be locked out.
+- **Every request.** `middleware/enforcePolicy.ts` is mounted before every router. It finds the route Express will serve, reads
+  the caller's role from the database on every request (no token, a refused token and a deleted account all count as not signed
+  in), and loads the record's attributes for routes about a case, an account or an audit trail. Not signed in is refused with
+  401 and the answer the sign-in check gives (an expired session still says so); anyone else is refused with 403
+  `POLICY_DENIED`, "Access denied: <reason>". The error handler writes every refusal to the audit log as `ACCESS_DENIED` with the
+  rule, the reason and the policy version. A request no route serves (a 404, a preflight) is left alone.
+- **Two layers.** The guards on each route (`authenticate`, `requireStaff`, `requireRole`) and the checks in the handlers stay as
+  a second layer: the policy can refuse what the code would allow, and never allows what the code refuses. The attribute rules
+  cover routes about one record; lists (`GET /api/cases?scope=all`, the export) are scoped by the route's roles and their handlers.
+- **Changed without a deploy.** Administrators use `GET`/`PUT /api/policies` or the Access Policies page. A save is a new version
+  with a reason, recorded in the audit log as `POLICY_CHANGE` (who, what, why). The process that saved it applies it at once; every
+  other process re-reads the newest version number at most every 5 seconds and reloads when it changed.
+- **Rebuilding.** After editing the .rego, run `node scripts/opa/build.mjs` and commit the .rego, the .wasm and `manifest.json`
+  together (`--check` rebuilds and fails if the committed files differ). To change which rules exist, edit `RULES` in
+  `security/accessPolicy.ts`; to add a route, declare it in `security/routeAccess.ts` (a test fails until it is).
 
 ---
 

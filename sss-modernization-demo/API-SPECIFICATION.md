@@ -184,6 +184,75 @@ off is written to the audit log as `MFA_SETUP`, `MFA_ENABLE`, `MFA_CHALLENGE`, `
 
 ---
 
+## Access Policy (STORY-016)
+
+Every request is decided by an access policy (Open Policy Agent, compiled to WebAssembly) before any route runs: by the
+caller's role, the route, the action (GET is a read, anything else a write) and, for routes about one case, account or audit
+trail, who owns or is assigned the record. The checks on each route stay behind it. Demonstrated on a synthetic demo deployment.
+
+**What a refusal looks like.**
+
+| Caller | Status | Body |
+|--------|--------|------|
+| Not signed in (no token, a refused token, or an account that no longer exists) | 401 | `{ "error": { "message": "Missing or invalid authorization header", "code": "UNAUTHORIZED" } }`; a token that was refused keeps its own message, such as `Your session has expired. Please sign in again.` |
+| Signed in, refused by the policy | 403 | `{ "error": { "message": "Access denied: No rule lets a case manager work a case assigned to someone else", "code": "POLICY_DENIED" } }` |
+
+Every refusal is written to the audit log as `ACCESS_DENIED` with `rule` (a rule id, or `no-route`, `route-roles`,
+`no-matching-rule`), `reason` and `policyVersion` beside the method, path and status. A record that does not exist is not refused:
+the route answers 404 as usual.
+
+### GET /api/policies
+
+Admins only. The policy engine, the version in force, every rule and route with its state, and the last 20 versions.
+
+**Success (200):**
+```json
+{
+  "engine": { "name": "Open Policy Agent", "version": "1.21.0", "format": "WebAssembly", "wasmSha256": "3ad8ff8be8434daee3b94be3200732bde6f375ff9547b0a78408208366220807" },
+  "current": { "version": 2, "summary": "case-manager-team turned off", "reason": "Case managers work their own caseload", "changedBy": "morgan.lee@example.com", "changedAt": "2026-10-14T09:12:41.000Z" },
+  "rules": [
+    {
+      "id": "case-manager-assigned",
+      "description": "Case managers can view and work cases assigned to them",
+      "resource": "case", "roles": ["case_manager"], "actions": ["read", "write"], "when": "assignee",
+      "enabled": true, "defaultEnabled": true
+    }
+  ],
+  "routes": [
+    { "key": "GET /api/cases/export", "method": "GET", "path": "/api/cases/export", "resource": null,
+      "baselineRoles": ["case_manager", "admin"], "roles": ["case_manager", "admin"], "locked": false }
+  ],
+  "history": [
+    { "version": 2, "summary": "case-manager-team turned off", "reason": "Case managers work their own caseload", "changedBy": "morgan.lee@example.com", "changedAt": "2026-10-14T09:12:41.000Z" }
+  ]
+}
+```
+Before anything is changed, `current` is `{ "version": 0, "summary": "The defaults that come with the code", "reason": null, "changedBy": null, "changedAt": null }`.
+A rule's `when` is `any`, `owner`, `assignee`, `unassigned` or `under_review`. `baselineRoles` are the roles the route's code allows;
+`roles` are the roles it allows now. A locked route (sign-in, `GET /health`, and these two endpoints) cannot be limited.
+403 `POLICY_DENIED` for anyone who is not an admin; 401 when not signed in.
+
+### PUT /api/policies
+
+Admins only. Saves a new version, audited as `POLICY_CHANGE` (who, what, why), and applies it at once; every other instance applies it
+within 5 seconds. Returns what `GET /api/policies` returns.
+
+**Request:** `rules` and `routes` are both optional, and `reason` is required (up to 500 characters).
+```json
+{
+  "rules": { "case-manager-team": false },
+  "routes": { "GET /api/cases/export": ["admin"] },
+  "reason": "Case managers work their own caseload; only admins export"
+}
+```
+A route sent all the roles its code allows is no longer limited. Roles can only be taken away from a route, never added beyond what the
+code allows.
+
+**Error (400 `VALIDATION_ERROR`):** no reason or one over 500 characters; an unknown rule or route; a rule not set to `true` or
+`false`; a route given no role, or a role its code does not allow; a locked route; or a change that changes nothing. Nothing is saved.
+
+---
+
 ## Health Check
 
 ### GET /health
@@ -206,8 +275,8 @@ off is written to the audit log as `MFA_SETUP`, `MFA_ENABLE`, `MFA_CHALLENGE`, `
 | 200 | Success (GET, PUT, login) |
 | 201 | Created (register) |
 | 400 | Validation failed |
-| 401 | Unauthorized (invalid token/credentials) |
-| 403 | Forbidden (cannot update another user) |
+| 401 | Unauthorized (invalid token/credentials; also anything the access policy refuses to a caller who is not signed in) |
+| 403 | Forbidden (cannot update another user; `POLICY_DENIED` when the access policy refuses a signed-in caller) |
 | 404 | Not found |
 | 409 | Conflict (duplicate email; two-step verification already on) |
 | 429 | Too many wrong authentication codes |
