@@ -1,9 +1,10 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { registerUser, loginUser } from '../services/authService';
 import { AuditAction, recordAudit } from '../services/auditService';
+import { CodeRefusedError, verifySignInCode } from '../services/mfaService';
 import { BOOTSTRAP_VIA } from '../services/roleService';
 import { authenticate } from '../middleware/authenticate';
-import { extendToken, generateToken, MAX_SESSION_SECONDS } from '../utils/jwt';
+import { extendToken, generateToken, MAX_SESSION_SECONDS, PendingClaims, PENDING_MFA_SECONDS, verifyPendingToken } from '../utils/jwt';
 import { validateRegistrationInput } from '../utils/validators';
 import { ValidationError, AppError } from '../utils/errors';
 
@@ -88,10 +89,49 @@ router.post('/login', async (req: LoginRequest, res: Response, next: NextFunctio
     }
 
     const result = await loginUser(email, password);
-    recordAudit(AuditAction.USER_LOGIN, 'auth', 'success', { actor: result.user.id, actorEmail: result.user.email, resourceId: result.user.id });
+    const actor = { actor: result.user.id, actorEmail: result.user.email, resourceId: result.user.id };
+    if ('mfaRequired' in result) {
+      // STORY-003: the password was right, but this is not a sign-in yet: no session and nothing about the person is returned
+      recordAudit(AuditAction.MFA_CHALLENGE, 'mfa', 'success', { ...actor, details: { via: 'sign-in' } });
+      return res.json({ mfaRequired: true, pendingToken: result.pendingToken, expiresIn: PENDING_MFA_SECONDS });
+    }
+    recordAudit(AuditAction.USER_LOGIN, 'auth', 'success', actor);
     res.json(result);
   } catch (error) {
     recordAudit(AuditAction.USER_LOGIN, 'auth', 'failure', { details: { email: attempted(req.body?.email), reason: reasonOf(error) } });
+    next(error);
+  }
+});
+
+// POST /auth/mfa/verify - STORY-003: the second step of sign-in. The pending token from the password step and the 6-digit
+// code go in the body (there is no session yet); the session is issued only if the code is right, and is shaped like a login's.
+router.post('/mfa/verify', async (req: Request, res: Response, next: NextFunction) => {
+  let pending: PendingClaims | undefined;
+  try {
+    const { pendingToken, code } = req.body ?? {};
+    if (typeof pendingToken !== 'string' || !pendingToken) {
+      throw new ValidationError('A sign-in token and a 6-digit code are required');
+    }
+    pending = verifyPendingToken(pendingToken);
+    if (typeof code !== 'string' || !/^\d{6}$/.test(code)) {
+      throw new ValidationError('Enter the 6-digit code from your authenticator app');
+    }
+
+    const user = await verifySignInCode(pending, code);
+    const actor = { actor: user.id, actorEmail: user.email, resourceId: user.id };
+    recordAudit(AuditAction.MFA_VERIFIED, 'mfa', 'success', { ...actor, details: { via: 'sign-in' } });
+    recordAudit(AuditAction.USER_LOGIN, 'auth', 'success', { ...actor, details: { mfa: true } });
+    res.json({ user, token: generateToken(user.id, user.email) });
+  } catch (error) {
+    // Only a code that was actually checked is an MFA failure; the reason and try number are recorded, never the code
+    if (pending && error instanceof CodeRefusedError) {
+      recordAudit(AuditAction.MFA_VERIFY_FAILED, 'mfa', 'failure', {
+        actor: pending.sub,
+        actorEmail: pending.email,
+        resourceId: pending.sub,
+        details: { via: 'sign-in', reason: error.code, attempt: error.attempt },
+      });
+    }
     next(error);
   }
 });

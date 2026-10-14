@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import pool from '../database/connection';
-import { generateToken } from '../utils/jwt';
+import { generatePendingToken, generateToken } from '../utils/jwt';
 import { ConflictError, ValidationError } from '../utils/errors';
 import { roleForNewUser, Role } from './roleService';
 
@@ -74,7 +74,7 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
 
 export async function loginUser(email: string, password: string) {
   const result = await pool.query(
-    'SELECT id, email, password_hash, full_name, role, created_at FROM users WHERE email = $1',
+    'SELECT id, email, password_hash, full_name, role, mfa_enabled, created_at FROM users WHERE email = $1',
     [email]
   );
 
@@ -89,16 +89,19 @@ export async function loginUser(email: string, password: string) {
     throw new ValidationError('Invalid email or password');
   }
 
-  const token = generateToken(user.id, user.email);
-
-  return {
-    user: {
-      id: user.id,
-      email: user.email,
-      fullName: user.full_name,
-      createdAt: user.created_at,
-      role: user.role,
-    },
-    token,
+  const profile = {
+    id: user.id,
+    email: user.email,
+    fullName: user.full_name,
+    createdAt: user.created_at,
+    role: user.role,
   };
+
+  // STORY-003: with two-step verification on, a correct password earns only a short-lived pending token. The
+  // session comes from POST /auth/mfa/verify, once the authentication code is right.
+  if (user.mfa_enabled === true) {
+    return { user: profile, mfaRequired: true as const, pendingToken: generatePendingToken(user.id, user.email) };
+  }
+
+  return { user: profile, token: generateToken(user.id, user.email) };
 }

@@ -7,7 +7,7 @@ import { AuditAction, logAuditEvent } from './auditService';
 // previous start and records any difference as CONFIG_CHANGE. Public settings appear with their old and
 // new values; the others are compared by a salted fingerprint and only named, so no secret or
 // connection detail reaches the log.
-const PUBLIC_SETTINGS = ['CORS_ORIGIN', 'JWT_EXPIRY', 'CASE_MANAGER_EMAILS', 'DATABASE_SSL'];
+const PUBLIC_SETTINGS = ['CORS_ORIGIN', 'JWT_EXPIRY', 'CASE_MANAGER_EMAILS', 'ADMIN_EMAILS', 'DATABASE_SSL'];
 const HIDDEN_SETTINGS = ['JWT_SECRET', 'DATABASE_PASSWORD', 'DATABASE_HOST', 'DATABASE_PORT', 'DATABASE_NAME', 'DATABASE_USER'];
 export const TRACKED_SETTINGS = [...PUBLIC_SETTINGS, ...HIDDEN_SETTINGS];
 const NOT_SET = '(not set)';

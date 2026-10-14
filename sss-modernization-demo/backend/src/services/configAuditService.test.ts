@@ -50,6 +50,16 @@ describe('recordConfigChanges (STORY-010 configuration changes)', () => {
     });
   });
 
+  it('shows the addresses on ADMIN_EMAILS before and after, like the case-manager list', async () => {
+    await recordConfigChanges({ ...base, ADMIN_EMAILS: 'morgan.lee@example.com' });
+    await recordConfigChanges({ ...base, ADMIN_EMAILS: 'morgan.lee@example.com,riley.chen@example.com' });
+    expect(logged.mock.calls[1][3].details).toEqual({
+      via: 'environment at startup',
+      changed: ['ADMIN_EMAILS'],
+      ADMIN_EMAILS: 'morgan.lee@example.com → morgan.lee@example.com,riley.chen@example.com',
+    });
+  });
+
   it('reports a removed setting, and a moved database by name only', async () => {
     await recordConfigChanges(base);
     const { CORS_ORIGIN, ...withoutCors } = base;

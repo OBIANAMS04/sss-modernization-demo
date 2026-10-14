@@ -44,6 +44,8 @@ export enum AuditAction {
   MFA_DISABLE = 'MFA_DISABLE',
   MFA_VERIFY_FAILED = 'MFA_VERIFY_FAILED',
   MFA_VERIFIED = 'MFA_VERIFIED',
+  // STORY-003: the password was right and a code was asked for; the sign-in is not complete until MFA_VERIFIED
+  MFA_CHALLENGE = 'MFA_CHALLENGE',
 
   // Data access (STORY-010): every successful read of the API, and exports
   DATA_READ = 'DATA_READ',

@@ -22,12 +22,19 @@ export type Access =
   /** Signed in, and the handler allows only the record's owner or staff. */
   | 'owner-or-staff'
   /** Case managers and admins only (requireStaff). */
-  | 'staff';
+  | 'staff'
+  /** Admins only (requireRole). */
+  | 'admin'
+  /** Leadership and admins only (requireRole). Leadership is not staff: it reads aggregates and does no case work. */
+  | 'leadership';
 
 export const ROUTE_ACCESS: Record<string, Access> = {
   'GET /health': 'public',
   'POST /api/auth/register': 'public',
   'POST /api/auth/login': 'public',
+  // STORY-003: the second step of sign-in. 'public' because the caller has no session yet; the handler carries its own
+  // check instead: a pending token from the password step (valid 5 minutes, refused everywhere a session is) plus the code.
+  'POST /api/auth/mfa/verify': 'public',
   'POST /api/auth/logout': 'signed-in',
   'POST /api/auth/refresh': 'signed-in',
 
@@ -36,7 +43,7 @@ export const ROUTE_ACCESS: Record<string, Access> = {
 
   'POST /api/mfa/setup': 'signed-in',
   'POST /api/mfa/verify': 'signed-in',
-  'POST /api/mfa/verify-code': 'signed-in',
+  'POST /api/mfa/disable': 'signed-in',
   'GET /api/mfa/status': 'signed-in',
 
   'GET /api/exemptions': 'signed-in',
@@ -81,4 +88,7 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'POST /api/notifications/:id/read': 'signed-in',
 
   'GET /api/dashboards/citizen': 'signed-in',
+  'GET /api/dashboards/case-manager': 'staff',
+  'GET /api/dashboards/admin': 'admin',
+  'GET /api/dashboards/leadership': 'leadership',
 };
