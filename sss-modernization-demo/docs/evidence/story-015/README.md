@@ -1,0 +1,26 @@
+# STORY-015 Leadership Dashboard: evidence
+
+STORY-015 works on the demo deployment, with synthetic data; it is not operating in production. A leadership user (a director) sees how the program is doing, never who is in it: total applications, approval rate, average processing time, open cases and appeal rate; applications and decisions per week for 12 weeks; bottlenecks (average days in each stage, from the case timelines, and how many cases are stuck in each for more than 5 days); and team performance by case manager.
+
+Aggregates only: no applicant names, emails or other personal data reach this page or its API. Leadership does no case work: the case pages, the audit log and the admin dashboard refuse it.
+
+## Checks
+
+- Evidence run, local: the leadership figures name no applicant (API and page); processing takes days as laid out (6.5 days on average); no case-work links show; Riley is refused the staff case statistics, the audit log and the admin dashboard (403 each).
+- API end to end, local (scripts/e2e/dashboards.mjs): the leadership output contains no applicant email or name; KPIs and week buckets move as cases are decided.
+- Accessibility: the leadership /dashboard and an admin's /leadership pass the WCAG 2.1 AA checks. Each chart is an image with a description, followed by a table with the same numbers.
+
+## Screens
+
+### 1. Riley's leadership dashboard
+
+KPIs, applications and decisions per week (chart and table), bottlenecks by stage, and team performance. No applicant is named anywhere on the page.
+
+![Riley's leadership dashboard](01-leadership-dashboard.png)
+
+## Notes
+
+- Case manager names appear in team performance, as the story asks; applicant data never does.
+- All data shown is synthetic.
+
+_Built by `scripts/evidence/report.mjs` from `evidence.json`. Screenshots by `scripts/evidence/story-003-015.mjs on a local copy of the deployed code`._

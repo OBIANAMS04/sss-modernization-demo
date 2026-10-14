@@ -1,0 +1,23 @@
+{
+  "out": "milestone-003-016-screens.jpg", "maxKb": 650,
+  "title": "STORY-003, 013-016 (R1 complete) - demonstrated on the synthetic demo deployment",
+  "columns": 3, "tileWidth": 720,
+  "packs": [".", "../story-003", "../story-013", "../story-014", "../story-015", "../story-016"],
+  "tiles": [
+    { "file": "../story-003/01-mfa-setup.png", "label": "003-1 Set up an authenticator app", "top": 0, "height": 1100 },
+    { "file": "../story-003/02-sign-in-code.png", "label": "003-2 Sign-in asks for the code", "top": 120, "height": 640 },
+    { "file": "../story-003/03-mfa-audit.png", "label": "003-3 Every MFA step audited", "top": 0, "height": 1100 },
+    { "file": "../story-013/01-case-manager-dashboard.png", "label": "013-1 Case manager's work list", "top": 0, "height": 1500 },
+    { "file": "../story-013/02-case-search.png", "label": "013-2 Search opens the case list", "top": 0, "height": 700 },
+    { "file": "../story-014/01-admin-dashboard.png", "label": "014-1 Admin dashboard", "top": 0, "height": 1500 },
+    { "file": "../story-014/02-give-leadership.png", "label": "014-2 Admin gives leadership access", "top": 0, "height": 1100 },
+    { "file": "../story-015/01-leadership-dashboard.png", "label": "015-1 Leadership: aggregates only", "top": 0, "height": 1500 },
+    { "file": "../story-016/01-policy-change.png", "label": "016-1 Admin changes a policy rule", "top": 0, "height": 1100 },
+    { "file": "../story-016/02-policy-refusal.png", "label": "016-2 Refused at once by OPA", "top": 0, "height": 700 },
+    { "file": "../story-016/03-policy-audit.png", "label": "016-3 Refusal audited with its rule", "top": 0, "height": 1000 },
+    { "file": "../story-016/04-policy-history.png", "label": "016-4 Every version kept", "top": 0, "height": 1100 },
+    { "file": "01-a11y-report.png", "label": "22 of 22 pages pass WCAG 2.1 AA", "top": 0, "height": 1000 },
+    { "file": "live-01-citizen-dashboard.png", "label": "Demo site: citizen, R1 complete", "top": 0, "height": 1100 },
+    { "file": "live-05-admin-dashboard-owner.png", "label": "Demo site: owner is administrator", "top": 0, "height": 972 }
+  ]
+}

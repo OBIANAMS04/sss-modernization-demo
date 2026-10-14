@@ -1,0 +1,49 @@
+# STORY-016 API Access Policies with Open Policy Agent: evidence
+
+STORY-016 works on the demo deployment, with synthetic data; it is not operating in production. Every API request is decided by Open Policy Agent (OPA) before any route sees it. The policy is written in Rego, tested with OPA's own test runner, compiled by OPA 1.21.0 to WebAssembly and evaluated inside the API. It checks the user's role, the resource type, the action and the record's owner or assignee; among its rules is the story's example, 'Case managers can view and work cases assigned to them'. A refusal is recorded in the Security Audit Log with the rule and the policy version.
+
+Rules change without a deployment. On the Access Policies page an administrator switches rules on or off and narrows the roles allowed on any route, with a required reason. Each change is a new write-once version, recorded in the audit log, and applies at once. The policy is a first layer: the route guards stay, so it can refuse what the code would allow, but never allow what the code refuses. Sign-in, the health check and the policy pages themselves are locked, so an administrator cannot be locked out.
+
+Found in our own archive: the earlier 'API governance' service said it enforced OPA policies, but it never called OPA and was never wired into the app. It has been removed and replaced by the real thing.
+
+## Checks
+
+- Evidence run, local (scripts/evidence/story-016.mjs, 5 checks passed): by default Sam opens a case assigned to Dana; Morgan switches team visibility off with a reason; at once Sam is refused that case, and the page says why; the refusal is in the audit log with its rule; the defaults are restored.
+- API end to end, local (scripts/e2e/policy.mjs, 23 checks): only an administrator reads or changes the policy; refused changes (no reason, unknown rule or route, a role the code does not allow, a locked route, locking the administrator out, no change); a rule switched off applies with no restart; refusals and changes audited; a route narrowed to administrators; history; the stored versions cannot be edited or deleted. It passes twice in a row, restoring the defaults each time.
+- OPA's own tests (opa test) on the Rego policy, and unit tests that load the committed WebAssembly policy and check its decisions; a test fails if the Rego and the compiled policy drift apart (manifest hashes).
+- Every other suite still passes with the policy in front of every request: 351 end-to-end checks in 9 suites and 719 unit tests.
+- Accessibility: /admin/policies passes the WCAG 2.1 AA checks (153 Tab stops, all reached).
+
+## Screens
+
+### 1. An administrator changes a rule
+
+Morgan switches off team visibility (case managers then work only their own cases, the queue and second-manager reviews) and gives the reason. The page names the engine and the version in force.
+
+![An administrator changes a rule](01-policy-change.png)
+
+### 2. Applied at once, no deployment
+
+Seconds later Sam opens a case assigned to Dana and is refused by the policy, with the reason: no rule lets a case manager view a case assigned to someone else.
+
+![Applied at once, no deployment](02-policy-refusal.png)
+
+### 3. The refusal in the audit log
+
+The Security Audit Log entry for Sam's refused request names the policy rule and version that refused it.
+
+![The refusal in the audit log](03-policy-audit.png)
+
+### 4. Every version kept
+
+The policy history after the defaults were restored: each version with who changed it, when, what changed and why.
+
+![Every version kept](04-policy-history.png)
+
+## Notes
+
+- The compiled policy is committed with a manifest of hashes, because the demo host cannot run the OPA tool; scripts/opa/build.mjs downloads OPA 1.21.0 (checksum verified), runs its tests and rebuilds it.
+- A second API process picks up a change within 5 seconds; the demo runs one.
+- All data shown is synthetic.
+
+_Built by `scripts/evidence/report.mjs` from `evidence.json`. Screenshots by `scripts/evidence/story-016.mjs on a local copy of the deployed code`._
