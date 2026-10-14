@@ -84,6 +84,7 @@ export enum AuditAction {
 
   // Infrastructure
   DEPLOYMENT = 'DEPLOYMENT',
+  SERVER_START = 'SERVER_START',
   CONFIGURATION_UPDATE = 'CONFIGURATION_UPDATE',
   ALERT_TRIGGERED = 'ALERT_TRIGGERED',
 }
@@ -124,6 +125,22 @@ export async function logAuditEvent(
   );
 
   return mapRowToAuditLog(result.rows[0]);
+}
+
+/**
+ * Records a start of the server. It is a new release (DEPLOYMENT) when the commit differs from the last release
+ * recorded or migrations ran; otherwise a restart (SERVER_START). Render's free plan restarts idle services, and
+ * the log listed every one of those restarts as a deployment.
+ */
+export async function recordServerStart(commit: string, migrationsApplied: string[]): Promise<void> {
+  const last = await pool.query(
+    `SELECT details->>'commit' AS commit FROM audit_logs WHERE action = $1 ORDER BY id DESC LIMIT 1`,
+    [AuditAction.DEPLOYMENT]
+  );
+  const release = migrationsApplied.length > 0 || last.rows[0]?.commit !== commit;
+  await logAuditEvent(release ? AuditAction.DEPLOYMENT : AuditAction.SERVER_START, 'system', 'success', {
+    details: { commit, migrationsApplied },
+  });
 }
 
 /**

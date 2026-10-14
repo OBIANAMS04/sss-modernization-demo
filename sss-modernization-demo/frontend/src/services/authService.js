@@ -32,6 +32,8 @@ export const authService = {
   // No body: a JSON "null" is refused by the server's strict JSON parser before the route runs.
   logout: () => {
     const token = getToken();
+    // Signed out already (for example in another tab): nothing to record, and a request without a token is refused
+    if (!token) return Promise.resolve();
     return api.post('/auth/logout', undefined, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined).catch(() => {});
   }
 };

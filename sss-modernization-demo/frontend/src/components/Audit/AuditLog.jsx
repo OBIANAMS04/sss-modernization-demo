@@ -36,6 +36,7 @@ const LABELS = {
   OVERRIDE: 'Override',
   ALERT_TRIGGERED: 'Freshness alert',
   DEPLOYMENT: 'Deployment',
+  SERVER_START: 'Server restart',
   CONFIG_CHANGE: 'Configuration change',
 };
 

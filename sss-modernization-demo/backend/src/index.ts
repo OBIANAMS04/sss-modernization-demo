@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import app from './app';
 import { runMigrations } from './database/migrate';
 import { bootstrapStaffRoles } from './services/roleService';
-import { AuditAction, logAuditEvent } from './services/auditService';
+import { recordServerStart } from './services/auditService';
 import { recordConfigChanges } from './services/configAuditService';
 
 dotenv.config();
@@ -23,10 +23,8 @@ async function start() {
   await bootstrapStaffRoles();
   // STORY-010: a setting changed since the previous start is an audited configuration change
   await recordConfigChanges();
-  // STORY-010: each start of a release is an audited infrastructure event
-  await logAuditEvent(AuditAction.DEPLOYMENT, 'system', 'success', {
-    details: { commit: (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7), migrationsApplied },
-  });
+  // STORY-010: a new release is an audited infrastructure event; a restart of the same release is recorded as one
+  await recordServerStart((process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7), migrationsApplied);
 
   const server = app.listen(PORT, () => {
     console.log(`🚀 Backend server running on port ${PORT}`);

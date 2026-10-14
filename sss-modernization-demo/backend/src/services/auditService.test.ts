@@ -57,3 +57,25 @@ describe('readAuditEntry (every successful read is audited by its route key)', (
     expect(readAuditEntry('GET', '/api/compliance', '/matrix', {}, 200)).toBeNull();
   });
 });
+
+describe('recordServerStart (a restart is not a deployment)', () => {
+  const pool = require('../database/connection').default;
+  const { recordServerStart } = require('./auditService');
+  const recorded = async (lastCommit: string | null, commit: string, migrations: string[]) => {
+    pool.query.mockReset();
+    pool.query.mockResolvedValueOnce({ rows: lastCommit ? [{ commit: lastCommit }] : [] });
+    pool.query.mockResolvedValueOnce({ rows: [{ id: 1, action: 'X', resource: 'system', status: 'success', timestamp: new Date() }] });
+    await recordServerStart(commit, migrations);
+    return pool.query.mock.calls[1][1][0];
+  };
+
+  it('records a deployment for a new commit, for the first start ever, and when migrations ran', async () => {
+    expect(await recorded('68e0274', 'a8250f5', [])).toBe('DEPLOYMENT');
+    expect(await recorded(null, '68e0274', [])).toBe('DEPLOYMENT');
+    expect(await recorded('68e0274', '68e0274', ['017_roles.sql'])).toBe('DEPLOYMENT');
+  });
+
+  it('records a server restart when the same release starts again', async () => {
+    expect(await recorded('68e0274', '68e0274', [])).toBe('SERVER_START');
+  });
+});

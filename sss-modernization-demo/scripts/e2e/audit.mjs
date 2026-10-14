@@ -61,7 +61,7 @@ run(async () => {
   expect('bad date rejected', (await call('GET', '/audit?startDate=yesterday', m.token)).status, 400);
   await sleep(300);
   expect('reading the audit log is itself audited', (await find({ action: 'DATA_READ', user: MANAGER, resource: 'audit', limit: 1 })).total > 0, true);
-  expect('each server start is recorded as a deployment', (await find({ action: 'DEPLOYMENT', limit: 1 })).total > 0, true);
+  expect('server starts are recorded (a new release as a deployment)', (await find({ action: 'DEPLOYMENT', limit: 1 })).total > 0, true);
   const config = (await find({ action: 'CONFIG_CHANGE', limit: 100 })).logs;
   expect(
     'configuration is recorded at startup, naming changed secrets without values or fingerprints',
