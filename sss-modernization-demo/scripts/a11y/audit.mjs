@@ -1,5 +1,5 @@
-// STORY-011: Section 508 / WCAG 2.1 AA checks on every page of the app, signed out, as an applicant and as a
-// case manager, in real Chrome. For each page:
+// STORY-011: Section 508 / WCAG 2.1 AA checks on every page of the app, signed out, as an applicant, a
+// case manager, an administrator and a leadership user, in real Chrome. For each page:
 //   - axe-core with the WCAG 2.0 and 2.1 A and AA rules (contrast, names and labels, structure, ARIA); its
 //     best-practice rules (landmarks, heading order) are reported alongside but do not fail the run
 //   - keyboard: Tab reaches every visible control without getting stuck, and each stop shows a focus indicator
@@ -54,22 +54,35 @@ async function setup() {
       { role: 'Signed out', path: '/register' },
       { role: 'Applicant', path: '/dashboard', session: citizen },
       { role: 'Applicant', path: '/profile', session: citizen },
+      { role: 'Applicant', path: '/mfa', session: citizen },
     ];
   }
-  const { account, call, exemptionId, staffAccount } = await import('../e2e/lib.mjs');
+  const { account, adminAccount, call, exemptionId, leadershipAccount, PASSWORD, staffAccount } = await import('../e2e/lib.mjs');
   const applicant = await account(`a11y-applicant-${Date.now()}@example.com`, 'Avery Lane', '1950-03-14');
   await call('PUT', `/users/${applicant.user.id}`, applicant.token, { phone: '555-0111', address: '12 Elm Street, Dayton, OH' });
   const caseId = (await call('POST', '/cases', applicant.token, { exemptionId: await exemptionId(applicant.token, 'Type A') })).data.id;
   const dana = await staffAccount('dana.whitfield@example.com', 'Dana Whitfield');
   const sam = await staffAccount('sam.ortiz@example.com', 'Sam Ortiz');
+  // STORY-013 to 015: an administrator (listed in ADMIN_EMAILS, so a case manager becomes one on being given the role) and a leadership user
+  const morgan = await adminAccount('morgan.lee@example.com', 'Morgan Lee');
+  const riley = await leadershipAccount('riley.chen@example.com', 'Riley Chen');
   await call('PUT', `/cases/${caseId}/assignment`, dana.token, { assignedTo: dana.user.email });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'In Review' });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'Approved' }); // no proof of age on file: a review opens for Sam
+  // STORY-003: the sign-in code step belongs to someone with two-step verification on; a pending token (good for five minutes) is what the password step leaves
+  const { totpAt } = await import('../e2e/totp.mjs');
+  const secured = await account(`a11y-mfa-${Date.now()}@example.com`, 'Casey Park', '1950-03-14');
+  const { secret } = (await call('POST', '/mfa/setup', secured.token)).data;
+  await call('POST', '/mfa/verify', secured.token, { totpCode: totpAt(secret) });
+  const pendingToken = async () => (await call('POST', '/auth/login', null, { email: secured.user.email, password: PASSWORD })).data.pendingToken;
   return [
     { role: 'Signed out', path: '/login' },
     { role: 'Signed out', path: '/register' },
     { role: 'Applicant', path: '/dashboard', session: applicant },
     { role: 'Applicant', path: '/profile', session: applicant },
+    { role: 'Applicant', path: '/mfa', session: applicant },
+    { role: 'Applicant', path: '/mfa', label: '/mfa (setup started)', session: applicant, after: startMfaSetup },
+    { role: 'Signed out', path: '/mfa/verify', before: async () => `sessionStorage.setItem('mfa_pending_token', ${JSON.stringify(await pendingToken())}); true` },
     { role: 'Applicant', path: `/cases/${caseId}`, label: '/cases/:id', session: applicant, reflowShot: true },
     ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit', '/staff'].map((path) => ({
       role: 'Case manager',
@@ -77,6 +90,8 @@ async function setup() {
       label: path.startsWith('/cases/') ? '/cases/:id' : path,
       session: sam,
     })),
+    ...['/dashboard', '/my-work', '/leadership', '/admin'].map((path) => ({ role: 'Admin', path, session: morgan })),
+    { role: 'Leadership', path: '/dashboard', session: riley },
   ];
 }
 
@@ -102,12 +117,13 @@ const results = [];
 const failures = [];
 let apiTree = [];
 
-async function open(path, session) {
+async function open(path, session, before) {
   if (session) await page.signIn(SITE, session);
   else {
     await page.goto(`${SITE}/login`);
     await page.evaluate('localStorage.clear(); true');
   }
+  if (before) await page.evaluate(await before()); // state a page needs before it loads, such as a pending sign-in
   await page.goto(`${SITE}${path}`);
   const end = Date.now() + (live ? 90_000 : 20_000);
   while (Date.now() < end) {
@@ -118,6 +134,12 @@ async function open(path, session) {
   await sleep(500);
   // Transitions would make a focus ring read as "not there yet"; they change timing only
   await page.evaluate(`(() => { const s = document.createElement('style'); s.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}'; document.head.append(s); return true; })()`);
+}
+
+/** STORY-003: /mfa once a setup is started, with the QR code and key showing. */
+async function startMfaSetup() {
+  await page.click('Set up an authenticator app');
+  await until(`!!document.querySelector('img[alt^="QR code"]')`, 10_000);
 }
 
 async function axe(tags) {
@@ -134,6 +156,8 @@ async function structure() {
 
 /** Tabs through the page from the top; every visible control must be reached and show a visible change when focused. */
 async function keyboard(shotFile) {
+  // A page that puts focus in a field as it loads (the sign-in code step) would start the walk mid-page and show that field focused at rest
+  await page.evaluate(`(() => { document.body.tabIndex = -1; document.body.focus(); document.body.removeAttribute('tabindex'); return true; })()`);
   const count = await page.evaluate(`(() => {
     const style = (el) => { const c = getComputedStyle(el); return [c.outlineStyle, c.outlineWidth, c.outlineColor, c.boxShadow, c.borderColor, c.backgroundColor, c.color, c.textDecorationLine].join('|'); };
     const shown = (el) => { const r = el.getBoundingClientRect(), c = getComputedStyle(el); return r.width > 0 && r.height > 0 && c.visibility !== 'hidden'; };
@@ -227,13 +251,15 @@ try {
   let skipShot = !live; // one screenshot of the skip link, on the applicant's dashboard
 
   for (const p of pages) {
-    await open(p.path, p.session);
+    await open(p.path, p.session, p.before);
+    await p.after?.();
     const wcag = await axe(WCAG);
     const advisory = await axe(['best-practice']);
     const s = await structure();
     const shotSkip = skipShot && p.role === 'Applicant' && p.path === '/dashboard' ? join(OUT, '02-skip-link.png') : null;
     if (shotSkip) skipShot = false;
-    await open(p.path, p.session); // fresh load, so Tab starts from the top
+    await open(p.path, p.session, p.before); // fresh load, so Tab starts from the top
+    await p.after?.();
     const k = await keyboard(shotSkip);
     const r = await reflow(p.reflowShot ? join(OUT, '04-reflow-320.png') : null);
     const checks = {
@@ -262,6 +288,14 @@ try {
   }
   await sleep(1500);
   forms.push({ form: live ? 'Sign in, empty' : 'Sign in, wrong password', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
+  // STORY-003: the code step of sign-in, submitted empty (the code is checked in the browser first, so nothing is sent)
+  const codeStep = pages.find((p) => p.path === '/mfa/verify');
+  if (codeStep) {
+    await open(codeStep.path, null, codeStep.before);
+    await page.click('Verify and sign in');
+    await sleep(800);
+    forms.push({ form: 'Sign-in code, empty', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
+  }
   await open('/register');
   await page.click('Create Account', 'button');
   await sleep(800);

@@ -66,7 +66,7 @@ while (Date.now() < deadline) {
 // The site's CDN caches the page served for each deep link (s-maxage=300), so for a few minutes after a
 // deploy a path can still return the previous index.html and its old bundle while /version.json is new.
 // A deploy is only verified once every page path serves the same bundle as the freshly fetched root.
-const PAGE_PATHS = ['/login', '/register', '/dashboard', '/profile', '/cases', '/compliance', '/compliance/audit', '/freshness', '/audit', '/staff'];
+const PAGE_PATHS = ['/login', '/register', '/mfa/verify', '/dashboard', '/profile', '/mfa', '/cases', '/compliance', '/compliance/audit', '/freshness', '/audit', '/staff', '/my-work', '/leadership', '/admin'];
 const bundleOf = async (url) => {
   try {
     const html = await (await fetch(url, { signal: AbortSignal.timeout(60_000) })).text();

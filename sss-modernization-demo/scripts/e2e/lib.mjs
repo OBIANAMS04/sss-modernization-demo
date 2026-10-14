@@ -6,6 +6,9 @@
 // Set E2E_BASE to point elsewhere, and E2E_ALLOW_REMOTE=1 to allow a non-local host on purpose.
 // The list only bootstraps staff: on a fresh database the first case manager of a run must be a listed address that
 // registers first (MANAGER, below); staffAccount() then grants the others the role through Staff Access.
+// ADMIN_EMAILS works the same way for administrators (adminAccount); leadershipAccount() is given its role by an administrator.
+// When the first case manager was set up before the run (the a11y audit's dana.whitfield@example.com, say), set
+// E2E_GRANTER to its address: a run that has no staff session of its own then signs in as it to grant the roles.
 
 export const BASE = process.env.E2E_BASE || 'http://localhost:3001/api';
 const host = new URL(BASE).hostname;
@@ -51,6 +54,14 @@ export async function account(email, name, dob = '1950-06-01') {
 
 const STAFF_ROLES = ['case_manager', 'admin'];
 let firstStaff = null; // the first case manager session of this run; it grants the role to the others
+let firstAdmin = null; // the first administrator session of this run; it grants leadership and administrator access
+
+/** Signs in the account named by E2E_GRANTER, which must already hold a role on this database (it is never registered). */
+async function grantingAccount() {
+  if (!process.env.E2E_GRANTER) return null;
+  const login = await call('POST', '/auth/login', null, { email: process.env.E2E_GRANTER, password: PASSWORD });
+  return login.status === 200 ? login.data : null;
+}
 
 /**
  * Like account(), for a case manager. Registering no longer grants the role once anyone has staff access (Staff
@@ -63,16 +74,63 @@ export async function staffAccount(email, name) {
     firstStaff ??= session;
     return session;
   }
-  if (!firstStaff) {
+  const existing = firstStaff ? null : await grantingAccount();
+  const granter = firstStaff ?? (STAFF_ROLES.includes(existing?.user.role) ? existing : null);
+  if (!granter) {
     throw new Error(
       `${email} is not a case manager, and no case manager has signed in yet in this run to grant the role. ` +
         'On a fresh database the first case manager must be an address listed in CASE_MANAGER_EMAILS that registers first ' +
-        '(the list only bootstraps a database with no staff). Create that account before this one.'
+        '(the list only bootstraps a database with no staff). Create that account before this one, or set E2E_GRANTER to its address.'
     );
   }
-  const granted = await call('POST', '/staff/grant', firstStaff.token, { email, reason: 'Test setup: case manager for this run' });
+  firstStaff ??= granter;
+  const granted = await call('POST', '/staff/grant', granter.token, { email, reason: 'Test setup: case manager for this run' });
   if (granted.status !== 200) throw new Error(`grant case-manager access to ${email}: ${granted.status} ${JSON.stringify(granted.data)}`);
   session.user.role = 'case_manager';
+  return session;
+}
+
+/**
+ * Like staffAccount(), for an administrator. ADMIN_EMAILS makes a listed case manager an administrator while there is
+ * none, right after the case-manager role is granted, so the first one of a fresh database is that address; any later
+ * one is given the role through Staff Access by an administrator's session, with a reason that lands in the audit log.
+ */
+export async function adminAccount(email, name) {
+  const session = await staffAccount(email, name);
+  // The grant above may have promoted a listed address at once, so read the role that stands, not the one it returned
+  const standing = session.user.role === 'admin' ? 'admin' : (await call('GET', '/staff', session.token)).data.staff?.find((s) => s.id === session.user.id)?.role;
+  if (standing !== 'admin') {
+    const existing = firstAdmin ? null : await grantingAccount();
+    const granter = firstAdmin ?? (existing?.user.role === 'admin' ? existing : null);
+    if (!granter) {
+      throw new Error(
+        `${email} is not an administrator, and no administrator has signed in yet in this run to grant the role. ` +
+          'On a fresh database the first administrator must be a case manager listed in ADMIN_EMAILS (the list only bootstraps a ' +
+          'database with no administrator). Create that account before this one, or set E2E_GRANTER to an administrator.'
+      );
+    }
+    firstAdmin ??= granter;
+    const granted = await call('POST', '/staff/grant', granter.token, { email, role: 'admin', reason: 'Test setup: administrator for this run' });
+    if (granted.status !== 200) throw new Error(`grant administrator access to ${email}: ${granted.status} ${JSON.stringify(granted.data)}`);
+  }
+  session.user.role = 'admin';
+  firstAdmin ??= session;
+  return session;
+}
+
+/** Like account(), for a leadership user: an administrator's session gives the role (call adminAccount() first). */
+export async function leadershipAccount(email, name) {
+  const session = await account(email, name);
+  if (session.user.role === 'leadership') return session;
+  const existing = firstAdmin ? null : await grantingAccount();
+  const granter = firstAdmin ?? (existing?.user.role === 'admin' ? existing : null);
+  if (!granter) {
+    throw new Error(`${email} is not a leadership user, and no administrator has signed in yet in this run to grant the role. Call adminAccount() first.`);
+  }
+  firstAdmin ??= granter;
+  const granted = await call('POST', '/staff/grant', granter.token, { email, role: 'leadership', reason: 'Test setup: leadership user for this run' });
+  if (granted.status !== 200) throw new Error(`grant leadership access to ${email}: ${granted.status} ${JSON.stringify(granted.data)}`);
+  session.user.role = 'leadership';
   return session;
 }
 
