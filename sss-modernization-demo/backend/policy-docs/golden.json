@@ -147,7 +147,7 @@
     },
     {
       "id": "g25",
-      "question": "What happens to my case after I appeal?",
+      "question": "What happens to a case after the applicant appeals?",
       "expectedPassages": ["appeals:what-happens-after-an-appeal"],
       "facts": ["appealed", "in review"]
     },
