@@ -281,7 +281,7 @@ describe('askAssistant: an answer from the stand-in model', () => {
       status: 'shown',
       level: 0,
       passageIds: retrievedIds,
-      citedPassageIds: [TYPE_A.id, TYPE_B.id, APPEALS.id],
+      citedPassageIds: [TYPE_A.id, TYPE_B.id],
       grounded: true,
     });
     expect(JSON.stringify(audit.mock.calls)).not.toContain('How old must a registrant');

@@ -114,13 +114,13 @@ describe('buildRequest (the call as the claude-api skill shapes it)', () => {
 });
 
 describe('askStub (the stand-in for tests)', () => {
-  it('answers from the best sentence of each of the top three passages, each cited to itself', () => {
+  it('answers from the best sentence of each of the top two passages, each cited to itself', () => {
     const outcome = askStub('What is the income limit for Type B?', PASSAGES);
     expect(outcome.type).toBe('answer');
     if (outcome.type !== 'answer') return;
     expect(outcome.model).toBe('stub');
     const cited = outcome.segments.filter((s) => s.citations.length > 0);
-    expect(cited.map((s) => s.citations[0].passageId)).toEqual(PASSAGES.map((p) => p.id));
+    expect(cited.map((s) => s.citations[0].passageId)).toEqual([TYPE_A.id, TYPE_B.id]);
     expect(cited[1].text).toBe('A registrant qualifies for Type B when the annual income on the profile is below $20,000.');
     expect(cited.every((s) => s.citations[0].quote === s.text)).toBe(true);
   });
@@ -131,7 +131,7 @@ describe('askStub (the stand-in for tests)', () => {
       if (outcome.type !== 'answer') throw new Error('expected an answer');
       const grounding = checkGrounding(outcome.segments, PASSAGES);
       expect(grounding).toMatchObject({ grounded: true, coverage: 1, unsupported: [] });
-      expect(grounding.citedPassages).toHaveLength(3);
+      expect(grounding.citedPassages).toHaveLength(2);
     }
   });
 

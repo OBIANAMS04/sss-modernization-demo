@@ -170,7 +170,7 @@ function bestSentence(passage: RetrievedPassage, terms: Set<string>): string {
 }
 
 /**
- * A deterministic answer for tests: the best sentence from each of the top three passages, each cited to the sentence itself, so it
+ * A deterministic answer for tests: the best sentence from each of the top two passages, each cited to the sentence itself, so it
  * is grounded by construction. Two words in the question make it misbehave on purpose, so the paths that withhold or fall back
  * can be run end to end: "stub-ungrounded" adds a sentence no citation covers, with a number no passage has, and
  * "stub-unavailable" makes the call fail.
@@ -180,7 +180,7 @@ export function askStub(question: string, passages: RetrievedPassage[]): ModelOu
   if (passages.length === 0) return { type: 'no-answer', model: 'stub' };
   const terms = new Set(words(question).map(stem));
   const segments: AnswerSegment[] = [];
-  passages.slice(0, 3).forEach((passage, i) => {
+  passages.slice(0, 2).forEach((passage, i) => {
     const quote = bestSentence(passage, terms);
     if (i > 0) segments.push({ text: ' ', citations: [] });
     segments.push({ text: quote, citations: [{ passageId: passage.id, quote }] });

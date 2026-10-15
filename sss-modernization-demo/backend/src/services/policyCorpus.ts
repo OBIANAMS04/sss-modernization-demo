@@ -173,7 +173,8 @@ export async function ingestPolicyDocs(dir: string = POLICY_DOCS_DIR): Promise<I
         removed,
         documents: docs.length,
         passages: result.passages,
-        versions: Object.fromEntries(docs.map((d) => [d.slug, d.version.slice(0, 12)])),
+        // A list, not an object keyed by document: the audit log redacts the value of a key that ends in "ssn" (privacy-and-ssn)
+        versions: docs.map((d) => ({ document: d.slug, version: d.version.slice(0, 12) })),
       },
     });
   });

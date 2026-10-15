@@ -5,7 +5,7 @@ jest.mock('./caseEvents', () => ({ inTransaction: jest.fn() }));
 jest.mock('./auditService', () => ({ ...jest.requireActual('./auditService'), logAuditEvent: jest.fn() }));
 
 import pool from '../database/connection';
-import { logAuditEvent } from './auditService';
+import { logAuditEvent, sanitizeDetails } from './auditService';
 import { inTransaction } from './caseEvents';
 import { MAX_PASSAGE_CHARS, chunkDocument, contentHash, getCorpusInfo, ingestPolicyDocs, readPolicyDocs, searchPassages, slugify } from './policyCorpus';
 
@@ -147,7 +147,9 @@ describe('ingestPolicyDocs (STORY-017)', () => {
     expect(audit).toHaveBeenCalledTimes(1);
     expect(audit.mock.calls[0].slice(0, 3)).toEqual(['AI_CORPUS_UPDATE', 'assistant', 'success']);
     expect(audit.mock.calls[0][3].details).toMatchObject({ added: result.added, updated: [], removed: [], documents: docs.length, passages: result.passages });
-    expect(audit.mock.calls[0][3].details.versions['appeals']).toBe(docs[0].version.slice(0, 12));
+    expect(audit.mock.calls[0][3].details.versions).toContainEqual({ document: 'appeals', version: docs[0].version.slice(0, 12) });
+    // The audit log redacts the value of a key ending in "ssn", and one document is privacy-and-ssn: nothing of the entry may be lost to it
+    expect(JSON.stringify(sanitizeDetails(audit.mock.calls[0][3].details))).not.toContain('[REDACTED]');
   });
 
   it('writes and audits nothing when no document changed', async () => {
