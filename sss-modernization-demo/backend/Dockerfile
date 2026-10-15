@@ -23,6 +23,8 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 # STORY-016: the compiled access policy (read from ../../policy relative to dist/services)
 COPY --from=builder /app/policy ./policy
+# STORY-017: the synthetic policy documents the assistant answers from (read from ../../policy-docs relative to dist/services)
+COPY --from=builder /app/policy-docs ./policy-docs
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nodejs -u 1001

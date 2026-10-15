@@ -1,0 +1,203 @@
+{
+  "note": "STORY-020: the golden set for the policy assistant. Illustrative demo policy only. Each question lists the passages it should be answered from (the retrieval check passes when at least one of them is among the five passages retrieved) and the facts a correct answer must contain (a fact in a list is satisfied by any one of its alternatives; comparison ignores case, commas and the dollar sign). scripts/ai/eval.mjs scores the running API against this file.",
+  "questions": [
+    {
+      "id": "g01",
+      "question": "What do I need to create an account?",
+      "expectedPassages": ["registration-duty:creating-an-account"],
+      "facts": [["email", "email address"], "date of birth"]
+    },
+    {
+      "id": "g02",
+      "question": "How old do I have to be to register?",
+      "expectedPassages": ["registration-duty:creating-an-account"],
+      "facts": ["18"]
+    },
+    {
+      "id": "g03",
+      "question": "What does the registration compliance check look at?",
+      "expectedPassages": ["registration-duty:profile-fields-and-the-registration-compliance-check"],
+      "facts": ["phone", "address"]
+    },
+    {
+      "id": "g04",
+      "question": "Is two-step verification required when I sign in?",
+      "expectedPassages": ["registration-duty:signing-in-and-roles"],
+      "facts": ["optional"]
+    },
+    {
+      "id": "g05",
+      "question": "Which role only sees summary figures and does no case work?",
+      "expectedPassages": ["registration-duty:signing-in-and-roles"],
+      "facts": ["leadership"]
+    },
+    {
+      "id": "g06",
+      "question": "Who qualifies for the senior exemption?",
+      "expectedPassages": ["exemption-type-a:who-qualifies"],
+      "facts": ["65"]
+    },
+    {
+      "id": "g07",
+      "question": "What proof do I need to be approved for Type A?",
+      "expectedPassages": ["exemption-type-a:proof-of-age"],
+      "facts": ["proof of age"]
+    },
+    {
+      "id": "g08",
+      "question": "How is Type A eligibility worked out?",
+      "expectedPassages": ["exemption-type-a:how-eligibility-is-decided"],
+      "facts": ["automatically"]
+    },
+    {
+      "id": "g09",
+      "question": "Can I open a second case for the same exemption?",
+      "expectedPassages": ["exemption-type-a:how-to-apply"],
+      "facts": [["cannot", "can not", "not open"]]
+    },
+    {
+      "id": "g10",
+      "question": "What is the income limit for the Type B exemption?",
+      "expectedPassages": ["exemption-type-b:who-qualifies-the-income-limit"],
+      "facts": ["$20,000"]
+    },
+    {
+      "id": "g11",
+      "question": "Which document do I attach for the income exemption?",
+      "expectedPassages": ["exemption-type-b:income-statement"],
+      "facts": ["income statement"]
+    },
+    {
+      "id": "g12",
+      "question": "What result do I get for Type B if I have no income on file?",
+      "expectedPassages": ["exemption-type-b:who-qualifies-the-income-limit"],
+      "facts": ["not eligible"]
+    },
+    {
+      "id": "g13",
+      "question": "Does the eligibility reason show my exact income?",
+      "expectedPassages": ["exemption-type-b:how-eligibility-is-decided", "privacy-and-ssn:reasons-that-avoid-exact-figures"],
+      "facts": ["exact"]
+    },
+    {
+      "id": "g14",
+      "question": "How is the hardship exemption decided?",
+      "expectedPassages": ["exemption-type-c:caseworker-review-how-type-c-is-decided", "exemption-type-c:who-is-considered"],
+      "facts": [["caseworker", "case manager"]]
+    },
+    {
+      "id": "g15",
+      "question": "Does Pending Review mean my hardship exemption is approved?",
+      "expectedPassages": ["exemption-type-c:caseworker-review-how-type-c-is-decided"],
+      "facts": ["pending review"]
+    },
+    {
+      "id": "g16",
+      "question": "What evidence is needed for Type C?",
+      "expectedPassages": ["exemption-type-c:hardship-evidence"],
+      "facts": ["hardship evidence"]
+    },
+    {
+      "id": "g17",
+      "question": "How does the demo define hardship?",
+      "expectedPassages": ["exemption-type-c:what-counts-as-hardship"],
+      "facts": [["does not define", "not define"]]
+    },
+    {
+      "id": "g18",
+      "question": "How many compliance controls are there?",
+      "expectedPassages": ["decisions-and-controls:the-8-compliance-controls"],
+      "facts": ["8"]
+    },
+    {
+      "id": "g19",
+      "question": "What does CTRL-04 check?",
+      "expectedPassages": ["decisions-and-controls:controls-ctrl-01-to-ctrl-04"],
+      "facts": ["applicant"]
+    },
+    {
+      "id": "g20",
+      "question": "What happens when a compliance control fails?",
+      "expectedPassages": ["decisions-and-controls:when-a-control-fails"],
+      "facts": ["compliance review", "different case manager"]
+    },
+    {
+      "id": "g21",
+      "question": "What is the compliance target for decisions?",
+      "expectedPassages": ["decisions-and-controls:the-compliance-target"],
+      "facts": ["99%"]
+    },
+    {
+      "id": "g22",
+      "question": "Who is allowed to decide a case?",
+      "expectedPassages": ["decisions-and-controls:who-decides"],
+      "facts": ["case manager"]
+    },
+    {
+      "id": "g23",
+      "question": "How do I appeal a denial?",
+      "expectedPassages": ["appeals:how-to-appeal"],
+      "facts": ["appeal this decision"]
+    },
+    {
+      "id": "g24",
+      "question": "Is there a deadline to appeal?",
+      "expectedPassages": ["appeals:who-can-appeal-and-when"],
+      "facts": ["no deadline"]
+    },
+    {
+      "id": "g25",
+      "question": "What happens to my case after I appeal?",
+      "expectedPassages": ["appeals:what-happens-after-an-appeal"],
+      "facts": ["appealed", "in review"]
+    },
+    {
+      "id": "g26",
+      "question": "Is my Social Security number stored in the system?",
+      "expectedPassages": ["privacy-and-ssn:social-security-numbers"],
+      "facts": ["hash"]
+    },
+    {
+      "id": "g27",
+      "question": "Does the assistant send my SSN to the AI model?",
+      "expectedPassages": ["privacy-and-ssn:what-the-assistant-never-sees"],
+      "facts": ["removed"]
+    },
+    {
+      "id": "g28",
+      "question": "How long are audit log entries kept?",
+      "expectedPassages": ["privacy-and-ssn:the-audit-log"],
+      "facts": ["7 years"]
+    },
+    {
+      "id": "g29",
+      "question": "Who can read internal case notes?",
+      "expectedPassages": ["privacy-and-ssn:who-can-see-what"],
+      "facts": ["staff"]
+    },
+    {
+      "id": "g30",
+      "question": "What are the six case statuses?",
+      "expectedPassages": ["case-statuses-and-timelines:the-six-statuses"],
+      "facts": ["draft", "submitted", "in review", "approved", "denied", "appealed"]
+    },
+    {
+      "id": "g31",
+      "question": "When is a case marked overdue?",
+      "expectedPassages": ["case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes"],
+      "facts": ["5 days"]
+    },
+    {
+      "id": "g32",
+      "question": "How long does a decision take?",
+      "expectedPassages": ["case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes"],
+      "facts": [["no decision time", "promises no", "does not promise", "no promise"]]
+    },
+    {
+      "id": "g33",
+      "question": "Can an approved case be changed afterwards?",
+      "expectedPassages": ["case-statuses-and-timelines:how-a-case-moves", "case-statuses-and-timelines:the-six-statuses"],
+      "facts": [["final", "no further"]]
+    }
+  ]
+}

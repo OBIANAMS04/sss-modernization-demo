@@ -86,6 +86,11 @@ export enum AuditAction {
   COMPLIANCE_CHECK = 'COMPLIANCE_CHECK',
   COMPLIANCE_ALERT = 'COMPLIANCE_ALERT',
 
+  // STORY-017 and STORY-018: the policy assistant. A change to the documents it answers from, and each answer it gives
+  // (the entry names the exchange and the passages; the question itself is never written to the log)
+  AI_CORPUS_UPDATE = 'AI_CORPUS_UPDATE',
+  AI_ANSWER = 'AI_ANSWER',
+
   // Infrastructure
   DEPLOYMENT = 'DEPLOYMENT',
   SERVER_START = 'SERVER_START',
@@ -337,6 +342,11 @@ function mapRowToAuditLog(row: any): AuditLog {
 // mfaSecret, token, authorization, cookie, ...), and SSN-shaped text anywhere in a value.
 const SENSITIVE_KEY = /^pass(word)?$|password|secret|token$|ssn(hash)?$|authorization|cookie|^totp/i;
 const SSN_TEXT = /\b\d{3}-\d{2}-\d{4}\b/g;
+
+/** STORY-018: the same SSN pattern, for text that is not an audit entry (the assistant strips it from questions before they are stored or sent). */
+export function redactSsn(text: string): string {
+  return text.replace(SSN_TEXT, '[REDACTED]');
+}
 
 /** Redacts sensitive keys and SSN-shaped text throughout the details, including nested objects and arrays. */
 export function sanitizeDetails(details?: Record<string, any>): Record<string, any> | null {

@@ -4,7 +4,7 @@
 
 Type B is the income-based exemption for low-income registrants. It depends on the annual income on the registrant's profile.
 
-## Who qualifies
+## Who qualifies: the income limit
 A registrant qualifies for Type B when the annual income on the profile is below $20,000. An annual income of $20,000 or more does not qualify. The income is a whole number of dollars. If no annual income is on file, the result is Not Eligible and the reason asks the registrant to add it to the profile.
 
 ## How eligibility is decided

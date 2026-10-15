@@ -5,6 +5,7 @@ import { bootstrapStaffRoles } from './services/roleService';
 import { recordServerStart } from './services/auditService';
 import { recordConfigChanges } from './services/configAuditService';
 import { startPolicy } from './services/policyService';
+import { ingestPolicyDocs } from './services/policyCorpus';
 
 dotenv.config();
 
@@ -27,6 +28,9 @@ async function start() {
   await startPolicy();
   // STORY-010: a setting changed since the previous start is an audited configuration change
   await recordConfigChanges();
+  // STORY-017: the policy documents the assistant answers from are re-ingested only when their content hash changed, and a change is audited;
+  // documents that cannot be read stop the start, like a failed migration, so the assistant never runs on a half-loaded corpus
+  await ingestPolicyDocs();
   // STORY-010: a new release is an audited infrastructure event; a restart of the same release is recorded as one
   await recordServerStart((process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7), migrationsApplied);
 

@@ -10,7 +10,7 @@ In the demo, a registrant has three duties. The first is to create an account. T
 ## Creating an account
 An account needs an email address, a password, a full name, a Social Security number in the format XXX-XX-XXXX and a date of birth. The password must have at least 12 characters, with an uppercase letter, a digit and a special character. The registrant must be at least 18 years old. Only synthetic Social Security numbers may be used in the demo.
 
-## Keeping the profile current
+## Profile fields and the registration compliance check
 The profile also holds a phone number, an address, an annual income in whole dollars and whether the registrant has documented hardship. Income and hardship are optional. The registration compliance check reads three things: age 18 or older, a phone number on file and an address on file. With all three the status is Eligible. If the phone number or the address is missing, the status is Pending Review. Under 18, the status is Ineligible.
 
 ## Exemptions a registrant can apply for
