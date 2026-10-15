@@ -30,10 +30,12 @@ CREATE INDEX IF NOT EXISTS idx_policy_passages_doc ON policy_passages(doc_slug, 
 --   question_redacted  the question with SSN-shaped text removed; the original is never stored
 --   passage_ids        the passages the assistant was given, best first
 --   citations          [{ passageId, docTitle, heading, quote, version }] for the answer
---   grounding          the result of the grounding check ({ grounded, unsupported, coverage, ... }); null when no answer was made
+--   grounding          the result of the grounding check ({ grounded, unsupported, coverage, levelReasons, ... }); when no answer was
+--                      made, why not ({ fallback }); null when nothing needed saying
 --   mode               ai (the model), stub (the test double) or passages-only (nothing was generated)
 --   level              0 shown, 1 shown with "check with a case manager", 2 withheld for a person (STORY-023)
---   status             pending, shown, no-answer or with-staff (a level 2 answer waiting for a case manager)
+--   status             pending (accepted, not yet answered), shown, no-answer (the documents do not cover it), with-staff (a level 2
+--                      answer waiting for a case manager) or error (the request failed after it was counted)
 --   feedback           the person's rating of the answer (STORY-019)
 -- The review columns are for STORY-023: who reviewed a withheld answer, what they sent the person instead, and the outcome.
 CREATE TABLE IF NOT EXISTS assistant_interactions (

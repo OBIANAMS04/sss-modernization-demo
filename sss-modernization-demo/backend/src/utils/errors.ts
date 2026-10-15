@@ -33,6 +33,14 @@ export class UnauthorizedError extends AppError {
   }
 }
 
+/** STORY-018: a person has asked too often; the route sends how long to wait in Retry-After. */
+export class RateLimitError extends AppError {
+  constructor(message: string, public retryAfterSeconds: number) {
+    super(429, message, 'RATE_LIMITED');
+    Object.setPrototypeOf(this, RateLimitError.prototype);
+  }
+}
+
 export class NotFoundError extends AppError {
   constructor(message: string = 'Not found') {
     super(404, message, 'NOT_FOUND');
