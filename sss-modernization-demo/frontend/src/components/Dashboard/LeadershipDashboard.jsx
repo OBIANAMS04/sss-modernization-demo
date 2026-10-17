@@ -9,6 +9,7 @@ import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 import Chart from './Chart';
 import DashboardSection from './DashboardSection';
 import NotificationsCard from './NotificationsCard';
+import OverrideRateSection from './OverrideRateSection';
 import StatTile from './StatTile';
 
 const percentOrDash = (value) => (value === null ? '—' : `${value}%`);
@@ -143,6 +144,8 @@ export default function LeadershipDashboard() {
                           </div>
                         )}
                       </DashboardSection>
+
+                      <OverrideRateSection report={data.overrideRate} />
                     </div>
 
                     <NotificationsCard inbox={inbox} onMarkAllRead={markAllRead} />

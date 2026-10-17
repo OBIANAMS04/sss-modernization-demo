@@ -10,6 +10,7 @@ import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 import Chart from './Chart';
 import DashboardSection from './DashboardSection';
 import NotificationsCard from './NotificationsCard';
+import OverrideRateSection from './OverrideRateSection';
 import ReleaseProgress from './ReleaseProgress';
 import StatTile from './StatTile';
 
@@ -189,6 +190,8 @@ export default function AdminDashboard() {
                           </div>
                         )}
                       </DashboardSection>
+
+                      <OverrideRateSection report={data.overrideRate} />
 
                       <DashboardSection title="System health" hint="Read when this page loaded.">
                         <dl className="divide-y divide-gray-100">

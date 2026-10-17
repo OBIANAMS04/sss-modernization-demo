@@ -1,9 +1,11 @@
-// STORY-014 and 015: simple charts drawn as inline SVG, with no chart library. The picture is for sighted readers: it is
+// STORY-014, 015 and 024: simple charts drawn as inline SVG, with no chart library. The picture is for sighted readers: it is
 // labelled for what it shows (role="img") and the table under it holds the same numbers, which is the version assistive
 // technology and keyboard users read (WCAG 1.1.1). Colour is never the only signal: the values are written on the picture,
-// a second line is also dashed with square markers, and the colours below read at 4.5:1 or better on white.
+// a second line is also dashed with square markers, a target is a dotted line with its words, and the colours below read at
+// 4.5:1 or better on white.
 
 const SERIES_COLORS = ['#1d4ed8', '#b45309']; // blue-700 (6.7:1) and amber-700 (5.0:1)
+const TARGET_COLOR = '#b91c1c'; // red-700 (6.5:1)
 const TEXT = '#374151'; // gray-700
 const AXIS = '#6b7280'; // gray-500
 const GRID = '#e5e7eb'; // gray-200: decoration only
@@ -18,16 +20,34 @@ function axisFor(max) {
 }
 
 const shown = (value, format) => (value === null || value === undefined ? '—' : format(value));
+const missing = (value) => value === null || value === undefined;
+
+/** The runs of consecutive categories that have a value, as lists of indexes: a gap in the data is a gap in the line. */
+function runsOf(values) {
+  const runs = [];
+  let run = [];
+  values.forEach((value, i) => {
+    if (missing(value)) {
+      if (run.length) runs.push(run);
+      run = [];
+    } else {
+      run.push(i);
+    }
+  });
+  if (run.length) runs.push(run);
+  return runs;
+}
 
 /**
  * Horizontal bars, one row per category with its label above the bar and its value at the end of it. The picture is narrow
- * (and capped in width) so its text stays about as large as the page's on a phone and on a desktop.
+ * (and capped in width) so its text stays about as large as the page's on a phone and on a desktop. Bars are scaled to the
+ * longest value, or to `maxValue` when the values are shares of a whole (100 for percentages).
  */
-function BarGraph({ ariaLabel, categories, values, format, color }) {
+function BarGraph({ ariaLabel, categories, values, format, color, maxValue }) {
   const width = 280;
   const rowHeight = 46;
   const height = categories.length * rowHeight + 8;
-  const longest = Math.max(0, ...values.map((v) => v ?? 0));
+  const longest = maxValue ?? Math.max(0, ...values.map((v) => v ?? 0));
   const room = width - 56; // keeps the number at the end of the longest bar inside the picture
   return (
     <svg role="img" aria-label={ariaLabel} viewBox={`0 0 ${width} ${height}`} className="w-full max-w-xs h-auto">
@@ -48,14 +68,18 @@ function BarGraph({ ariaLabel, categories, values, format, color }) {
   );
 }
 
-/** Lines over time. The first series is solid with round markers, the second dashed with square ones. */
-function LineGraph({ ariaLabel, categories, series, categoryTitle }) {
+/**
+ * Lines over time. The first series is solid with round markers, the second dashed with square ones. A category with no value
+ * (null) leaves a gap, not a zero. `referenceLine` ({ value, label }) draws a target as a dotted line with its words, and the
+ * axis is made tall enough to show it.
+ */
+function LineGraph({ ariaLabel, categories, series, categoryTitle, format, referenceLine }) {
   const width = 480;
   const height = 250;
-  const margin = { top: 14, right: 16, bottom: 50, left: 38 };
+  const margin = { top: 14, right: 16, bottom: 50, left: 42 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const { top, ticks } = axisFor(Math.max(0, ...series.flatMap((s) => s.values.map((v) => v ?? 0))));
+  const { top, ticks } = axisFor(Math.max(0, referenceLine?.value ?? 0, ...series.flatMap((s) => s.values.map((v) => v ?? 0))));
   const x = (i) => margin.left + (categories.length > 1 ? (i / (categories.length - 1)) * plotWidth : plotWidth / 2);
   const y = (value) => margin.top + plotHeight - (value / top) * plotHeight;
   return (
@@ -70,12 +94,20 @@ function LineGraph({ ariaLabel, categories, series, categoryTitle }) {
             <span>{s.name} ({index ? 'dashed line, squares' : 'solid line, circles'})</span>
           </li>
         ))}
+        {referenceLine && (
+          <li className="flex items-center gap-2">
+            <svg width="34" height="12" aria-hidden="true">
+              <line x1="0" x2="34" y1="6" y2="6" stroke={TARGET_COLOR} strokeWidth="2" strokeDasharray="2 4" />
+            </svg>
+            <span>{referenceLine.label} (dotted line)</span>
+          </li>
+        )}
       </ul>
       <svg role="img" aria-label={ariaLabel} viewBox={`0 0 ${width} ${height}`} className="w-full min-w-[420px] max-w-xl h-auto">
         {ticks.map((tick) => (
           <g key={tick}>
             <line x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} stroke={tick ? GRID : AXIS} />
-            <text x={margin.left - 6} y={y(tick) + 4} textAnchor="end" fontSize="12" fill={TEXT}>{tick}</text>
+            <text x={margin.left - 6} y={y(tick) + 4} textAnchor="end" fontSize="12" fill={TEXT}>{format(tick)}</text>
           </g>
         ))}
         {categories.map((category, i) =>
@@ -84,20 +116,31 @@ function LineGraph({ ariaLabel, categories, series, categoryTitle }) {
           ) : null
         )}
         <text x={margin.left + plotWidth / 2} y={height - 8} textAnchor="middle" fontSize="12" fill={TEXT}>{categoryTitle}</text>
+        {referenceLine && (
+          <g>
+            <line x1={margin.left} x2={width - margin.right} y1={y(referenceLine.value)} y2={y(referenceLine.value)} stroke={TARGET_COLOR} strokeWidth="2" strokeDasharray="2 4" />
+            <text x={width - margin.right} y={y(referenceLine.value) - 6} textAnchor="end" fontSize="12" fontWeight="600" fill={TARGET_COLOR}>{referenceLine.label}</text>
+          </g>
+        )}
         {series.map((s, index) => (
           <g key={s.name}>
-            <polyline
-              fill="none"
-              stroke={SERIES_COLORS[index]}
-              strokeWidth="2.5"
-              strokeDasharray={index ? '6 4' : undefined}
-              points={s.values.map((value, i) => `${x(i)},${y(value ?? 0)}`).join(' ')}
-            />
+            {runsOf(s.values)
+              .filter((run) => run.length > 1)
+              .map((run) => (
+                <polyline
+                  key={run[0]}
+                  fill="none"
+                  stroke={SERIES_COLORS[index]}
+                  strokeWidth="2.5"
+                  strokeDasharray={index ? '6 4' : undefined}
+                  points={run.map((i) => `${x(i)},${y(s.values[i])}`).join(' ')}
+                />
+              ))}
             {s.values.map((value, i) =>
-              index ? (
-                <rect key={categories[i]} x={x(i) - 4} y={y(value ?? 0) - 4} width="8" height="8" fill={SERIES_COLORS[index]} />
+              missing(value) ? null : index ? (
+                <rect key={categories[i]} x={x(i) - 4} y={y(value) - 4} width="8" height="8" fill={SERIES_COLORS[index]} />
               ) : (
-                <circle key={categories[i]} cx={x(i)} cy={y(value ?? 0)} r="4" fill={SERIES_COLORS[index]} />
+                <circle key={categories[i]} cx={x(i)} cy={y(value)} r="4" fill={SERIES_COLORS[index]} />
               )
             )}
           </g>
@@ -137,17 +180,20 @@ function ChartTable({ caption, categoryHeader, categories, columns, format }) {
 }
 
 /**
- * A chart with its data table. `series` is what the picture draws ({ name, values } each; a bar chart draws the first);
- * `extraColumns` are numbers that only the table shows. `label` says what the chart is of, and names the table too.
+ * A chart with its data table. `series` is what the picture draws ({ name, values, format? } each; a bar chart draws the first);
+ * `extraColumns` are numbers that only the table shows. `label` says what the chart is of, and names the table too. A value of
+ * null is shown as a dash in the table and as a gap in a line. `referenceLine` ({ value, label }) marks a target on a line chart;
+ * `maxValue` scales a bar chart to a whole (100 for percentages).
  */
-export default function Chart({ type = 'bar', label, categoryHeader, categoryTitle, categories, series, extraColumns = [], format = String }) {
+export default function Chart({ type = 'bar', label, categoryHeader, categoryTitle, categories, series, extraColumns = [], format = String, referenceLine, maxValue }) {
   const ariaLabel = `${label}. The table below has the same numbers.`;
+  const drawnFormat = series[0].format ?? format;
   return (
     <div>
       {type === 'line' ? (
-        <LineGraph ariaLabel={ariaLabel} categories={categories} series={series} categoryTitle={categoryTitle} />
+        <LineGraph ariaLabel={ariaLabel} categories={categories} series={series} categoryTitle={categoryTitle} format={drawnFormat} referenceLine={referenceLine} />
       ) : (
-        <BarGraph ariaLabel={ariaLabel} categories={categories} values={series[0].values} format={series[0].format ?? format} color={SERIES_COLORS[0]} />
+        <BarGraph ariaLabel={ariaLabel} categories={categories} values={series[0].values} format={drawnFormat} color={SERIES_COLORS[0]} maxValue={maxValue} />
       )}
       <ChartTable caption={label} categoryHeader={categoryHeader} categories={categories} columns={[...series, ...extraColumns]} format={format} />
     </div>
