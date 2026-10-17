@@ -5,6 +5,8 @@
 //   - keyboard: Tab reaches every visible control without getting stuck, and each stop shows a focus indicator
 //   - a descriptive page title, one h1 and one main landmark; signed in, a skip link is the first Tab stop
 //   - reflow: no sideways scrolling at 320 CSS pixels (WCAG 1.4.10); wide tables scroll inside their own box
+// STORY-019 and 023: the policy assistant page (an applicant and a case manager, with an answer shown, a cited passage open and the
+// report form open) and the review queue; the override rate sits on the admin and leadership dashboards already listed.
 // and for the forms, after a failed submit: the message is announced (role="alert") or each invalid field
 // is marked aria-invalid and described by its message, with focus on the first one. Locally it also checks the
 // warning before a session ends (WCAG 2.2.1): shown in time, accessible, extendable, and a clear sign-out if ignored.
@@ -66,6 +68,9 @@ async function setup() {
   // STORY-013 to 015: an administrator (listed in ADMIN_EMAILS, so a case manager becomes one on being given the role) and a leadership user
   const morgan = await adminAccount('morgan.lee@example.com', 'Morgan Lee');
   const riley = await leadershipAccount('riley.chen@example.com', 'Riley Chen');
+  // STORY-019 and 023: a question answered with its citations, and one withheld for a case manager (it waits in the queue Sam sees)
+  await call('POST', '/assistant/ask', applicant.token, { question: 'What is the income limit for the Type B exemption?' });
+  await call('POST', '/assistant/ask', applicant.token, { question: 'Am I eligible for the senior exemption?' });
   await call('PUT', `/cases/${caseId}/assignment`, dana.token, { assignedTo: dana.user.email });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'In Review' });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'Approved' }); // no proof of age on file: a review opens for Sam
@@ -84,7 +89,9 @@ async function setup() {
     { role: 'Applicant', path: '/mfa', label: '/mfa (setup started)', session: applicant, after: startMfaSetup },
     { role: 'Signed out', path: '/mfa/verify', before: async () => `sessionStorage.setItem('mfa_pending_token', ${JSON.stringify(await pendingToken())}); true` },
     { role: 'Applicant', path: `/cases/${caseId}`, label: '/cases/:id', session: applicant, reflowShot: true },
-    ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit', '/staff'].map((path) => ({
+    { role: 'Applicant', path: '/assistant', session: applicant },
+    { role: 'Applicant', path: '/assistant', label: '/assistant (answered)', session: applicant, after: askQuestion, reflowShot: '04-reflow-320-assistant.png' },
+    ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit', '/assistant', '/assistant/reviews', '/staff'].map((path) => ({
       role: 'Case manager',
       path,
       label: path.startsWith('/cases/') ? '/cases/:id' : path,
@@ -134,6 +141,17 @@ async function open(path, session, before) {
   await sleep(500);
   // Transitions would make a focus ring read as "not there yet"; they change timing only
   await page.evaluate(`(() => { const s = document.createElement('style'); s.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}'; document.head.append(s); return true; })()`);
+}
+
+/** STORY-019: /assistant once a question is answered: the answer, the first source's passage open, and the report form open. */
+async function askQuestion() {
+  await page.type('textarea', 'How do I appeal a denial?');
+  await page.click('Ask', 'button');
+  await until(`[...document.querySelectorAll('h2')].some((h) => h.innerText.trim() === 'Answer')`, 15_000);
+  await page.evaluate(`document.querySelector('section[aria-labelledby] ol button')?.click(); true`);
+  await sleep(500);
+  await page.click('Report a problem', 'button');
+  await sleep(300);
 }
 
 /** STORY-003: /mfa once a setup is started, with the QR code and key showing. */
@@ -261,7 +279,7 @@ try {
     await open(p.path, p.session, p.before); // fresh load, so Tab starts from the top
     await p.after?.();
     const k = await keyboard(shotSkip);
-    const r = await reflow(p.reflowShot ? join(OUT, '04-reflow-320.png') : null);
+    const r = await reflow(p.reflowShot ? join(OUT, typeof p.reflowShot === 'string' ? p.reflowShot : '04-reflow-320.png') : null);
     const checks = {
       'WCAG A/AA rules': wcag.length === 0,
       'Every control reached by Tab': k.missed.length === 0 && !k.trapped,
@@ -295,6 +313,23 @@ try {
     await page.click('Verify and sign in');
     await sleep(800);
     forms.push({ form: 'Sign-in code, empty', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
+  }
+  // STORY-019: the question, submitted too short (the browser checks it first, so nothing is sent)
+  const asking = pages.find((p) => p.role === 'Applicant' && p.path === '/assistant');
+  if (asking) {
+    await open(asking.path, asking.session);
+    await page.type('textarea', 'Hi');
+    await page.click('Ask', 'button');
+    await sleep(500);
+    forms.push({ form: 'Question, too short', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
+  }
+  // STORY-023: a review sent with nothing chosen and no note
+  const reviewing = pages.find((p) => p.role === 'Case manager' && p.path === '/assistant/reviews');
+  if (reviewing) {
+    await open(reviewing.path, reviewing.session);
+    await page.click('Send review', 'button');
+    await sleep(500);
+    forms.push({ form: 'Review, empty', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
   }
   await open('/register');
   await page.click('Create Account', 'button');
