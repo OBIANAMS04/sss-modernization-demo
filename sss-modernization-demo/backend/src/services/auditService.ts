@@ -90,6 +90,10 @@ export enum AuditAction {
   // (the entry names the exchange and the passages; the question itself is never written to the log)
   AI_CORPUS_UPDATE = 'AI_CORPUS_UPDATE',
   AI_ANSWER = 'AI_ANSWER',
+  // STORY-019 and STORY-023: a person's feedback on an answer (a report sends it to the review queue), and a case manager's
+  // review of a withheld or reported one. Neither entry holds the question, the answer or the person's comment.
+  AI_FEEDBACK = 'AI_FEEDBACK',
+  AI_REVIEW = 'AI_REVIEW',
 
   // Infrastructure
   DEPLOYMENT = 'DEPLOYMENT',

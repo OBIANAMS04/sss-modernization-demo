@@ -71,6 +71,13 @@ export interface AskResponse {
 // Social Security numbers written with spaces or odd dashes, or as nine digits, as well as the dashed form auditService removes
 const LOOSE_SSN = [/\b\d{3}[\s\-‐-―]\d{2}[\s\-‐-―]\d{4}\b/g, /\b\d{9}\b/g];
 
+/** Removes SSN-shaped text from free text, however it is written. Also used for comments and reviews (STORY-019, 023), which are stored and shown. */
+export function scrubSsn(text: string): string {
+  let clean = redactSsn(text);
+  for (const pattern of LOOSE_SSN) clean = clean.replace(pattern, '[REDACTED]');
+  return clean;
+}
+
 /** Checks a question (3 to 500 characters) and removes SSN-shaped text. Nothing is stored or sent before this has run. */
 export function cleanQuestion(raw: unknown): { question: string; redacted: boolean } {
   if (typeof raw !== 'string') throw new ValidationError('Ask your question as text.');
@@ -78,8 +85,7 @@ export function cleanQuestion(raw: unknown): { question: string; redacted: boole
   if (text.length < QUESTION_MIN || text.length > QUESTION_MAX) {
     throw new ValidationError(`A question must be between ${QUESTION_MIN} and ${QUESTION_MAX} characters.`);
   }
-  let question = redactSsn(text);
-  for (const pattern of LOOSE_SSN) question = question.replace(pattern, '[REDACTED]');
+  const question = scrubSsn(text);
   if (question.replace(/\[REDACTED\]/g, '').replace(/[^\p{L}]/gu, '').length < 2) {
     throw new ValidationError('Please ask your question in words. Social Security numbers are removed from questions.');
   }
@@ -334,43 +340,81 @@ export async function askAssistant(user: { id: string; email: string }, rawQuest
 
 // ---- History
 
+export type ReviewOutcome = 'approved' | 'corrected' | 'declined';
+/** 'reviewed' is a with-staff exchange after a case manager has answered it (STORY-023). */
+export type HistoryStatus = AssistantStatus | 'reviewed';
+/** What the history says of a question a case manager declined; the reason they gave follows it. */
+export const DECLINED_MESSAGE = 'A case manager reviewed this question and could not answer it here.';
+
+export interface HistorySection {
+  passageId: string;
+  docTitle: string;
+  heading: string;
+}
+
 export interface HistoryItem {
   traceId: string;
   question: string;
   mode: AssistantMode;
-  status: AssistantStatus;
+  status: HistoryStatus;
   level: OversightLevel | null;
   answer: string | null;
   citations: Omit<CitationView, 'version'>[];
   message?: string;
+  /** With AI off or unavailable: the policy sections the question matched. Their text is read with GET /api/assistant/passages. */
+  sections?: HistorySection[];
+  /** STORY-023: a case manager reviewed it. `answer` is then theirs (or the draft they approved), or null with `message` when they declined. */
+  reviewed?: { outcome: ReviewOutcome; at: string };
   feedback: string | null;
   createdAt: string;
 }
 
-/** The caller's own last questions with their answers. An answer waiting for a case manager is not shown, as when it was asked. */
+const showsSections = (r: any): boolean => r.mode === 'passages-only' && r.status === 'shown';
+
+/** Title and heading of each passage id, for the exchanges answered with the passages alone. Nothing is read when there are none. */
+async function sectionTitles(ids: string[]): Promise<Map<string, HistorySection>> {
+  if (ids.length === 0) return new Map();
+  const result = await pool.query('SELECT id, doc_title, heading FROM policy_passages WHERE id = ANY($1::text[])', [[...new Set(ids)]]);
+  return new Map(result.rows.map((r: any) => [r.id, { passageId: r.id, docTitle: r.doc_title, heading: r.heading }]));
+}
+
+/**
+ * The caller's own last questions with their answers. An answer waiting for a case manager is not shown, as when it was asked; once
+ * the case manager has reviewed it, the reviewed answer is (marked as reviewed), never the draft that was withheld.
+ */
 export async function getHistory(userId: string, limit: number = HISTORY_LENGTH): Promise<HistoryItem[]> {
   const result = await pool.query(
-    `SELECT trace_id, question_redacted, mode, status, level, answer, citations, feedback, created_at
+    `SELECT trace_id, question_redacted, mode, status, level, answer, citations, passage_ids, feedback, created_at,
+            review_outcome, reviewed_answer, reviewed_at
      FROM assistant_interactions
-     WHERE user_id = $1 AND status IN ('shown', 'no-answer', 'with-staff')
+     WHERE user_id = $1 AND status IN ('shown', 'no-answer', 'with-staff', 'reviewed')
      ORDER BY created_at DESC, id DESC LIMIT $2`,
     [userId, limit]
   );
-  return result.rows.map((r: any) => {
+  const rows: any[] = result.rows;
+  const sections = await sectionTitles(rows.filter(showsSections).flatMap((r) => r.passage_ids ?? []));
+  return rows.map((r) => {
     const withheld = r.status === 'with-staff';
+    const reviewed = r.status === 'reviewed';
+    const declined = reviewed && r.review_outcome === 'declined';
+    // A corrected answer is the case manager's own words, so the draft's citations no longer stand behind it
+    const cited = !withheld && !(reviewed && r.review_outcome !== 'approved');
     const item: HistoryItem = {
       traceId: r.trace_id,
       question: r.question_redacted,
       mode: r.mode,
       status: r.status,
       level: r.level,
-      answer: withheld ? null : r.answer,
-      citations: withheld ? [] : (r.citations ?? []).map(({ version, ...citation }: CitationView) => citation),
+      answer: withheld || declined ? null : reviewed ? r.reviewed_answer : r.answer,
+      citations: cited ? (r.citations ?? []).map(({ version, ...citation }: CitationView) => citation) : [],
       feedback: r.feedback,
       createdAt: r.created_at,
     };
     if (withheld) item.message = STAFF_REPLY_MESSAGE;
+    else if (declined) item.message = r.reviewed_answer ? `${DECLINED_MESSAGE} ${r.reviewed_answer}` : DECLINED_MESSAGE;
     else if (r.status === 'no-answer') item.message = NO_ANSWER_MESSAGE;
+    if (reviewed) item.reviewed = { outcome: r.review_outcome, at: r.reviewed_at };
+    if (showsSections(r)) item.sections = (r.passage_ids ?? []).flatMap((id: string) => sections.get(id) ?? []);
     return item;
   });
 }

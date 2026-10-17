@@ -100,8 +100,13 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'GET /api/policies': 'admin',
   'PUT /api/policies': 'admin',
 
-  // STORY-018 to 023: the policy assistant. Anyone signed in may ask and read their own history; its quality figures are staff work
+  // STORY-018 to 023: the policy assistant. Anyone signed in may ask, read their own history, open a cited passage and rate their own
+  // answers (the handler allows only the person's own exchange); its quality figures and the review queue are staff work
   'POST /api/assistant/ask': 'signed-in',
   'GET /api/assistant/history': 'signed-in',
+  'GET /api/assistant/passages': 'signed-in',
+  'POST /api/assistant/:traceId/feedback': 'signed-in',
   'GET /api/assistant/quality': 'staff',
+  'GET /api/assistant/reviews': 'staff',
+  'POST /api/assistant/reviews/:traceId': 'staff',
 };

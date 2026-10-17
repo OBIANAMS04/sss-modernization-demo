@@ -492,7 +492,7 @@ describe('getHistory', () => {
     const [sql, params] = poolQuery.mock.calls[0];
     const text = String(sql).replace(/\s+/g, ' ');
     expect(text).toContain('WHERE user_id = $1');
-    expect(text).toContain("status IN ('shown', 'no-answer', 'with-staff')");
+    expect(text).toContain("status IN ('shown', 'no-answer', 'with-staff', 'reviewed')");
     expect(text).toContain('ORDER BY created_at DESC');
     expect(params).toEqual(['user-1', 20]);
   });
@@ -520,6 +520,63 @@ describe('getHistory', () => {
     expect(history[1]).toMatchObject({ traceId: 't2', answer: null, citations: [], message: STAFF_REPLY_MESSAGE });
     expect(history[2]).toMatchObject({ traceId: 't3', message: NO_ANSWER_MESSAGE });
     expect(JSON.stringify(history)).not.toContain('must stay hidden');
+  });
+
+  // STORY-023: after a case manager has reviewed an exchange the person sees the reviewed answer, marked as reviewed, never the draft
+  describe('reviewed exchanges', () => {
+    const REVIEWED_AT = '2026-10-16T09:30:00.000Z';
+    const reviewedRow = (outcome: string, reviewedAnswer: string | null) =>
+      row({ trace_id: `r-${outcome}`, status: 'reviewed', level: 2, answer: 'The withheld draft', review_outcome: outcome, reviewed_answer: reviewedAnswer, reviewed_at: REVIEWED_AT });
+
+    it('shows an approved draft with its citations, and a correction with none, both marked as reviewed', async () => {
+      poolQuery.mockResolvedValue({ rows: [reviewedRow('approved', 'The withheld draft'), reviewedRow('corrected', 'The case manager\'s own words.')] });
+      const [approved, corrected] = await getHistory('user-1');
+      expect(approved).toMatchObject({ traceId: 'r-approved', status: 'reviewed', answer: 'The withheld draft', reviewed: { outcome: 'approved', at: REVIEWED_AT } });
+      expect(approved.citations).toEqual([{ passageId: 'a:b', docTitle: 'A', heading: 'B', quote: 'q' }]);
+      expect(corrected).toMatchObject({ status: 'reviewed', answer: 'The case manager\'s own words.', citations: [], reviewed: { outcome: 'corrected' } });
+      expect(corrected.message).toBeUndefined();
+    });
+
+    it('shows a declined question with the case manager\'s reason as a message and no answer', async () => {
+      poolQuery.mockResolvedValue({ rows: [reviewedRow('declined', 'Please contact a case manager directly about this question.')] });
+      const [declined] = await getHistory('user-1');
+      expect(declined).toMatchObject({
+        status: 'reviewed',
+        answer: null,
+        citations: [],
+        message: 'A case manager reviewed this question and could not answer it here. Please contact a case manager directly about this question.',
+        reviewed: { outcome: 'declined' },
+      });
+      expect(JSON.stringify(declined)).not.toContain('The withheld draft');
+    });
+
+    it('never shows the draft of an exchange that is still with a case manager, and a report does not bring it back', async () => {
+      poolQuery.mockResolvedValue({ rows: [row({ status: 'with-staff', level: 2, answer: 'The withheld draft', feedback: 'problem' })] });
+      const [waiting] = await getHistory('user-1');
+      expect(waiting).toMatchObject({ status: 'with-staff', answer: null, citations: [], message: STAFF_REPLY_MESSAGE, feedback: 'problem' });
+      expect(waiting.reviewed).toBeUndefined();
+      expect(JSON.stringify(waiting)).not.toContain('The withheld draft');
+    });
+  });
+
+  // With AI off the history still says which sections the question matched, so they can be opened again
+  it('lists the sections an exchange answered with the passages alone matched, in order, with their titles', async () => {
+    poolQuery
+      .mockResolvedValueOnce({ rows: [row({ mode: 'passages-only', answer: null, citations: [], passage_ids: ['b:two', 'a:one', 'gone:missing'] })] })
+      .mockResolvedValueOnce({ rows: [{ id: 'a:one', doc_title: 'Doc A', heading: 'One' }, { id: 'b:two', doc_title: 'Doc B', heading: 'Two' }] });
+    const [item] = await getHistory('user-1');
+    expect(item.sections).toEqual([
+      { passageId: 'b:two', docTitle: 'Doc B', heading: 'Two' },
+      { passageId: 'a:one', docTitle: 'Doc A', heading: 'One' },
+    ]);
+    expect(poolQuery.mock.calls[1][1]).toEqual([['b:two', 'a:one', 'gone:missing']]);
+  });
+
+  it('reads no section titles when no exchange was answered with the passages alone', async () => {
+    poolQuery.mockResolvedValue({ rows: [row({})] });
+    const [item] = await getHistory('user-1');
+    expect(poolQuery).toHaveBeenCalledTimes(1);
+    expect(item.sections).toBeUndefined();
   });
 });
 

@@ -229,3 +229,20 @@ export async function getCorpusInfo(): Promise<CorpusInfo> {
     ingestedAt: rows.length ? new Date(Math.max(...rows.map((r) => new Date(r.ingested_at).getTime()))).toISOString() : null,
   };
 }
+
+export interface PassageView {
+  id: string;
+  docSlug: string;
+  docTitle: string;
+  heading: string;
+  text: string;
+  /** The first 12 characters of the document's content hash: which version of the document this is. */
+  version: string;
+}
+
+/** One passage by its id, to open a citation on the assistant page (STORY-019); null when there is no such passage. */
+export async function getPassage(id: string): Promise<PassageView | null> {
+  const result = await pool.query('SELECT id, doc_slug, doc_title, heading, body, version FROM policy_passages WHERE id = $1', [id]);
+  const r = result.rows[0];
+  return r ? { id: r.id, docSlug: r.doc_slug, docTitle: r.doc_title, heading: r.heading, text: r.body, version: String(r.version).slice(0, 12) } : null;
+}

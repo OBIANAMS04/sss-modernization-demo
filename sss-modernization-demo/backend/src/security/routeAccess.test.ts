@@ -223,6 +223,8 @@ describe('access policy routes', () => {
     const noRecord = Object.keys(BASELINE_ROUTES).filter((key) => key.includes(':') && BASELINE_ROUTES[key].resource === null);
     expect(noRecord.sort()).toEqual([
       'GET /api/audit/resource/:resource/:resourceId', // staff reading the trail of any record
+      'POST /api/assistant/:traceId/feedback', // the handler only touches the caller's own question
+      'POST /api/assistant/reviews/:traceId', // staff work, never on a question the reviewer asked (the handler refuses it)
       'POST /api/compliance/reviews/:id/resolve', // a review, resolved by a second case manager
       'POST /api/notifications/:id/read', // the handler only touches the caller's own notification
       'POST /api/staff/:id/revoke', // staff work

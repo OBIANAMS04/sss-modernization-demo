@@ -7,7 +7,7 @@ jest.mock('./auditService', () => ({ ...jest.requireActual('./auditService'), lo
 import pool from '../database/connection';
 import { logAuditEvent, sanitizeDetails } from './auditService';
 import { inTransaction } from './caseEvents';
-import { MAX_PASSAGE_CHARS, chunkDocument, contentHash, getCorpusInfo, ingestPolicyDocs, readPolicyDocs, searchPassages, slugify } from './policyCorpus';
+import { MAX_PASSAGE_CHARS, chunkDocument, contentHash, getCorpusInfo, getPassage, ingestPolicyDocs, readPolicyDocs, searchPassages, slugify } from './policyCorpus';
 
 const query = pool.query as unknown as jest.Mock;
 const audit = logAuditEvent as jest.Mock;
@@ -243,6 +243,32 @@ describe('getCorpusInfo', () => {
   it('is empty before anything is ingested', async () => {
     query.mockResolvedValueOnce({ rows: [] });
     expect(await getCorpusInfo()).toEqual({ documents: 0, passages: 0, version: null, ingestedAt: null });
+  });
+});
+
+// STORY-019: a citation on the assistant page opens the passage it names
+describe('getPassage', () => {
+  it('reads one passage by its id, as a parameter, with its title and a short version', async () => {
+    query.mockResolvedValueOnce({
+      rows: [{ id: 'exemption-type-b:who-qualifies-the-income-limit', doc_slug: 'exemption-type-b', doc_title: 'Exemption Type B', heading: 'Who qualifies', body: 'Income below $20,000.', version: 'a'.repeat(64) }],
+    });
+    const passage = await getPassage('exemption-type-b:who-qualifies-the-income-limit');
+    expect(passage).toEqual({
+      id: 'exemption-type-b:who-qualifies-the-income-limit',
+      docSlug: 'exemption-type-b',
+      docTitle: 'Exemption Type B',
+      heading: 'Who qualifies',
+      text: 'Income below $20,000.',
+      version: 'a'.repeat(12),
+    });
+    expect(query.mock.calls[0][1]).toEqual(['exemption-type-b:who-qualifies-the-income-limit']);
+    expect(String(query.mock.calls[0][0])).toContain('WHERE id = $1');
+  });
+
+  it('is null for a passage that does not exist', async () => {
+    query.mockResolvedValueOnce({ rows: [] });
+    expect(await getPassage("x'; DROP TABLE policy_passages; --")).toBeNull();
+    expect(String(query.mock.calls[0][0])).not.toContain('DROP');
   });
 });
 
