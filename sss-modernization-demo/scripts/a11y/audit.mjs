@@ -314,6 +314,14 @@ try {
     await sleep(800);
     forms.push({ form: 'Sign-in code, empty', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
   }
+  await open('/register');
+  await page.click('Create Account', 'button');
+  await sleep(800);
+  forms.push({ form: 'Registration, empty', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
+  apiTree = await accessibilityTree();
+  await page.screenshot(join(OUT, `${live ? 'live-a11y' : '03'}-form-errors.png`));
+  // STORY-019 and 023: two forms of the assistant, after a failed submit. They come after the registration form, whose page the
+  // accessibility tree above is read from, and each starts from a session of its own.
   // STORY-019: the question, submitted too short (the browser checks it first, so nothing is sent)
   const asking = pages.find((p) => p.role === 'Applicant' && p.path === '/assistant');
   if (asking) {
@@ -331,12 +339,6 @@ try {
     await sleep(500);
     forms.push({ form: 'Review, empty', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
   }
-  await open('/register');
-  await page.click('Create Account', 'button');
-  await sleep(800);
-  forms.push({ form: 'Registration, empty', ...(await page.evaluate(formState)), axe: (await axe(WCAG)).length });
-  apiTree = await accessibilityTree();
-  await page.screenshot(join(OUT, `${live ? 'live-a11y' : '03'}-form-errors.png`));
   for (const f of forms) {
     const ok = f.axe === 0 && (f.alerts.length > 0 || (f.invalid > 0 && f.described === f.invalid && f.focusOnInvalid));
     f.pass = ok;
