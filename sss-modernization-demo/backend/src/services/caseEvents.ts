@@ -8,18 +8,21 @@ export interface Actor {
   role: string | null;
 }
 
-/** Records one entry on a case's timeline and returns its id. */
+/**
+ * Records one entry on a case's timeline and returns its id. For a decision, `eligibility` is the automatic eligibility result in
+ * force at that moment (STORY-024): the exemption row is updated in place when eligibility is checked again, so it cannot be read back.
+ */
 export async function recordEvent(
   client: any,
   caseId: string,
   eventType: string,
   actor: Actor,
-  extra: { fromStatus?: string | null; toStatus?: string | null; detail?: string | null } = {}
+  extra: { fromStatus?: string | null; toStatus?: string | null; detail?: string | null; eligibility?: string | null } = {}
 ): Promise<string> {
   const result = await client.query(
-    `INSERT INTO case_events (case_id, event_type, from_status, to_status, actor_id, actor_email, detail)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-    [caseId, eventType, extra.fromStatus ?? null, extra.toStatus ?? null, actor.id, actor.email, extra.detail ?? null]
+    `INSERT INTO case_events (case_id, event_type, from_status, to_status, actor_id, actor_email, detail, eligibility_status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+    [caseId, eventType, extra.fromStatus ?? null, extra.toStatus ?? null, actor.id, actor.email, extra.detail ?? null, extra.eligibility ?? null]
   );
   return result.rows[0].id;
 }

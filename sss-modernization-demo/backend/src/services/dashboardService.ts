@@ -3,7 +3,9 @@ import { APPLICANT_EVENT_TYPES, CASE_STATUSES, CaseStatus, OPEN_STATUSES, getCas
 import { getDashboard as getComplianceDashboard } from './complianceService';
 import { getExemptionsByUserId } from './exemptionService';
 import { getFreshnessDashboard } from './freshnessService';
+import { weekStarts } from '../utils/weeks';
 import { Notification, listNotifications } from './notificationService';
+import { OverrideRateReport, getOverrideRate } from './overrideRateService';
 import { Role } from './roleService';
 import { determineCompliance, getUserById } from './userService';
 
@@ -414,6 +416,8 @@ export interface AdminDashboard {
     auditRefusalsLast24h: number;
     staffByRole: { case_manager: number; leadership: number; admin: number };
   };
+  /** STORY-024: how often staff went against the system in the last 30 days, with its weekly trend and where it comes from. */
+  overrideRate: OverrideRateReport;
 }
 
 /** What /health reports about the database and the release, read the same way. */
@@ -439,7 +443,7 @@ const toTeamMember = (row: any): TeamMember => ({
 
 /** Every case, how each case manager is doing, and whether the system is healthy. */
 export async function getAdminDashboard(): Promise<AdminDashboard> {
-  const [byStatus, byType, decided, team, health, freshness, compliance, refusals, staff] = await Promise.all([
+  const [byStatus, byType, decided, team, health, freshness, compliance, refusals, staff, overrideRate] = await Promise.all([
     pool.query('SELECT status, COUNT(*)::int AS count FROM cases GROUP BY status'),
     pool.query(`SELECT x.exemption_type, COUNT(*)::int AS count FROM cases c LEFT JOIN exemptions x ON x.id = c.exemption_id GROUP BY x.exemption_type`),
     pool.query(
@@ -473,6 +477,7 @@ export async function getAdminDashboard(): Promise<AdminDashboard> {
     getComplianceDashboard(DECISION_WINDOW_DAYS),
     pool.query(`SELECT COUNT(*)::int AS n FROM audit_logs WHERE action = 'ACCESS_DENIED' AND timestamp >= NOW() - INTERVAL '24 hours'`),
     pool.query(`SELECT role, COUNT(*)::int AS n FROM users WHERE role IN ('case_manager', 'leadership', 'admin') GROUP BY role`),
+    getOverrideRate(),
   ]);
 
   const statusCounts = new Map<string, number>(byStatus.rows.map((r: any) => [r.status, count(r.count)]));
@@ -518,6 +523,7 @@ export async function getAdminDashboard(): Promise<AdminDashboard> {
         admin: staffCounts.get('admin') ?? 0,
       },
     },
+    overrideRate,
   };
 }
 
@@ -564,6 +570,8 @@ export interface LeadershipDashboard {
   trends: { weeks: TrendWeek[] };
   bottlenecks: { stuckDays: number; stages: BottleneckStage[] };
   team: { name: string; decisions: number; averageDays: number | null; approvalRate: number | null }[];
+  /** STORY-024: counts and rates only, with no case, person or answer in them. */
+  overrideRate: OverrideRateReport;
 }
 
 const STAGES: { stage: BottleneckStage['stage']; label: string; waiting: CaseStatus }[] = [
@@ -572,11 +580,8 @@ const STAGES: { stage: BottleneckStage['stage']; label: string; waiting: CaseSta
   { stage: 'appealedToDecision', label: 'Appealed to decision', waiting: 'Appealed' },
 ];
 
-/** The Mondays of the last `weeks` weeks, oldest first, ending with the week that starts on `currentWeek` (YYYY-MM-DD). */
-export function weekStarts(currentWeek: string, weeks = TREND_WEEKS): string[] {
-  const [year, month, day] = currentWeek.split('-').map(Number);
-  return Array.from({ length: weeks }, (_, i) => new Date(Date.UTC(year, month - 1, day - 7 * (weeks - 1 - i))).toISOString().slice(0, 10));
-}
+// The weeks are listed by utils/weeks.ts, which the override rate (STORY-024) lists them with too
+export { weekStarts };
 
 /** One entry per week, empty weeks included, from the per-week counts the database returns for the weeks that had any. */
 export function weeklyTrend(
@@ -599,7 +604,7 @@ export function weeklyTrend(
 const WEEKS_BACK = TREND_WEEKS - 1;
 
 export async function getLeadershipDashboard(): Promise<LeadershipDashboard> {
-  const [totals, processing, appeals, thisWeek, applications, decisions, stages, stuck, team] = await Promise.all([
+  const [totals, processing, appeals, thisWeek, applications, decisions, stages, stuck, team, overrideRate] = await Promise.all([
     pool.query(
       `SELECT COUNT(*)::int AS total,
               COUNT(*) FILTER (WHERE status = ANY($1))::int AS open,
@@ -682,6 +687,7 @@ export async function getLeadershipDashboard(): Promise<LeadershipDashboard> {
        GROUP BY u.id, u.full_name
        ORDER BY decisions DESC, u.full_name`
     ),
+    getOverrideRate(),
   ]);
 
   const { total, open, approved, denied: deniedCases } = totals.rows[0];
@@ -720,5 +726,6 @@ export async function getLeadershipDashboard(): Promise<LeadershipDashboard> {
       averageDays: averageDays(r.average_days),
       approvalRate: percent(count(r.approved), count(r.decisions)),
     })),
+    overrideRate,
   };
 }

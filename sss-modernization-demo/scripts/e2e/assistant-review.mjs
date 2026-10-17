@@ -8,7 +8,7 @@
 // CONFIG_CHANGE for the AI settings needs two starts: restart the backend with a different AI_MODEL, then
 //   node scripts/e2e/assistant-review.mjs --model-changed <the new model>
 import { createRequire } from 'node:module';
-import { account, adminAccount, call, expect, leadershipAccount, MANAGER, REVIEWER, run, stamp, staffAccount } from './lib.mjs';
+import { account, adminAccount, call, exemptionId, expect, leadershipAccount, MANAGER, REVIEWER, run, stamp, staffAccount } from './lib.mjs';
 
 const require = createRequire(new URL('../../backend/package.json', import.meta.url));
 const { Client } = require('pg');
@@ -45,13 +45,16 @@ run(async () => {
 async function checks(db, people) {
   const a = await staffAccount(MANAGER, 'Manager Test');
   const b = await staffAccount(REVIEWER, 'Reviewer Test');
-  await adminAccount('morgan.lee@example.com', 'Morgan Lee');
+  const admin = await adminAccount('morgan.lee@example.com', 'Morgan Lee');
   const lead = await leadershipAccount(`review-leadership-${stamp}@example.com`, `Review Leadership ${stamp}`);
   const x = await account(`review-x-${stamp}@example.com`, 'Review X');
   const y = await account(`review-y-${stamp}@example.com`, 'Review Y');
   people.push(a.user.id, b.user.id, x.user.id, y.user.id);
   const row = async (traceId) => (await db.query('SELECT * FROM assistant_interactions WHERE trace_id = $1', [traceId])).rows[0];
   expect('two case managers, two citizens', [a.user.role, b.user.role, x.user.role, y.user.role], ['case_manager', 'case_manager', 'citizen', 'citizen']);
+
+  // The override rate as it stands before this run reviews or decides anything (STORY-024). It covers every case, so the run is judged by what it adds.
+  const overridesBefore = await overrideRateOf(admin);
 
   // 1. Opening a cited passage (STORY-019)
   const first = await ask(x, GENERAL);
@@ -202,6 +205,102 @@ async function checks(db, people) {
   const recent = (await queueOf(a)).recentlyReviewed.filter((r) => [t, ungrounded.data.traceId, first.data.traceId].includes(r.traceId));
   expect('the latest reviews are listed with their outcome and reviewer, newest first', [recent.map((r) => r.outcome), recent.every((r) => r.reviewedBy === b.user.email), recent.find((r) => r.traceId === first.data.traceId).reported], [['declined', 'corrected', 'approved'], true, true]);
 
+  await overrideRate(db, { a, b, admin, lead, y, people }, overridesBefore);
+}
+
+const overrideRateOf = async (viewer) => (await call('GET', '/dashboards/admin', viewer.token)).data.overrideRate;
+const sourceOf = (report, name) => report.bySource.find((s) => s.source === name);
+const delta = (after, before) => ({ reviewed: after.reviewed - before.reviewed, overrides: after.overrides - before.overrides });
+
+/** STORY-024: what the three kinds of review add to the override rate, on both dashboards. */
+async function overrideRate(db, { a, b, admin, lead, y, people }, before) {
+  expect('before: three sources in a fixed order, twelve weeks, and the 20% target over 30 days', [before.bySource.map((s) => s.source), before.weeks.length, before.target, before.windowDays], [['assistant', 'compliance', 'eligibility'], 12, 20, 30]);
+
+  // The assistant's three reviews above: one approved, one corrected, one declined
+  const afterAssistant = await overrideRateOf(admin);
+  expect('assistant: three reviewed, and the corrected and the declined are overrides', delta(sourceOf(afterAssistant, 'assistant'), sourceOf(before, 'assistant')), { reviewed: 3, overrides: 2 });
+  expect('the other sources did not move', [delta(sourceOf(afterAssistant, 'compliance'), sourceOf(before, 'compliance')), delta(sourceOf(afterAssistant, 'eligibility'), sourceOf(before, 'eligibility'))], [{ reviewed: 0, overrides: 0 }, { reviewed: 0, overrides: 0 }]);
+  expect('this week of the trend moved with them', delta(afterAssistant.weeks.at(-1), before.weeks.at(-1)), { reviewed: 3, overrides: 2 });
+
+  // Case decisions. P1 is Type A and eligible: denied (against the result). P2: approved with proof of age (with it). P3 is Type B and
+  // eligible when the case is opened, then earns too much to be: approved while Not Eligible (against it, and it fails two controls).
+  // P4: approved without proof of age (with the result; fails a control). P5 is Type C, which the system sends to a person (Pending
+  // Review): approved, and not counted either way.
+  const applicant = async (label, profile = {}, dob) => {
+    const person = await account(`override-${label}-${stamp}@example.com`, `Override ${label} ${stamp}`, dob);
+    await call('PUT', `/users/${person.user.id}`, person.token, { phone: '555-0150', address: '1 Test Way', ...profile });
+    people.push(person.user.id);
+    return person;
+  };
+  const open = async (person, type) => (await call('POST', '/cases', person.token, { exemptionId: await exemptionId(person.token, type) })).data.id;
+  const decide = async (caseId, status, reason) => {
+    await call('PUT', `/cases/${caseId}/assignment`, a.token, { assignedTo: a.user.email });
+    await call('POST', `/cases/${caseId}/status`, a.token, { status: 'In Review' });
+    return call('POST', `/cases/${caseId}/status`, a.token, { status, reason });
+  };
+  const p1 = await applicant('p1');
+  const p2 = await applicant('p2');
+  const p3 = await applicant('p3', { annualIncome: 15000 }, '1990-01-01');
+  const p4 = await applicant('p4');
+  const p5 = await applicant('p5', { hasDocumentedHardship: true }, '1990-01-01');
+  const [c1, c2, c3, c4, c5] = [await open(p1, 'Type A'), await open(p2, 'Type A'), await open(p3, 'Type B'), await open(p4, 'Type A'), await open(p5, 'Type C')];
+  await call('PUT', `/users/${p3.user.id}`, p3.token, { annualIncome: 90000 });
+  const statusOf = async (person, type) => (await call('GET', '/exemptions', person.token)).data.exemptions.find((e) => e.exemptionType === type).status;
+  expect('P3 is now Not Eligible for Type B, P5 is Pending Review for Type C', [await statusOf(p3, 'Type B'), await statusOf(p5, 'Type C')], ['Not Eligible', 'Pending Review']);
+  await call('POST', `/cases/${c2}/documents`, p2.token, { documentType: 'proof_of_age', documentUrl: 'https://example.com/birth.pdf' });
+  await call('POST', `/cases/${c5}/documents`, p5.token, { documentType: 'hardship_evidence', documentUrl: 'https://example.com/hardship.pdf' });
+  const decided = [(await decide(c1, 'Denied', 'Proof of age not provided.')).data.status, (await decide(c2, 'Approved')).data.status, (await decide(c3, 'Approved')).data.status, (await decide(c4, 'Approved')).data.status, (await decide(c5, 'Approved')).data.status];
+  expect('the decisions are made', decided, ['Denied', 'Approved', 'Approved', 'Approved', 'Approved']);
+
+  const kept = (await db.query(`SELECT c.id, e.eligibility_status FROM case_events e JOIN cases c ON c.id = e.case_id WHERE c.id = ANY($1::uuid[]) AND e.event_type = 'status_change' AND e.to_status IN ('Approved', 'Denied')`, [[c1, c2, c3, c4, c5]])).rows;
+  expect('each decision keeps the eligibility result it was made against', [c1, c2, c3, c4, c5].map((id) => kept.find((k) => k.id === id).eligibility_status), ['Eligible', 'Eligible', 'Not Eligible', 'Eligible', 'Pending Review']);
+  expect('other timeline events keep none', (await db.query(`SELECT COUNT(*)::int AS n FROM case_events WHERE case_id = ANY($1::uuid[]) AND eligibility_status IS NOT NULL AND NOT (event_type = 'status_change' AND to_status IN ('Approved', 'Denied'))`, [[c1, c2, c3, c4, c5]])).rows[0].n, 0);
+
+  const afterDecisions = await overrideRateOf(admin);
+  expect(
+    'case decisions: four where the system had a result, two against it; the Pending Review one is not counted',
+    delta(sourceOf(afterDecisions, 'eligibility'), sourceOf(afterAssistant, 'eligibility')),
+    { reviewed: 4, overrides: 2 }
+  );
+
+  // Compliance: P3's approval failed controls (not eligible, no income statement), P4's failed the evidence control. B, who did not
+  // decide them, accepts the exception on one (an override) and reopens the other (the failed control is upheld).
+  const reviewOf = async (caseId) => (await call('GET', `/compliance/cases/${caseId}`, b.token)).data.reviews.find((r) => r.status === 'Open');
+  const r3 = await reviewOf(c3);
+  const r4 = await reviewOf(c4);
+  expect('both approvals opened a compliance review', [r3?.failedControls.includes('CTRL-01'), r4?.failedControls.includes('CTRL-07')], [true, true]);
+  expect("B accepts the exception on P3's", (await call('POST', `/compliance/reviews/${r3.id}/resolve`, b.token, { action: 'accept', note: 'Override rate suite: exception accepted.' })).status, 200);
+  expect("B reopens P4's case", (await call('POST', `/compliance/reviews/${r4.id}/resolve`, b.token, { action: 'reopen', note: 'Override rate suite: reopened.' })).status, 200);
+  const afterReviews = await overrideRateOf(admin);
+  expect('compliance: two reviews resolved, one of them an accepted exception', delta(sourceOf(afterReviews, 'compliance'), sourceOf(afterDecisions, 'compliance')), { reviewed: 2, overrides: 1 });
+  await sleep(700);
+  expect('the accepted exception is the OVERRIDE audit action', (await trail(a, { action: 'OVERRIDE', resourceId: c3 })).length, 1);
+
+  // The whole: every source adds up, and a correction moves the rate
+  expect('all three together over the run: 3 + 4 + 2 reviewed, 2 + 2 + 1 overridden', delta(afterReviews, before), { reviewed: 9, overrides: 5 });
+  expect('this week of the trend holds the same', delta(afterReviews.weeks.at(-1), before.weeks.at(-1)), { reviewed: 9, overrides: 5 });
+  const rateOf = (report) => (report.reviewed ? Math.round((report.overrides / report.reviewed) * 10000) / 100 : null);
+  expect('the rate is overrides over reviewed items: the whole, each source and each week', [rateOf(afterReviews) === afterReviews.rate, afterReviews.bySource.every((s) => rateOf(s) === s.rate), afterReviews.weeks.every((w) => rateOf(w) === w.rate)], [true, true, true]);
+  expect('the sources add up to the whole', [afterReviews.bySource.reduce((n, s) => n + s.reviewed, 0), afterReviews.bySource.reduce((n, s) => n + s.overrides, 0)], [afterReviews.reviewed, afterReviews.overrides]);
+  expect('the alert is raised exactly when the rate is at or over the 20% target, with its words', [afterReviews.alert, typeof afterReviews.alertMessage], afterReviews.rate !== null && afterReviews.rate >= 20 ? [true, 'string'] : [false, 'object']);
+
+  const asked = await ask(y, PERSONAL);
+  const correction = await review(b, asked.data.traceId, { outcome: 'corrected', answer: 'Eligibility is decided by a case manager from your case, not by this assistant.', note: 'Override rate suite: correction.' });
+  expect('a correction is made', correction.status, 200);
+  const afterCorrection = await overrideRateOf(admin);
+  expect('the correction moved the override rate: one more reviewed, one more overridden', [delta(afterCorrection, afterReviews), rateOf(afterCorrection) === afterCorrection.rate], [{ reviewed: 1, overrides: 1 }, true]);
+  expect('and the share went up (unless it was already 100%)', afterReviews.rate === 100 || afterCorrection.rate > afterReviews.rate, true);
+  const later = await ask(y, `Will I be approved? ${stamp}`);
+  await review(b, later.data.traceId, { outcome: 'approved', note: 'Override rate suite: approval.' });
+  const afterApproval = await overrideRateOf(admin);
+  expect('an approval adds a reviewed item and no override, so the share falls', [delta(afterApproval, afterCorrection), afterApproval.rate < afterCorrection.rate], [{ reviewed: 1, overrides: 0 }, true]);
+
+  // Who sees it
+  const leadership = (await call('GET', '/dashboards/leadership', lead.token)).data;
+  expect('leadership sees the same report as the admin', JSON.stringify(leadership.overrideRate), JSON.stringify(await overrideRateOf(admin)));
+  const shown = JSON.stringify(leadership.overrideRate);
+  expect('and it holds counts and rates only: no email, no id, no question or answer', [/@/.test(shown), /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/i.test(shown), shown.includes('senior exemption')], [false, false, false]);
+  expect('a case manager and a citizen are still refused the admin dashboard that carries it', [(await call('GET', '/dashboards/admin', a.token)).status, (await call('GET', '/dashboards/admin', y.token)).status], [403, 403]);
 }
 
 /** The AI settings are part of the audited configuration: after a restart with another AI_MODEL, the change is in the log. */

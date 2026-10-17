@@ -5,11 +5,13 @@
 jest.mock('../database/connection', () => ({ __esModule: true, default: { query: jest.fn() } }));
 jest.mock('./freshnessService', () => ({ ...jest.requireActual('./freshnessService'), getFreshnessDashboard: jest.fn() }));
 jest.mock('./complianceService', () => ({ ...jest.requireActual('./complianceService'), getDashboard: jest.fn() }));
+jest.mock('./overrideRateService', () => ({ ...jest.requireActual('./overrideRateService'), getOverrideRate: jest.fn() }));
 
 import pool from '../database/connection';
 import { OPEN_STATUSES } from './caseService';
 import { getDashboard as getComplianceDashboard } from './complianceService';
 import { getFreshnessDashboard } from './freshnessService';
+import { OverrideRateReport, getOverrideRate, summariseOverrides } from './overrideRateService';
 import {
   OVERDUE_DAYS,
   RECENT_DECISIONS,
@@ -28,6 +30,16 @@ import {
 const query = pool.query as unknown as jest.Mock;
 const freshness = getFreshnessDashboard as jest.Mock;
 const compliance = getComplianceDashboard as jest.Mock;
+const overrides = getOverrideRate as jest.Mock;
+// The override rate is computed and tested in overrideRateService.test.ts; here it only has to reach the two dashboards unchanged
+const OVERRIDE_REPORT: OverrideRateReport = summariseOverrides(
+  [
+    { source: 'assistant', outcome: 'corrected', week: '2026-10-12', recent: true },
+    { source: 'assistant', outcome: 'approved', week: '2026-10-12', recent: true },
+    { source: 'eligibility', outcome: 'Denied while Eligible', week: '2026-10-05', recent: true },
+  ],
+  '2026-10-12'
+);
 
 const normalized = (sql: string) => sql.replace(/\s+/g, ' ').trim();
 const DAY = 86_400_000;
@@ -163,6 +175,7 @@ beforeEach(() => {
   query.mockReset();
   freshness.mockReset();
   compliance.mockReset();
+  overrides.mockReset().mockResolvedValue(OVERRIDE_REPORT);
 });
 
 describe('case manager dashboard (STORY-013)', () => {
@@ -515,6 +528,12 @@ describe('admin dashboard (STORY-014)', () => {
     });
   });
 
+  it('carries the override rate (STORY-024) as it was computed, and does not pick the figures apart', async () => {
+    adminDatabase(adminData());
+    expect((await getAdminDashboard()).overrideRate).toEqual(OVERRIDE_REPORT);
+    expect(overrides).toHaveBeenCalledTimes(1);
+  });
+
   it('is empty, not broken, for a system with no cases or staff', async () => {
     adminDatabase({ ...adminData(), byStatus: [], byType: [], decided: 0, staff: [], refusals: 0 });
     const { cases, health } = await getAdminDashboard();
@@ -686,6 +705,13 @@ describe('leadership dashboard (STORY-015)', () => {
     expect(normalized(stuck[0])).toMatch(/> \$1 GROUP BY c\.status$/);
   });
 
+  it('carries the override rate (STORY-024): counts and rates only, no case, person or answer', async () => {
+    leadershipDatabase(leadershipData());
+    const { overrideRate } = await getLeadershipDashboard();
+    expect(overrideRate).toEqual(OVERRIDE_REPORT);
+    expect(JSON.stringify(overrideRate)).not.toMatch(/@|[0-9a-f]{8}-[0-9a-f]{4}|ssn|phone|address|password/i);
+  });
+
   it('shows decisions, average days and approval rate for each case manager, by name', async () => {
     leadershipDatabase(leadershipData());
     expect((await getLeadershipDashboard()).team).toEqual([
@@ -742,7 +768,7 @@ describe('leadership dashboard (STORY-015)', () => {
       leadershipDatabase(leaky());
       const dashboard = await getLeadershipDashboard();
       expect(dashboard.team.map((t) => Object.keys(t).sort())).toEqual([['approvalRate', 'averageDays', 'decisions', 'name'], ['approvalRate', 'averageDays', 'decisions', 'name']]);
-      expect(Object.keys(dashboard).sort()).toEqual(['bottlenecks', 'kpis', 'team', 'trends']);
+      expect(Object.keys(dashboard).sort()).toEqual(['bottlenecks', 'kpis', 'overrideRate', 'team', 'trends']);
     });
 
     it('never reads an applicant name, email or id: none of its queries selects one', async () => {

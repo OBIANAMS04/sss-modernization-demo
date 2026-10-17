@@ -212,10 +212,18 @@ export async function changeStatus(caseId: string, toStatus: string, actor: Acto
        WHERE id = $2`,
       [toStatus, caseId]
     );
+    // STORY-024: a decision keeps the automatic eligibility result it was made against, so the override rate can say whether it went
+    // against it. The exemption row is updated in place whenever eligibility is checked again.
+    const decision = toStatus === 'Approved' || toStatus === 'Denied';
+    const eligibility =
+      decision && current.exemptionId
+        ? (await client.query('SELECT status FROM exemptions WHERE id = $1', [current.exemptionId])).rows[0]?.status ?? null
+        : null;
     const id = await recordEvent(client, caseId, 'status_change', actor, {
       fromStatus: current.status,
       toStatus,
       detail: cleanReason,
+      eligibility,
     });
     const typeLabel = current.exemptionType ? `${current.exemptionType} ` : '';
     const message =
