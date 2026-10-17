@@ -8,7 +8,7 @@ import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 
 const PAGE_SIZE = 50;
 const EMPTY = { startDate: '', endDate: '', user: '', action: '', resource: '', status: '' };
-const RESOURCES = ['auth', 'users', 'mfa', 'exemptions', 'cases', 'compliance', 'freshness', 'audit', 'notifications', 'policies', 'system'];
+const RESOURCES = ['auth', 'users', 'mfa', 'exemptions', 'cases', 'compliance', 'freshness', 'audit', 'notifications', 'policies', 'assistant', 'system'];
 
 const LABELS = {
   USER_LOGIN: 'Sign-in',
@@ -37,6 +37,10 @@ const LABELS = {
   COMPLIANCE_CHECK: 'Compliance check',
   COMPLIANCE_ALERT: 'Compliance alert',
   OVERRIDE: 'Override',
+  AI_ANSWER: 'Assistant answer',
+  AI_FEEDBACK: 'Assistant feedback',
+  AI_REVIEW: 'Assistant answer reviewed',
+  AI_CORPUS_UPDATE: 'Policy documents updated',
   ALERT_TRIGGERED: 'Freshness alert',
   DEPLOYMENT: 'Deployment',
   SERVER_START: 'Server restart',
@@ -65,6 +69,16 @@ function describe(log) {
   }
   // A policy change leads with what changed and why (stored JSON does not keep key order)
   if (log.action === 'POLICY_CHANGE' && d.summary) return `version ${d.version}: ${d.summary}${d.reason ? ` · reason: ${d.reason}` : ''}`;
+  // The assistant (STORY-017 to 023): the entry names the exchange and what happened to it. The question and the answer are never in it.
+  if (log.action === 'AI_REVIEW' && d.outcome) {
+    return [`outcome: ${d.outcome}`, d.reported && 'reported by the person', `level ${d.level}`, `exchange ${String(d.traceId).slice(0, 8)}`, d.note && `note: ${d.note}`].filter(Boolean).join(' · ');
+  }
+  if (log.action === 'AI_FEEDBACK' && d.rating) {
+    return [`rating: ${d.rating}`, d.queued && 'sent to the review queue', d.commented && 'with a comment', `exchange ${String(d.traceId).slice(0, 8)}`].filter(Boolean).join(' · ');
+  }
+  if (log.action === 'AI_ANSWER' && d.status) {
+    return [`${d.status}, level ${d.level}`, `${d.mode} mode`, d.grounded === false && 'failed the grounding check', d.fallback && `fallback: ${d.fallback}`, `exchange ${String(d.traceId).slice(0, 8)}`].filter(Boolean).join(' · ');
+  }
   // A role change leads with the person and the reason. Stored JSON does not keep key order, which put the reason last,
   // and a long address or reason then cut it off.
   if (log.action.startsWith('PERMISSION_') && d.email) {

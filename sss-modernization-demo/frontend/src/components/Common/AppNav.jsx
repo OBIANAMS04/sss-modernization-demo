@@ -11,7 +11,8 @@ const linkClass = ({ isActive }) =>
   }`;
 
 /**
- * Shared top navigation. The staff pages (cases, compliance, freshness, audit, staff access) only appear for case managers and admins.
+ * Shared top navigation. The staff pages (cases, compliance, freshness, audit, assistant reviews, staff access) only appear for case managers and admins.
+ * Ask about policy (the assistant) is for everyone signed in.
  * A case manager's Dashboard is My Work, so only admins get a separate My Work link; Leadership is for leadership and admins, Admin and Access Policies for admins.
  * `pageTitle` names the browser tab when the heading is not a good name for it (the dashboard's is the app name).
  */
@@ -43,6 +44,7 @@ export default function AppNav({ title, subtitle, pageTitle }) {
           <nav aria-label="Main" className="flex flex-wrap items-center gap-2">
             <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
             <NavLink to="/profile" className={linkClass}>Profile &amp; Exemptions</NavLink>
+            <NavLink to="/assistant" end className={linkClass}>Ask about policy</NavLink>
             <NavLink to="/mfa" className={linkClass}>Sign-in security</NavLink>
             {isAdminUser(user) && <NavLink to="/my-work" className={linkClass}>My Work</NavLink>}
             {isStaffUser(user) && (
@@ -51,6 +53,7 @@ export default function AppNav({ title, subtitle, pageTitle }) {
                 <NavLink to="/compliance" className={linkClass}>Compliance</NavLink>
                 <NavLink to="/freshness" className={linkClass}>Data Freshness</NavLink>
                 <NavLink to="/audit" className={linkClass}>Audit Log</NavLink>
+                <NavLink to="/assistant/reviews" className={linkClass}>Assistant Reviews</NavLink>
                 <NavLink to="/staff" className={linkClass}>Staff Access</NavLink>
               </>
             )}

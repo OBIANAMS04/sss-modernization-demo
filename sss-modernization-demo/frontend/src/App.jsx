@@ -19,6 +19,8 @@ import FreshnessDashboard from './components/Freshness/FreshnessDashboard';
 import AuditLog from './components/Audit/AuditLog';
 import StaffAccess from './components/Staff/StaffAccess';
 import AccessPolicies from './components/Admin/AccessPolicies';
+import Assistant from './components/Assistant/Assistant';
+import ReviewQueue from './components/Assistant/ReviewQueue';
 import './App.css';
 
 // A signed-in person is sent on to the dashboard. The check is made each time the route renders, not once when the app
@@ -168,6 +170,22 @@ function App() {
           element={
             <ProtectedRoute>
               <AccessPolicies />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assistant"
+          element={
+            <ProtectedRoute>
+              <Assistant />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assistant/reviews"
+          element={
+            <ProtectedRoute>
+              <ReviewQueue />
             </ProtectedRoute>
           }
         />
