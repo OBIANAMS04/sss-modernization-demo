@@ -56,9 +56,11 @@ const toggled = (set, index) => {
  * STORY-019 and 023: everything about one exchange but its question: the oversight status in words, the answer with numbered
  * citations that open the policy passage, the sections it matched when AI is off, and the feedback controls. The numbers in the answer
  * open the passage and move focus to its button. `passages` and `loadPassage` come from usePassages(); `onFeedback(traceId, result)` is told when feedback was sent.
+ * `inHistory` is for an exchange listed under the person's recent questions, not shown as the answer to the question just asked.
  */
-export default function Exchange({ item, passages, loadPassage, onFeedback, citationsAs = 'h3' }) {
+export default function Exchange({ item, passages, loadPassage, onFeedback, citationsAs = 'h3', inHistory = false }) {
   const base = useId();
+  const citationBase = `${base}-c`;
   const [openCitations, setOpenCitations] = useState(() => new Set());
   const [openSections, setOpenSections] = useState(() => new Set());
   const [notice, setNotice] = useState('');
@@ -78,7 +80,7 @@ export default function Exchange({ item, passages, loadPassage, onFeedback, cita
   const reveal = (i) => {
     loadPassage(citations[i].passageId);
     setOpenCitations((prev) => new Set(prev).add(i));
-    requestAnimationFrame(() => document.getElementById(sourceButtonId(base, i))?.focus());
+    requestAnimationFrame(() => document.getElementById(sourceButtonId(citationBase, i))?.focus());
   };
 
   const sent = (result) => {
@@ -94,11 +96,15 @@ export default function Exchange({ item, passages, loadPassage, onFeedback, cita
       <OversightStatus item={item} />
       {item.reviewed && (
         <p className="mt-2 text-sm text-gray-700 wrap-anywhere">
-          {REVIEW_NOTES[item.reviewed.outcome]} {formatTime(item.reviewed.at)}
+          {REVIEW_NOTES[item.reviewed.outcome]} Reviewed {formatTime(item.reviewed.at)}.
         </p>
       )}
       {item.message && !sameWords(item.message, oversightOf(item).label) && <p className="mt-3 text-gray-800 wrap-anywhere">{item.message}</p>}
-      {item.status === 'with-staff' && <p className="mt-3 text-gray-800">You will see their reply in your recent questions below, and in your notifications.</p>}
+      {item.status === 'with-staff' && (
+        <p className="mt-3 text-gray-800">
+          {inHistory ? 'You will see their reply here, and in your notifications.' : 'You will see their reply in your recent questions below, and in your notifications.'}
+        </p>
+      )}
       {item.answer && (
         <p className="mt-3 whitespace-pre-line text-gray-900 wrap-anywhere">
           {item.answer}
@@ -115,7 +121,7 @@ export default function Exchange({ item, passages, loadPassage, onFeedback, cita
           ))}
         </p>
       )}
-      <Citations base={`${base}-c`} label="Sources" items={citations} open={openCitations} onToggle={toggleCitation} passages={passages} as={citationsAs} />
+      <Citations base={citationBase} label="Sources" items={citations} open={openCitations} onToggle={toggleCitation} passages={passages} as={citationsAs} />
       <Citations base={`${base}-s`} label="Matching policy sections" items={sections} open={openSections} onToggle={toggleSection} passages={passages} as={citationsAs} />
       {item.feedback === 'problem' && <p className="mt-3 text-sm text-gray-700">You reported a problem with this answer.</p>}
       {feedback}

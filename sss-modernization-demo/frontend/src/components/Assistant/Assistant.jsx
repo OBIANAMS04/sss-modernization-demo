@@ -199,7 +199,7 @@ export default function Assistant() {
                   <li key={item.traceId} className="rounded-lg bg-white p-4 shadow sm:p-5">
                     <h3 className="font-semibold text-gray-900 wrap-anywhere">{item.question}</h3>
                     <p className="mb-3 text-sm text-gray-600">Asked {formatTime(item.createdAt)}</p>
-                    <Exchange item={item} passages={passages} loadPassage={load} onFeedback={applyFeedback} citationsAs="h4" />
+                    <Exchange item={item} passages={passages} loadPassage={load} onFeedback={applyFeedback} citationsAs="h4" inHistory />
                   </li>
                 ))}
               </ol>
