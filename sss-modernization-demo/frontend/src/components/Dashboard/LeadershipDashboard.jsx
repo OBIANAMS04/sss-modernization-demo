@@ -145,7 +145,7 @@ export default function LeadershipDashboard() {
                         )}
                       </DashboardSection>
 
-                      <OverrideRateSection report={data.overrideRate} />
+                      {data.overrideRate && <OverrideRateSection report={data.overrideRate} />}
                     </div>
 
                     <NotificationsCard inbox={inbox} onMarkAllRead={markAllRead} />

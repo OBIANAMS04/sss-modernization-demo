@@ -191,7 +191,7 @@ export default function AdminDashboard() {
                         )}
                       </DashboardSection>
 
-                      <OverrideRateSection report={data.overrideRate} />
+                      {data.overrideRate && <OverrideRateSection report={data.overrideRate} />}
 
                       <DashboardSection title="System health" hint="Read when this page loaded.">
                         <dl className="divide-y divide-gray-100">

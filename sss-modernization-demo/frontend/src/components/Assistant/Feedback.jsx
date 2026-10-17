@@ -64,7 +64,9 @@ export default function Feedback({ item, onSent }) {
   const problem = form === 'problem';
   return (
     <div role="group" aria-labelledby={labelId} className="mt-4 border-t border-gray-200 pt-3">
-      <p id={labelId} className="text-sm font-medium text-gray-900">Was this answer useful?</p>
+      <p id={labelId} className="text-sm font-medium text-gray-900">
+        {item.answer ? 'Was this answer useful?' : item.sections?.length ? 'Were these policy sections useful?' : 'Was this useful?'}
+      </p>
       <div className="mt-2 flex flex-wrap gap-2">
         <button type="button" aria-pressed={item.feedback === 'helpful'} aria-disabled={busy} onClick={() => send('helpful', '')} className={item.feedback === 'helpful' ? pressed : plain}>
           Helpful

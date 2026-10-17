@@ -18,6 +18,9 @@ export function oversightOf(item) {
   return { label: 'Checked against the policy', tone: 'green', icon: 'check' };
 }
 
+/** The server's note for AI being turned off says what the status already says in words, so it is not shown a second time. */
+export const repeatsStatus = (item) => item.mode === 'passages-only' && /^AI answers are turned off/.test(item.message ?? '');
+
 /** What a case manager did with a reviewed exchange, for the person. */
 export const REVIEW_NOTES = {
   approved: 'A case manager checked the draft answer and approved it as it was.',
