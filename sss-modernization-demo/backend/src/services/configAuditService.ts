@@ -7,8 +7,10 @@ import { AuditAction, logAuditEvent } from './auditService';
 // previous start and records any difference as CONFIG_CHANGE. Public settings appear with their old and
 // new values; the others are compared by a salted fingerprint and only named, so no secret or
 // connection detail reaches the log.
-const PUBLIC_SETTINGS = ['CORS_ORIGIN', 'JWT_EXPIRY', 'CASE_MANAGER_EMAILS', 'ADMIN_EMAILS', 'DATABASE_SSL'];
-const HIDDEN_SETTINGS = ['JWT_SECRET', 'DATABASE_PASSWORD', 'DATABASE_HOST', 'DATABASE_PORT', 'DATABASE_NAME', 'DATABASE_USER'];
+// STORY-018/019: the policy assistant's settings are tracked too, so turning AI on (ANTHROPIC_API_KEY, AI_PROVIDER), changing the
+// model or moving the daily limit is an audited change. The key is hidden like any secret: its fingerprint changes, its value is never kept.
+const PUBLIC_SETTINGS = ['CORS_ORIGIN', 'JWT_EXPIRY', 'CASE_MANAGER_EMAILS', 'ADMIN_EMAILS', 'DATABASE_SSL', 'AI_PROVIDER', 'AI_MODEL', 'AI_DAILY_LIMIT'];
+const HIDDEN_SETTINGS = ['JWT_SECRET', 'DATABASE_PASSWORD', 'DATABASE_HOST', 'DATABASE_PORT', 'DATABASE_NAME', 'DATABASE_USER', 'ANTHROPIC_API_KEY'];
 export const TRACKED_SETTINGS = [...PUBLIC_SETTINGS, ...HIDDEN_SETTINGS];
 const NOT_SET = '(not set)';
 const SALT_ROW = '__salt';
@@ -22,7 +24,8 @@ export function storedValue(name: string, value: string | undefined, salt: strin
 
 /** Audit details naming each setting that differs from the previous start, or null if none does. */
 export function describeChanges(previous: Record<string, string>, current: Record<string, string>): Record<string, unknown> | null {
-  const changed = Object.keys(current).filter((name) => previous[name] !== current[name]);
+  // STORY-019: a setting that was never recorded counts as not set, so starting to track one that is not set is not a change
+  const changed = Object.keys(current).filter((name) => (previous[name] ?? NOT_SET) !== current[name]);
   if (!changed.length) return null;
   const details: Record<string, unknown> = { via: 'environment at startup', changed };
   for (const name of changed.filter((n) => PUBLIC_SETTINGS.includes(n))) {

@@ -60,6 +60,30 @@ describe('recordConfigChanges (STORY-010 configuration changes)', () => {
     });
   });
 
+  // STORY-019: turning AI on or changing the model is an audited change; the key itself never reaches the log
+  it('shows the AI provider, model and daily limit before and after, and names the key without showing it', async () => {
+    const KEY = 'sk-ant-key-Yt42-never-in-logs';
+    await recordConfigChanges({ ...base, AI_MODEL: 'claude-opus-5-5' });
+    await recordConfigChanges({ ...base, AI_PROVIDER: 'stub', AI_MODEL: 'claude-sonnet-5-5', AI_DAILY_LIMIT: '50', ANTHROPIC_API_KEY: KEY });
+    expect(logged.mock.calls[1][3].details).toEqual({
+      via: 'environment at startup',
+      changed: ['AI_PROVIDER', 'AI_MODEL', 'AI_DAILY_LIMIT', 'ANTHROPIC_API_KEY'],
+      AI_PROVIDER: '(not set) → stub',
+      AI_MODEL: 'claude-opus-5-5 → claude-sonnet-5-5',
+      AI_DAILY_LIMIT: '(not set) → 50',
+    });
+    await recordConfigChanges({ ...base, AI_PROVIDER: 'stub', AI_MODEL: 'claude-sonnet-5-5', AI_DAILY_LIMIT: '50', ANTHROPIC_API_KEY: 'rotated-key-Qq18' });
+    expect(logged.mock.calls[2][3].details).toEqual({ via: 'environment at startup', changed: ['ANTHROPIC_API_KEY'] });
+    expect(JSON.stringify([logged.mock.calls, query.mock.calls])).not.toMatch(/Yt42|Qq18/);
+  });
+
+  it('records nothing for a start that changes none of the AI settings', async () => {
+    const ai = { ...base, AI_PROVIDER: 'stub', AI_MODEL: 'claude-opus-5-5', AI_DAILY_LIMIT: '300', ANTHROPIC_API_KEY: 'sk-ant-key-Yt42' };
+    await recordConfigChanges(ai);
+    await recordConfigChanges({ ...ai });
+    expect(logged).toHaveBeenCalledTimes(1);
+  });
+
   it('reports a removed setting, and a moved database by name only', async () => {
     await recordConfigChanges(base);
     const { CORS_ORIGIN, ...withoutCors } = base;
@@ -106,5 +130,22 @@ describe('storedValue and describeChanges', () => {
 
   it('returns null when nothing changed', () => {
     expect(describeChanges({ CORS_ORIGIN: 'x' }, { CORS_ORIGIN: 'x' })).toBeNull();
+  });
+
+  it('does not call a setting that was never tracked a change while it is not set, but does once it is set', () => {
+    expect(describeChanges({ CORS_ORIGIN: 'x' }, { CORS_ORIGIN: 'x', AI_MODEL: '(not set)' })).toBeNull();
+    expect(describeChanges({ CORS_ORIGIN: 'x' }, { CORS_ORIGIN: 'x', AI_MODEL: 'claude-opus-5-5' })).toEqual({
+      via: 'environment at startup',
+      changed: ['AI_MODEL'],
+      AI_MODEL: '(not set) → claude-opus-5-5',
+    });
+  });
+
+  it('tracks the policy assistant settings: three in the open, the key as a fingerprint', () => {
+    expect(TRACKED_SETTINGS).toEqual(expect.arrayContaining(['AI_PROVIDER', 'AI_MODEL', 'AI_DAILY_LIMIT', 'ANTHROPIC_API_KEY']));
+    expect(storedValue('AI_MODEL', 'claude-opus-5-5', 's1')).toBe('claude-opus-5-5');
+    expect(storedValue('AI_PROVIDER', 'stub', 's1')).toBe('stub');
+    expect(storedValue('AI_DAILY_LIMIT', '300', 's1')).toBe('300');
+    expect(storedValue('ANTHROPIC_API_KEY', 'sk-ant-key', 's1')).toMatch(/^sha256:[0-9a-f]{64}$/);
   });
 });
