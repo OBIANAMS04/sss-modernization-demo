@@ -197,7 +197,7 @@ the action (read or write) and who owns or is assigned the record. Example rule:
 
 ---
 
-## Policy assistant (STORY-017 to 023)
+## Policy assistant (STORY-017 to 024)
 
 A signed-in person asks a question about synthetic policy documents and gets an answer that cites them, or the passages
 themselves. Demonstrated on a synthetic demo deployment; the documents are illustrative demo policy, not Selective Service policy.
@@ -216,8 +216,19 @@ themselves. Demonstrated on a synthetic demo deployment; the documents are illus
 - **Check (`services/groundingCheck.ts`).** A pure function: every sentence covered by a citation, every number, date or amount in a
   cited quote or passage, every cited passage among those retrieved. It decides `grounded`, `unsupported` and `coverage`.
 - **Oversight (`services/oversightLevel.ts`).** Level 2 (withheld for a case manager) for an ungrounded answer or a question about
-  the asker's own eligibility or case; level 1 for fewer than two cited passages or coverage under 0.9; otherwise level 0. The
-  review queue and the page are later stories; the level and the review columns are stored now.
+  the asker's own eligibility or case; level 1 for fewer than two cited passages or coverage under 0.9; otherwise level 0.
+- **Page and feedback (`components/Assistant/`, `services/assistantReviewService.ts`).** `/assistant` is for everyone signed in: a labelled
+  question field with a character count, the answer with its oversight status in plain words, numbered citations that open the passage
+  (a disclosure; `GET /api/assistant/passages`), Helpful / Not helpful / Report a problem, and the person's recent questions. A report
+  withholds the answer again and sends the exchange to the review queue at level 2.
+- **Review queue (STORY-023).** `/assistant/reviews` (staff) lists the withheld and reported exchanges, oldest first, with the question, the
+  draft, its citations, the grounding result and why it is there. A case manager approves the draft, corrects it or declines, with a note;
+  the exchange row is locked, the person is notified through the existing notifications and sees the reviewed answer in their history marked
+  as reviewed, and the review is audited as `AI_REVIEW` (never the question or the answer). Nobody reviews a question they asked.
+- **Override rate (STORY-024, `services/overrideRateService.ts`).** Overrides divided by reviewed items over 30 days, against a target below
+  20%, on the admin and leadership dashboards with a weekly trend, a breakdown by source and an alert. The denominator and numerator are
+  defined in the comment at the top of the service and in `API-SPECIFICATION.md`; each case decision keeps the eligibility result it was
+  made against (`case_events.eligibility_status`, migration 021), since exemption rows are updated in place.
 - **Limits and privacy (`services/assistantService.ts`).** SSN-shaped text is removed from the question before it is searched,
   stored, sent or audited. Each person may ask 20 questions per hour (429 with `Retry-After`) and `AI_DAILY_LIMIT` (300) answers
   may be generated per UTC day; both are counted under one advisory lock when the question is accepted, so parallel requests cannot

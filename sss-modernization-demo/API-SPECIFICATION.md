@@ -253,7 +253,7 @@ code allows.
 
 ---
 
-## Policy Assistant (STORY-017 to 023)
+## Policy Assistant (STORY-017 to 024)
 
 A signed-in person asks a question about the synthetic policy documents in `backend/policy-docs` (illustrative demo policy, not
 Selective Service policy). The most relevant passages are found with PostgreSQL full-text search (`websearch_to_tsquery`,
@@ -265,7 +265,9 @@ searched, stored, sent to the model or logged. Demonstrated on a synthetic demo 
 **Settings (environment).** `ANTHROPIC_API_KEY` switches AI on; without it, or with `AI_PROVIDER=off`, the assistant returns the
 policy passages alone (`mode: "passages-only"`). `AI_PROVIDER=stub` is a deterministic stand-in for tests that needs no key.
 `AI_MODEL` names the model (default `claude-opus-5-5`). `AI_DAILY_LIMIT` (default 300) caps the answers generated per UTC day across
-everyone; past it, questions get the passages alone.
+everyone; past it, questions get the passages alone. These settings are part of the audited configuration (STORY-010): turning AI on
+or changing the provider, the model or the limit is recorded at the next start as `CONFIG_CHANGE` with the old and new values, and
+`ANTHROPIC_API_KEY` by a fingerprint only, never its value.
 
 ### POST /api/assistant/ask
 
@@ -312,8 +314,29 @@ in about 30 minutes."), with a `Retry-After` header in seconds.
 ### GET /api/assistant/history
 
 Anyone signed in. The caller's own last 20 exchanges, newest first: `{ "history": [ { traceId, question, mode, status, level, answer,
-citations, feedback, createdAt, message? } ] }`. The question is the cleaned one. A withheld answer is not shown: `answer` is null and
-`message` says it is with a case manager.
+citations, feedback, createdAt, message?, sections?, reviewed? } ] }`. The question is the cleaned one. A withheld answer is not shown:
+`answer` is null and `message` says it is with a case manager; so is an answer the person reported. Once a case manager has reviewed it,
+`status` is `reviewed` and `reviewed` is `{ outcome, at }`: `answer` is the reviewed answer (an approved draft with its citations, or the
+case manager's correction with none), or null with a `message` when they declined. The withheld draft is never shown. An exchange
+answered with the passages alone has `sections` (`[{ passageId, docTitle, heading }]`); their text is read with the next endpoint.
+`feedback` is the person's rating, or null.
+
+### GET /api/assistant/passages?id=
+
+Anyone signed in. The title, heading and text of one policy passage, which is what a citation opens on the assistant page:
+`{ "passage": { id, docSlug, docTitle, heading, text, version } }` (`version` is the first 12 characters of the document's content hash).
+400 `VALIDATION_ERROR` without an id; 404 `NOT_FOUND` for a passage that does not exist; 401 when not signed in.
+
+### POST /api/assistant/:traceId/feedback
+
+Anyone signed in, on their own exchange only. **Request:** `{ "rating": "helpful" | "not-helpful" | "problem", "comment": "optional, up to 500 characters" }`.
+SSN-shaped text is removed from the comment. A `problem` is a report: the answer is withheld again and the exchange goes to the review
+queue at level 2. A rating can be changed until then. **Response (200):** `{ traceId, feedback, status, queued, message }`, where `status` is
+`with-staff` after a report.
+
+**Errors:** 400 for an unknown rating or a comment over 500 characters; 403 `FORBIDDEN` for another person's exchange (audited as
+`ACCESS_DENIED`); 404 for a question that does not exist; 409 `CONFLICT` once the exchange is with a case manager or reviewed, since there is
+nothing to rate. Audited as `AI_FEEDBACK`: the trace id, the rating, whether it was queued and whether there was a comment, never the comment.
 
 ### GET /api/assistant/quality
 
@@ -332,6 +355,71 @@ Staff only (case managers and admins); 403 for anyone else, 401 when not signed 
 ```
 `rate` is the percent of answers that failed the check (null when there were none); `alert` is true when a window is at or over the
 2% target. An exchange that made no answer (AI off, no match, a failed call) is not an answer and is not counted.
+
+### GET /api/assistant/reviews
+
+Staff only (STORY-023); 403 for anyone else, 401 when not signed in. The review queue: every exchange with `status` `with-staff` (answers that
+failed the grounding check, questions about the person's own eligibility or case, and answers the person reported), oldest first by when each
+entered the queue (when it was asked or, for a report, when it was reported), up to 100; and the 10 latest reviews.
+
+```json
+{
+  "waiting": 2,
+  "items": [ {
+    "traceId": "4bc727fb-eaad-459a-a522-4f5ecc937372",
+    "question": "Am I eligible for the senior exemption?",
+    "askedAt": "2026-10-16T08:00:00.000Z", "queuedAt": "2026-10-16T08:00:00.000Z",
+    "askedBy": { "name": "Avery Lane", "email": "avery@example.com" },
+    "own": false,
+    "reasons": [ { "code": "personal-question", "text": "The question is about the person's own eligibility or case. The assistant never decides those." } ],
+    "reportComment": null,
+    "draft": { "answer": "A registrant qualifies for Type A when ...", "note": null, "citations": [ { "passageId": "...", "docTitle": "...", "heading": "...", "quote": "..." } ], "mode": "ai", "model": "claude-opus-5-5" },
+    "grounding": { "grounded": true, "coverage": 1, "unsupported": [] }
+  } ],
+  "recentlyReviewed": [ { "traceId": "...", "question": "...", "outcome": "corrected", "reviewedBy": "casey@example.com", "reviewedAt": "2026-10-16T13:00:00.000Z", "reported": true } ]
+}
+```
+`reasons` are `reported`, `ungrounded` and `personal-question` (or `held`). `own` is true for a question the caller asked, which another case manager
+must review. `draft.answer` is null when no draft was made, and `draft.note` says why; `grounding` is null then too.
+
+### POST /api/assistant/reviews/:traceId
+
+Staff only. **Request:** `{ "outcome": "approved" | "corrected" | "declined", "answer": "...", "note": "..." }`. `note` (up to 1000 characters) is
+required: why the case manager made this choice. It is kept with the exchange and in the audit log, and never shown to the person.
+`answer` (up to 2000 characters) is required for `corrected` and replaces the draft; for `declined` it is the reason the person is given (without it
+they are told "Please contact a case manager directly about this question."); an `approved` review sends the draft as it is and takes none. An
+exchange with no draft cannot be approved. SSN-shaped text is removed from both.
+
+The person is notified through their notifications ("A case manager reviewed your policy question ... and replied: ..."), and sees the result in
+their history with `status` `reviewed`. The row is locked while it is reviewed, so two case managers cannot both review it. **Response (200):**
+`{ traceId, outcome, status: "reviewed", notified }`.
+
+**Errors:** 400 for an unknown outcome, no note, no answer for a correction, an answer with an approval, or a text over its limit; 403 `FORBIDDEN` for a
+question the reviewer asked themselves ("You cannot review a question you asked yourself. Another case manager will review it.", audited as
+`ACCESS_DENIED`) and for anyone who is not staff; 404 for a question that does not exist; 409 `CONFLICT` for one already reviewed or not waiting.
+Audited as `AI_REVIEW`: the trace id, the outcome, the level, the mode, whether it was reported, and the note; never the question or an answer.
+
+### Override rate on the admin and leadership dashboards (STORY-024)
+
+`GET /api/dashboards/admin` and `GET /api/dashboards/leadership` each carry `overrideRate`, which holds counts and rates only:
+
+```json
+{
+  "target": 20, "windowDays": 30, "reviewed": 12, "overrides": 3, "rate": 25, "alert": true,
+  "alertMessage": "The override rate is 25% for the last 30 days (3 of 12 reviewed items). The target is below 20%.",
+  "bySource": [ { "source": "assistant", "label": "Assistant answers", "description": "...", "reviewed": 5, "overrides": 2, "rate": 40 } ],
+  "weeks": [ { "weekStart": "2026-10-12", "reviewed": 4, "overrides": 1, "rate": 25 } ]
+}
+```
+The rate is **overrides divided by reviewed items** over the last 30 days, in percent, against a target below 20%; a rate at the target already
+raises the alert (as the 2% hallucination target does). A *reviewed item* is something the system decided or drafted that a person then looked at:
+an assistant answer a case manager reviewed (approved, corrected or declined); a compliance review a second case manager resolved (exception
+accepted, or case reopened); or a case decision made where the automatic eligibility check had said Eligible or Not Eligible. An *override* is
+one where the person went against the system: an answer corrected or declined; a compliance exception accepted (the `OVERRIDE` audit action);
+a case approved while Not Eligible, or denied while Eligible. A decision made while the check said Pending Review (the system sent it to a
+person), and a decision made before the result was recorded, are not counted. `bySource` has the three sources in a fixed order (`assistant`,
+`compliance`, `eligibility`); `weeks` has the last twelve weeks, oldest first, each starting on a Monday, with a null `rate` for a week or a source
+in which nothing was reviewed.
 
 ---
 
