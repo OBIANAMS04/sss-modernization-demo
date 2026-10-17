@@ -8,7 +8,7 @@ const router = Router();
 
 router.use(authenticate);
 
-// POST /assistant/ask - { question }: the most relevant policy passages and, with AI on, an answer cited to them. Anyone signed in; 20 questions per hour each
+// POST /assistant/ask - { question }: the most relevant policy passages and, with AI on, an answer cited to them. Anyone signed in; 20 questions per hour each (STORY-018)
 router.post('/ask', async (req: any, res: Response, next: NextFunction) => {
   try {
     res.json(await askAssistant({ id: req.user.sub, email: req.user.email }, req.body?.question));
@@ -18,7 +18,7 @@ router.post('/ask', async (req: any, res: Response, next: NextFunction) => {
   }
 });
 
-// GET /assistant/history - The caller's own last 20 questions with their answers
+// GET /assistant/history - The caller's own last 20 questions with their answers (STORY-018)
 router.get('/history', async (req: any, res: Response, next: NextFunction) => {
   try {
     res.json({ history: await getHistory(req.user.sub) });
@@ -27,7 +27,7 @@ router.get('/history', async (req: any, res: Response, next: NextFunction) => {
   }
 });
 
-// GET /assistant/quality - Answers checked and answers that failed the grounding check over 7 and 30 days, against the 2% target (staff only)
+// GET /assistant/quality - Answers checked and answers that failed the grounding check over 7 and 30 days, against the 2% target (staff only, STORY-022)
 router.get('/quality', requireStaff, async (_req: any, res: Response, next: NextFunction) => {
   try {
     res.json(await getQuality());

@@ -197,6 +197,36 @@ the action (read or write) and who owns or is assigned the record. Example rule:
 
 ---
 
+## Policy assistant (STORY-017 to 023)
+
+A signed-in person asks a question about synthetic policy documents and gets an answer that cites them, or the passages
+themselves. Demonstrated on a synthetic demo deployment; the documents are illustrative demo policy, not Selective Service policy.
+
+- **Corpus (`services/policyCorpus.ts`).** `backend/policy-docs/*.md` (each opens with the "illustrative demo policy" line, and a
+  document without it is refused) are split at their headings into passages with stable ids (`<document>:<heading>`) and stored in
+  `policy_passages` with a weighted full-text index (migration 020). At startup a document is replaced only when its SHA-256
+  differs from the stored one, and a change is audited as `AI_CORPUS_UPDATE` in the same transaction. Retrieval is
+  `websearch_to_tsquery` with the words joined by OR, ranked by `ts_rank`; no vector store, no LangChain.
+- **Answer (`services/assistantModel.ts`).** `@anthropic-ai/sdk` (pinned), model `claude-opus-5-5` or `AI_MODEL`, key from
+  `ANTHROPIC_API_KEY` alone. Each retrieved passage is a plain-text `document` block with `citations: { enabled: true }` and the
+  passage id as its title, so the citations the API returns name the passage and quote its exact text. The stable instructions are the
+  cached system prompt; `output_config.effort` is `low`; thinking is left at its default; the server-side refusal fallback
+  (`fallbacks: "default"`) is on; calls time out after 30 seconds and typed SDK errors become a fall back to the passages. With no
+  key (or `AI_PROVIDER=off`) only the passages are returned; `AI_PROVIDER=stub` is a deterministic stand-in for tests.
+- **Check (`services/groundingCheck.ts`).** A pure function: every sentence covered by a citation, every number, date or amount in a
+  cited quote or passage, every cited passage among those retrieved. It decides `grounded`, `unsupported` and `coverage`.
+- **Oversight (`services/oversightLevel.ts`).** Level 2 (withheld for a case manager) for an ungrounded answer or a question about
+  the asker's own eligibility or case; level 1 for fewer than two cited passages or coverage under 0.9; otherwise level 0. The
+  review queue and the page are later stories; the level and the review columns are stored now.
+- **Limits and privacy (`services/assistantService.ts`).** SSN-shaped text is removed from the question before it is searched,
+  stored, sent or audited. Each person may ask 20 questions per hour (429 with `Retry-After`) and `AI_DAILY_LIMIT` (300) answers
+  may be generated per UTC day; both are counted under one advisory lock when the question is accepted, so parallel requests cannot
+  slip past. Every exchange is stored in `assistant_interactions` and audited as `AI_ANSWER` without the question.
+- **Evaluation.** `scripts/ai/eval.mjs` scores the 33 golden questions against the running API (retrieval, facts, citation
+  validity, grounded rate) and exits 1 below its thresholds.
+
+---
+
 ## Docker Architecture
 
 **Frontend Container:**

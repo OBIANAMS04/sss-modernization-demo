@@ -253,6 +253,88 @@ code allows.
 
 ---
 
+## Policy Assistant (STORY-017 to 023)
+
+A signed-in person asks a question about the synthetic policy documents in `backend/policy-docs` (illustrative demo policy, not
+Selective Service policy). The most relevant passages are found with PostgreSQL full-text search (`websearch_to_tsquery`,
+`ts_rank`; the five best). With AI on, Claude answers only from them and cites them with its native citations; every answer is
+then checked (a sentence without a citation, a number no cited text contains, or a citation to a passage that was not retrieved
+fails the check) and given an oversight level. Social Security number-shaped text is removed from the question before anything is
+searched, stored, sent to the model or logged. Demonstrated on a synthetic demo deployment.
+
+**Settings (environment).** `ANTHROPIC_API_KEY` switches AI on; without it, or with `AI_PROVIDER=off`, the assistant returns the
+policy passages alone (`mode: "passages-only"`). `AI_PROVIDER=stub` is a deterministic stand-in for tests that needs no key.
+`AI_MODEL` names the model (default `claude-opus-5-5`). `AI_DAILY_LIMIT` (default 300) caps the answers generated per UTC day across
+everyone; past it, questions get the passages alone.
+
+### POST /api/assistant/ask
+
+Anyone signed in. **Request:** `{ "question": "What is the income limit for the Type B exemption?" }`, 3 to 500 characters.
+
+**Response (200):**
+```json
+{
+  "traceId": "4bc727fb-eaad-459a-a522-4f5ecc937372",
+  "mode": "ai",
+  "status": "shown",
+  "level": 0,
+  "answer": "A registrant qualifies for Type B when the annual income on the profile is below $20,000.",
+  "citations": [
+    { "passageId": "exemption-type-b:who-qualifies-the-income-limit", "docTitle": "Exemption Type B: income under $20,000",
+      "heading": "Who qualifies: the income limit",
+      "quote": "A registrant qualifies for Type B when the annual income on the profile is below $20,000." }
+  ],
+  "grounding": { "grounded": true, "coverage": 1, "unsupported": [] },
+  "retrieved": [ { "passageId": "exemption-type-b:who-qualifies-the-income-limit", "docTitle": "...", "heading": "..." } ],
+  "questionRedacted": false
+}
+```
+`mode` is `ai`, `stub` or `passages-only`. `status` and `level` say how much oversight the answer got:
+
+| level | status | What the person gets |
+|-------|--------|----------------------|
+| 0 | `shown` | A grounded answer citing at least two passages, with at least 90% of it under a citation |
+| 1 | `shown` | A grounded answer on thinner ground (one passage, or less of it cited): "check with a case manager". Also `no-answer`: the documents do not cover the question (`message` says so) |
+| 2 | `with-staff` | Nothing of the answer: `answer` is null, `citations` is empty and `message` is "A case manager will review this question and reply." Used when the answer failed the grounding check, and for a question about the person's own eligibility or case ("am I", "my case", "will I be approved") |
+
+With AI off, at the daily cap, or when the model is unavailable, refuses or runs out of room, `mode` is `passages-only` (or keeps
+`ai` after a refusal), `answer` is null and `passages` holds the policy text (`passageId`, `docTitle`, `heading`, `text`) with a plain
+`message` that says why. `grounding` is null when no answer was made; for a withheld answer it holds only `grounded` and
+`coverage`. `questionRedacted` is true when something shaped like an SSN was removed from the question.
+
+Every exchange is stored and audited as `AI_ANSWER` (the trace id, mode, status, level and passage ids, never the question).
+Policy documents re-ingested at startup are audited as `AI_CORPUS_UPDATE`.
+
+**Errors:** 400 `VALIDATION_ERROR` (not text, under 3 or over 500 characters, or nothing but a Social Security number); 401 when not
+signed in; 429 `RATE_LIMITED` after 20 questions in an hour ("You have reached the limit of 20 questions per hour. Please try again
+in about 30 minutes."), with a `Retry-After` header in seconds.
+
+### GET /api/assistant/history
+
+Anyone signed in. The caller's own last 20 exchanges, newest first: `{ "history": [ { traceId, question, mode, status, level, answer,
+citations, feedback, createdAt, message? } ] }`. The question is the cleaned one. A withheld answer is not shown: `answer` is null and
+`message` says it is with a case manager.
+
+### GET /api/assistant/quality
+
+Staff only (case managers and admins); 403 for anyone else, 401 when not signed in. How often answers fail the grounding check:
+
+```json
+{
+  "target": 2,
+  "windows": [ { "days": 7, "answers": 40, "ungrounded": 1, "rate": 2.5 }, { "days": 30, "answers": 120, "ungrounded": 4, "rate": 3.33 } ],
+  "alert": true,
+  "alertMessage": "1 of 40 answers in the last 7 days failed the grounding check (2.5%, target below 2%).",
+  "latestUngrounded": [ { "traceId": "...", "createdAt": "...", "question": "...", "answer": "...", "unsupported": [ { "type": "unsupported-number", "text": "45" } ], "mode": "ai", "model": "claude-opus-5-5", "level": 2 } ],
+  "usage": { "generatedToday": 12, "dailyLimit": 300 },
+  "corpus": { "documents": 8, "passages": 43, "version": "5b92e5985e22", "ingestedAt": "2026-10-15T22:38:52.830Z" }
+}
+```
+`rate` is the percent of answers that failed the check (null when there were none); `alert` is true when a window is at or over the
+2% target. An exchange that made no answer (AI off, no match, a failed call) is not an answer and is not counted.
+
+---
+
 ## Health Check
 
 ### GET /health
@@ -279,7 +361,7 @@ code allows.
 | 403 | Forbidden (cannot update another user; `POLICY_DENIED` when the access policy refuses a signed-in caller) |
 | 404 | Not found |
 | 409 | Conflict (duplicate email; two-step verification already on) |
-| 429 | Too many wrong authentication codes |
+| 429 | Too many wrong authentication codes; too many questions to the policy assistant (`RATE_LIMITED`, with `Retry-After`) |
 | 500 | Server error |
 
 ---
