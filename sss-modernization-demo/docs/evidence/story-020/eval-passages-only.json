@@ -1,0 +1,1078 @@
+{
+  "generatedAt": "2026-10-15T23:07:15.976Z",
+  "base": "http://localhost:3005/api",
+  "mode": "passages-only",
+  "modes": [
+    "passages-only"
+  ],
+  "corpusSha256": "0848bf58fa9ab9ef612ee8628ce15074cc7e83518f55af4e5d323907f843cfff",
+  "metrics": {
+    "questions": 33,
+    "retrievalHitRate": 1,
+    "factAccuracy": null,
+    "questionsWithAllFacts": null,
+    "citationValidity": null,
+    "citations": 0,
+    "groundedRate": null,
+    "shown": 33,
+    "withStaff": 0,
+    "noAnswer": 0,
+    "errors": 0,
+    "levels": {
+      "0": 33,
+      "1": 0,
+      "2": 0
+    },
+    "latencyMs": {
+      "median": 38,
+      "p95": 53
+    }
+  },
+  "thresholds": [
+    {
+      "name": "retrieval hit rate",
+      "value": 1,
+      "min": 0.9,
+      "enforced": true,
+      "passed": true
+    },
+    {
+      "name": "fact accuracy",
+      "value": null,
+      "min": 0.85,
+      "enforced": false,
+      "passed": true
+    },
+    {
+      "name": "citation validity",
+      "value": null,
+      "min": 1,
+      "enforced": false,
+      "passed": true
+    },
+    {
+      "name": "grounded rate",
+      "value": null,
+      "min": 0.98,
+      "enforced": false,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "results": [
+    {
+      "id": "g01",
+      "question": "What do I need to create an account?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 53,
+      "expectedPassages": [
+        "registration-duty:creating-an-account"
+      ],
+      "retrieved": [
+        "registration-duty:creating-an-account",
+        "decisions-and-controls:what-a-decision-needs",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "registration-duty:what-the-registration-duty-is",
+        "exemption-type-a:proof-of-age"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 2,
+      "factsFound": 0,
+      "factsMissing": [
+        [
+          "email",
+          "email address"
+        ],
+        "date of birth"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g02",
+      "question": "How old do I have to be to register?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 46,
+      "expectedPassages": [
+        "registration-duty:creating-an-account"
+      ],
+      "retrieved": [
+        "exemption-type-a:who-qualifies",
+        "registration-duty:creating-an-account",
+        "registration-duty:signing-in-and-roles"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "18"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g03",
+      "question": "What does the registration compliance check look at?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 43,
+      "expectedPassages": [
+        "registration-duty:profile-fields-and-the-registration-compliance-check"
+      ],
+      "retrieved": [
+        "registration-duty:profile-fields-and-the-registration-compliance-check",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "decisions-and-controls:the-8-compliance-controls",
+        "exemption-type-a:proof-of-age",
+        "exemption-type-b:income-statement"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 2,
+      "factsFound": 0,
+      "factsMissing": [
+        "phone",
+        "address"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g04",
+      "question": "Is two-step verification required when I sign in?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 40,
+      "expectedPassages": [
+        "registration-duty:signing-in-and-roles"
+      ],
+      "retrieved": [
+        "registration-duty:signing-in-and-roles",
+        "privacy-and-ssn:the-audit-log"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "optional"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g05",
+      "question": "Which role only sees summary figures and does no case work?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 38,
+      "expectedPassages": [
+        "registration-duty:signing-in-and-roles"
+      ],
+      "retrieved": [
+        "registration-duty:signing-in-and-roles",
+        "privacy-and-ssn:who-can-see-what",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "leadership"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g06",
+      "question": "Who qualifies for the senior exemption?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 38,
+      "expectedPassages": [
+        "exemption-type-a:who-qualifies"
+      ],
+      "retrieved": [
+        "exemption-type-a:exemption-type-a-senior-65-or-older",
+        "exemption-type-a:who-qualifies",
+        "exemption-type-b:who-qualifies-the-income-limit",
+        "exemption-type-b:exemption-type-b-income-under-20-000",
+        "exemption-type-c:exemption-type-c-documented-hardship"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "65"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g07",
+      "question": "What proof do I need to be approved for Type A?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 38,
+      "expectedPassages": [
+        "exemption-type-a:proof-of-age"
+      ],
+      "retrieved": [
+        "exemption-type-a:proof-of-age",
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "decisions-and-controls:what-a-decision-needs",
+        "exemption-type-b:income-statement",
+        "exemption-type-c:hardship-evidence"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "proof of age"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g08",
+      "question": "How is Type A eligibility worked out?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 39,
+      "expectedPassages": [
+        "exemption-type-a:how-eligibility-is-decided"
+      ],
+      "retrieved": [
+        "exemption-type-b:how-eligibility-is-decided",
+        "exemption-type-a:how-eligibility-is-decided",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-a:exemption-type-a-senior-65-or-older"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "automatically"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g09",
+      "question": "Can I open a second case for the same exemption?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 34,
+      "expectedPassages": [
+        "exemption-type-a:how-to-apply"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:how-a-case-moves",
+        "exemption-type-a:how-to-apply",
+        "registration-duty:what-the-registration-duty-is",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "case-statuses-and-timelines:who-moves-a-case"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        [
+          "cannot",
+          "can not",
+          "not open"
+        ]
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g10",
+      "question": "What is the income limit for the Type B exemption?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 25,
+      "expectedPassages": [
+        "exemption-type-b:who-qualifies-the-income-limit"
+      ],
+      "retrieved": [
+        "exemption-type-b:exemption-type-b-income-under-20-000",
+        "exemption-type-b:who-qualifies-the-income-limit",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "exemption-type-a:exemption-type-a-senior-65-or-older"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "$20,000"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g11",
+      "question": "Which document do I attach for the income exemption?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 28,
+      "expectedPassages": [
+        "exemption-type-b:income-statement"
+      ],
+      "retrieved": [
+        "exemption-type-b:exemption-type-b-income-under-20-000",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-b:income-statement",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "exemption-type-b:who-qualifies-the-income-limit"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "income statement"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g12",
+      "question": "What result do I get for Type B if I have no income on file?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 33,
+      "expectedPassages": [
+        "exemption-type-b:who-qualifies-the-income-limit"
+      ],
+      "retrieved": [
+        "exemption-type-b:exemption-type-b-income-under-20-000",
+        "exemption-type-b:changing-the-income",
+        "exemption-type-b:who-qualifies-the-income-limit",
+        "exemption-type-b:income-statement",
+        "exemption-type-c:exemption-type-c-documented-hardship"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "not eligible"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g13",
+      "question": "Does the eligibility reason show my exact income?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 39,
+      "expectedPassages": [
+        "exemption-type-b:how-eligibility-is-decided",
+        "privacy-and-ssn:reasons-that-avoid-exact-figures"
+      ],
+      "retrieved": [
+        "privacy-and-ssn:reasons-that-avoid-exact-figures",
+        "exemption-type-b:how-eligibility-is-decided",
+        "exemption-type-a:how-eligibility-is-decided",
+        "exemption-type-b:who-qualifies-the-income-limit",
+        "exemption-type-b:exemption-type-b-income-under-20-000"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "exact"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g14",
+      "question": "How is the hardship exemption decided?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 75,
+      "expectedPassages": [
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "exemption-type-c:who-is-considered"
+      ],
+      "retrieved": [
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "exemption-type-c:hardship-evidence",
+        "exemption-type-c:what-counts-as-hardship"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        [
+          "caseworker",
+          "case manager"
+        ]
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g15",
+      "question": "Does Pending Review mean my hardship exemption is approved?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 38,
+      "expectedPassages": [
+        "exemption-type-c:caseworker-review-how-type-c-is-decided"
+      ],
+      "retrieved": [
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-c:hardship-evidence",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "case-statuses-and-timelines:the-six-statuses"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "pending review"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g16",
+      "question": "What evidence is needed for Type C?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 37,
+      "expectedPassages": [
+        "exemption-type-c:hardship-evidence"
+      ],
+      "retrieved": [
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "exemption-type-c:hardship-evidence",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08",
+        "exemption-type-a:proof-of-age"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "hardship evidence"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g17",
+      "question": "How does the demo define hardship?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 42,
+      "expectedPassages": [
+        "exemption-type-c:what-counts-as-hardship"
+      ],
+      "retrieved": [
+        "exemption-type-c:what-counts-as-hardship",
+        "exemption-type-c:hardship-evidence",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "registration-duty:registration-duty-overview"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        [
+          "does not define",
+          "not define"
+        ]
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g18",
+      "question": "How many compliance controls are there?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 38,
+      "expectedPassages": [
+        "decisions-and-controls:the-8-compliance-controls"
+      ],
+      "retrieved": [
+        "decisions-and-controls:the-8-compliance-controls",
+        "decisions-and-controls:when-a-control-fails",
+        "decisions-and-controls:the-compliance-target",
+        "decisions-and-controls:controls-ctrl-01-to-ctrl-04",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "8"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g19",
+      "question": "What does CTRL-04 check?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 38,
+      "expectedPassages": [
+        "decisions-and-controls:controls-ctrl-01-to-ctrl-04"
+      ],
+      "retrieved": [
+        "decisions-and-controls:controls-ctrl-01-to-ctrl-04",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08",
+        "registration-duty:profile-fields-and-the-registration-compliance-check",
+        "decisions-and-controls:the-8-compliance-controls",
+        "registration-duty:exemptions-a-registrant-can-apply-for"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "applicant"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g20",
+      "question": "What happens when a compliance control fails?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 26,
+      "expectedPassages": [
+        "decisions-and-controls:when-a-control-fails"
+      ],
+      "retrieved": [
+        "decisions-and-controls:when-a-control-fails",
+        "decisions-and-controls:the-8-compliance-controls",
+        "decisions-and-controls:the-compliance-target",
+        "exemption-type-a:proof-of-age",
+        "exemption-type-b:income-statement"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 2,
+      "factsFound": 0,
+      "factsMissing": [
+        "compliance review",
+        "different case manager"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g21",
+      "question": "What is the compliance target for decisions?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 26,
+      "expectedPassages": [
+        "decisions-and-controls:the-compliance-target"
+      ],
+      "retrieved": [
+        "decisions-and-controls:the-compliance-target",
+        "decisions-and-controls:the-8-compliance-controls",
+        "decisions-and-controls:what-a-decision-needs",
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes",
+        "registration-duty:profile-fields-and-the-registration-compliance-check"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "99%"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g22",
+      "question": "Who is allowed to decide a case?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 32,
+      "expectedPassages": [
+        "decisions-and-controls:who-decides"
+      ],
+      "retrieved": [
+        "decisions-and-controls:who-decides",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "exemption-type-a:how-eligibility-is-decided"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "case manager"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g23",
+      "question": "How do I appeal a denial?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 31,
+      "expectedPassages": [
+        "appeals:how-to-appeal"
+      ],
+      "retrieved": [
+        "appeals:reading-the-denial-reason",
+        "appeals:who-can-appeal-and-when",
+        "appeals:how-to-appeal",
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:how-a-case-moves"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "appeal this decision"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g24",
+      "question": "Is there a deadline to appeal?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 41,
+      "expectedPassages": [
+        "appeals:who-can-appeal-and-when"
+      ],
+      "retrieved": [
+        "appeals:who-can-appeal-and-when",
+        "appeals:how-to-appeal",
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "appeals:reading-the-denial-reason"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "no deadline"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g25",
+      "question": "What happens to a case after the applicant appeals?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 29,
+      "expectedPassages": [
+        "appeals:what-happens-after-an-appeal"
+      ],
+      "retrieved": [
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "appeals:who-can-appeal-and-when",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 2,
+      "factsFound": 0,
+      "factsMissing": [
+        "appealed",
+        "in review"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g26",
+      "question": "Is my Social Security number stored in the system?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 33,
+      "expectedPassages": [
+        "privacy-and-ssn:social-security-numbers"
+      ],
+      "retrieved": [
+        "privacy-and-ssn:social-security-numbers",
+        "privacy-and-ssn:what-the-assistant-never-sees",
+        "privacy-and-ssn:the-audit-log",
+        "registration-duty:creating-an-account",
+        "registration-duty:profile-fields-and-the-registration-compliance-check"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "hash"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g27",
+      "question": "Does the assistant send my SSN to the AI model?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 35,
+      "expectedPassages": [
+        "privacy-and-ssn:what-the-assistant-never-sees"
+      ],
+      "retrieved": [
+        "privacy-and-ssn:what-the-assistant-never-sees"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "removed"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g28",
+      "question": "How long are audit log entries kept?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 31,
+      "expectedPassages": [
+        "privacy-and-ssn:the-audit-log"
+      ],
+      "retrieved": [
+        "privacy-and-ssn:the-audit-log",
+        "privacy-and-ssn:reasons-that-avoid-exact-figures",
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08",
+        "decisions-and-controls:when-a-control-fails"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "7 years"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g29",
+      "question": "Who can read internal case notes?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 31,
+      "expectedPassages": [
+        "privacy-and-ssn:who-can-see-what"
+      ],
+      "retrieved": [
+        "appeals:reading-the-denial-reason",
+        "privacy-and-ssn:who-can-see-what",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "case-statuses-and-timelines:what-the-applicant-sees"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "staff"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g30",
+      "question": "What are the six case statuses?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 31,
+      "expectedPassages": [
+        "case-statuses-and-timelines:the-six-statuses"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:the-six-statuses",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:what-the-applicant-sees"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 6,
+      "factsFound": 0,
+      "factsMissing": [
+        "draft",
+        "submitted",
+        "in review",
+        "approved",
+        "denied",
+        "appealed"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g31",
+      "question": "When is a case marked overdue?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 33,
+      "expectedPassages": [
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "decisions-and-controls:who-decides",
+        "appeals:how-to-appeal"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        "5 days"
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g32",
+      "question": "How long does a decision take?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 39,
+      "expectedPassages": [
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes",
+        "decisions-and-controls:what-a-decision-needs",
+        "decisions-and-controls:the-8-compliance-controls",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08",
+        "decisions-and-controls:the-compliance-target"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        [
+          "no decision time",
+          "promises no",
+          "does not promise",
+          "no promise"
+        ]
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    },
+    {
+      "id": "g33",
+      "question": "Can an approved case be changed afterwards?",
+      "httpStatus": 200,
+      "mode": "passages-only",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 38,
+      "expectedPassages": [
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:the-six-statuses"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:how-a-case-moves",
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "exemption-type-b:changing-the-income"
+      ],
+      "retrievalHit": true,
+      "answer": null,
+      "facts": 1,
+      "factsFound": 0,
+      "factsMissing": [
+        [
+          "final",
+          "no further"
+        ]
+      ],
+      "citations": 0,
+      "invalidCitations": [],
+      "grounded": null,
+      "error": null
+    }
+  ]
+}
