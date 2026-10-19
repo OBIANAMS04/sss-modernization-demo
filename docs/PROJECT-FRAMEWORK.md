@@ -2,7 +2,7 @@
 
 **Client opportunity:** U.S. Selective Service System (SSS) business-systems modernization (RFP)
 **Bidder:** Colaberry · **Owner:** Obi Anamelechi Kingsley · **Decision makers:** Ali Muwwakkil (Managing Director), Ram Katamaraja
-**Last updated:** 2026-10-14 · Updated after every milestone (see "How this document is maintained")
+**Last updated:** 2026-10-19 · Updated after every milestone (see "How this document is maintained")
 
 > "In the demo" means working on the synthetic demo deployment. Nothing here is operating in production (Ali, 2026-10-07).
 
@@ -46,8 +46,8 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 | Release | Stories | Status |
 |---|---|---|
 | **R0 Walking Skeleton** | 001 Registration & login · 002 Profile & compliance · 003 Two-step sign-in (MFA) · 004 Cloud infra (AWS, L5) · 005 Data pipeline (L2) | 001 ✅ in the demo (+ Ali's guards) · 002 ✅ in the demo · 003 ✅ 2026-10-14 in the demo (two-step sign-in) · 004 🚩 blocked on Ram's AWS approval (demo runs on Render) · 005 backend only, unverified |
-| **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API access policies (OPA) | 006 ✅ · 007 ✅ (both approved by Ali, 2026-10-02) · 008 ✅ 2026-10-06 (reviewed by Ali 2026-10-07) · 009 ✅ and 010 ✅ 2026-10-12 (both accepted by Ali, 2026-10-12) · 011 ✅ 2026-10-12 (posted) · 012 ✅ 2026-10-12 (posted) · 013 ✅, 014 ✅, 015 ✅ and 016 ✅ 2026-10-14 (posted). **R1 is complete: 11 of 11 in the demo.** **Next: R2 (STORY-017 onward)** |
-| **R2 AI & Governance** | 017–020 RAG policy Q&A · 021 drift · 022 hallucination monitoring · 023 HITL ladder · 024 override tracking · 025 bias testing · 026–029 observability | Not started |
+| **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API access policies (OPA) | 006 ✅ · 007 ✅ (both approved by Ali, 2026-10-02) · 008 ✅ 2026-10-06 (reviewed by Ali 2026-10-07) · 009 ✅ and 010 ✅ 2026-10-12 (both accepted by Ali, 2026-10-12) · 011 ✅ 2026-10-12 (posted) · 012 ✅ 2026-10-12 (posted) · 013 ✅, 014 ✅, 015 ✅ and 016 ✅ 2026-10-14 (posted). **R1 is complete: 11 of 11 in the demo.** |
+| **R2 AI & Governance** | 017–020 RAG policy Q&A · 021 drift · 022 hallucination monitoring · 023 HITL ladder · 024 override tracking · 025 bias testing · 026–029 observability | **Milestone 1 ✅ 2026-10-19 in the demo: 017, 018, 019, 020, 022, 023, 024 (7 of 11).** AI answers wait on `ANTHROPIC_API_KEY` on Render; until then the live assistant shows the matching policy passages. **Next: 021 drift, 025 bias, 026–029 observability** |
 | **R3 Scale & Launch** | 030–032 load testing · 033 performance · 034 failover · 035 training · 036 monitoring · 037 incident playbook · 038–040 docs · 041 pen test · 042 accessibility audit · 043–046 go-live review | Not started |
 
 ### What the demo does today
@@ -66,9 +66,10 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 - Leadership dashboard (STORY-015): KPIs (total applications, approval rate, average processing time, open cases, appeal rate), 12-week trends, bottlenecks by stage (average days, cases stuck more than 5 days) and team performance. Aggregates only, no applicant data; leadership does no case work.
 - Roles and Staff Access: citizen / case manager / leadership / administrator. Administrators give or remove case manager, leadership and administrator access in the app (Staff Access, `/staff`); case managers can only give case-manager access. Always with a reason; never your own, never the last case manager, never the last administrator; recorded in the same transaction as the change; the person is notified. `ADMIN_EMAILS` sets up the first administrator from existing case managers only; on 2026-10-14 the owner set it on Render and his case-manager account became the demo's administrator. `CASE_MANAGER_EMAILS` only sets up an empty system.
 - Access policies (STORY-016): every API request is decided by Open Policy Agent before any route runs. The Rego policy has OPA's own tests and is compiled by OPA 1.21.0 to WebAssembly and evaluated inside the API. Rules use role, resource type, action and owner or assignee, including the story's example, "case managers can view and work cases assigned to them". Administrators change rules without a deploy on an Access Policies page (switch rules, narrow routes; a reason is required; versions are write-once; each change is audited as a policy change and applies at once). Refusals are audited with the rule and policy version. The policy can refuse what the code allows, never allow what the code refuses (the route guards stay). Sign-in, health and the policy pages are locked so administrators cannot be locked out. Our own review found that the earlier "API governance" service claimed to enforce OPA but never called it and was never wired in; it was removed.
+- Policy assistant (STORY-017 to 020, 022 to 024; the plan and our acceptance criteria are in `docs/R2-MILESTONE-1-PLAN.md`): 8 synthetic policy documents (clearly labelled as not Selective Service policy) are split into 43 passages with a full-text index, re-indexed when a document changes, and each change is audited. Citizens and staff ask questions on an Ask about policy page; Claude answers only from the retrieved passages, with numbered citations that open the quoted policy text. SSN-shaped text is removed before anything is searched, stored or sent; 20 questions an hour per person and a daily cap on AI answers. Every answer is checked before anyone sees it: each statement needs a citation, and any number, date or amount must appear in a cited passage; a staff panel shows the failure rate for 7 and 30 days against a target below 2%. The assistant never decides eligibility: questions about a person's own case, answers that fail the check and answers people report go to an Assistant Reviews queue, where a case manager (never the person who asked) approves, corrects or declines with a note; the person is notified and sees the reviewed answer. The override rate (corrected answers, accepted compliance exceptions, and decisions against the automatic eligibility result) is on the admin and leadership dashboards with a 12-week trend against a target below 20%. An evaluation of 33 questions finds the right passage for all 33 and every citation is valid; with a key it also scores the model's facts and grounding.
 - The audit log records each visitor's own address (on Render, the address Cloudflare passes on); every deploy check confirms it.
 
-### Screens (2026-10-14)
+### Screens (2026-10-19)
 Captured from the demo application running the deployed code, with synthetic data. Full sets with captions are in each story's evidence pack.
 
 | | |
@@ -83,7 +84,9 @@ Captured from the demo application running the deployed code, with synthetic dat
 | **STORY-003 · Two-step setup** ![Authenticator setup with a QR code and key](demo/screens/tour-17-mfa-setup.png) | **STORY-003 · Sign-in code** ![Two-step verification asking for a 6-digit code, with tries left after a wrong code](demo/screens/tour-18-sign-in-code.png) |
 | **STORY-013 · Case manager dashboard** ![My Work: open cases, waiting on me, overdue, unassigned queue and search](demo/screens/tour-19-case-manager-dashboard.png) | **STORY-014 · Admin dashboard** ![Admin dashboard with cases by status and type, team performance and system health](demo/screens/tour-20-admin-dashboard.png) |
 | **STORY-015 · Leadership dashboard** ![Leadership dashboard with KPIs, 12-week trends and bottlenecks, no applicant data](demo/screens/tour-21-leadership-dashboard.png) | **STORY-016 · Policy refusal** ![Access denied: no rule lets a case manager view a case assigned to someone else](demo/screens/tour-22-policy-refusal.png) |
-| **STORY-016 · Access policies** ![Access Policies page where administrators switch rules and narrow routes](demo/screens/tour-23-access-policies.png) | |
+| **STORY-016 · Access policies** ![Access Policies page where administrators switch rules and narrow routes](demo/screens/tour-23-access-policies.png) | **STORY-018 and 019 · Cited answer** ![Answer checked against the policy, with two numbered citations and their quoted passages](demo/screens/tour-24-assistant-answer.png) |
+| **STORY-022 and 023 · Review queue** ![Assistant Reviews: answer quality against the 2% target, a reported answer and a withheld personal question waiting](demo/screens/tour-25-review-queue.png) | **STORY-023 · Reviewed answer** ![The citizen's history showing the case manager's correction, marked as reviewed](demo/screens/tour-26-reviewed-answer.png) |
+| **STORY-024 · Override rate** ![Override rate on the admin dashboard, with the weekly trend against the 20% target and a split by source](demo/screens/tour-27-override-rate.png) | |
 
 ---
 
@@ -92,12 +95,12 @@ Captured from the demo application running the deployed code, with synthetic dat
 | Layer | Choice |
 |---|---|
 | Frontend | React 18 + Vite + Tailwind v4 → Render static site `sss-demo-frontend` |
-| Backend | Node + Express + TypeScript → Render web service `sss-demo-backend` (free tier, sleeps when idle) |
-| Database | Render PostgreSQL `sss-demo-db` (Oregon); migrations 001–019 apply automatically on startup |
+| Backend | Node + Express + TypeScript → Render web service `sss-demo-backend` (free tier, sleeps when idle); `ANTHROPIC_API_KEY` turns on AI answers (`AI_MODEL`, default `claude-opus-5-5`) |
+| Database | Render PostgreSQL `sss-demo-db` (Oregon), paid Basic plan ($6/month) since 2026-10-19; migrations 001–021 apply automatically on startup |
 | Source | https://github.com/OBIANAMS04/sss-modernization-demo (Render auto-deploys on push to master) |
-| Access table | 52 routes, each with its access rule; a test fails the build if a route has none. Open Policy Agent (Rego policy compiled to WebAssembly, in the API) decides every request before any route runs and can only narrow what the code allows |
+| Access table | 59 routes, each with its access rule; a test fails the build if a route has none. Open Policy Agent (Rego policy compiled to WebAssembly, in the API) decides every request before any route runs and can only narrow what the code allows |
 | Workflow | Claude commits and pushes each change; Render deploys; Claude verifies the demo deployment itself and posts the conclusion with screenshots to the BUILD ticket (one post per milestone, one composite image of several screens per post) |
-| Verification | `scripts/verify-deploy.mjs`: served commits on every page path, database, migrations, and every protected route refuses requests without a token · `scripts/verify-live-citizen.mjs`: every staff route refuses a signed-in citizen · `scripts/evidence/<story>.mjs`: drives the UI in headless Chrome and captures the evidence pack in `docs/evidence/<story>/` · `scripts/evidence/composite.mjs`: the Basecamp image (refuses to leave out any evidence screen) · `scripts/e2e/policy.mjs`: the access policy end to end (23 checks) · `scripts/opa/build.mjs`: OPA's own tests, then the policy compiled to WebAssembly · `scripts/a11y/audit.mjs`: WCAG 2.1 AA, keyboard, reflow and session checks on every page (`--live` for the demo site) |
+| Verification | `scripts/verify-deploy.mjs`: served commits on every page path, database, migrations, and every protected route refuses requests without a token · `scripts/verify-live-citizen.mjs`: every staff route refuses a signed-in citizen · `scripts/evidence/<story>.mjs`: drives the UI in headless Chrome and captures the evidence pack in `docs/evidence/<story>/` · `scripts/evidence/composite.mjs`: the Basecamp image (refuses to leave out any evidence screen) · `scripts/e2e/policy.mjs`: the access policy end to end (23 checks) · `scripts/opa/build.mjs`: OPA's own tests, then the policy compiled to WebAssembly · `scripts/ai/eval.mjs`: the assistant's 33-question evaluation (retrieval, facts, citations, grounding) · `scripts/a11y/audit.mjs`: WCAG 2.1 AA, keyboard, reflow and session checks on every page (`--live` for the demo site) |
 
 ---
 
@@ -125,6 +128,8 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-14 | OPA design (STORY-016): the policy decides every request first and can only narrow what the code allows; rules are data that administrators change, with write-once versions | Obi |
 | 2026-10-14 | Effort level Medium for both Opus and Sonnet, one helper agent at a time | Obi |
 | 2026-10-14 | The owner made his own case-manager account the demo's administrator through ADMIN_EMAILS | Obi |
+| 2026-10-15 | R2 milestone 1 = STORY-017 to 020 and 022 to 024, with our own acceptance criteria (the story list has one line each). Claude through the official SDK with native citations; PostgreSQL full-text retrieval; no LangChain or LangSmith; synthetic policy documents; without a key the assistant shows passages; the assistant never decides eligibility | Obi |
+| 2026-10-19 | The free Render database expired on 2026-10-16 and the API went down; `sss-demo-db` upgraded to the paid Basic plan ($6/month), which kept all data and does not expire | Obi |
 
 ---
 
@@ -149,6 +154,8 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-12 | **STORY-012 in the demo**: citizen dashboard; Staff Access replaces email-list roles; the audit log records visitors' own addresses (it recorded Cloudflare's); verified on the demo deployment (46 routes, 24 protected routes refuse anonymous, 14 staff routes refuse a citizen, caller address checked); posted with screenshots `#__recording_10398133067` |
 | 2026-10-13 | Audit-log fixes: server restarts are no longer recorded as deployments; signing out with no session no longer sends a request |
 | 2026-10-14 | **STORY-003, 013, 014, 015 and 016 in the demo; R1 complete (11 of 11)**: two-step sign-in, case manager, admin and leadership dashboards with the administrator role, and API access policies with Open Policy Agent; verified on the demo deployment (commit a40a63c): 52 routes in the access table, 19 migrations, all 28 protected GET routes refuse requests without a token, all 15 staff routes refuse a signed-in citizen, 719 unit tests, 351 end-to-end API checks in 9 suites, 22 of 22 page and role combinations pass WCAG 2.1 AA; posted with screenshots `#__recording_10404013551` |
+| 2026-10-16 | The free Render database expired; from 2026-10-17 the API could not start (the site stayed up) |
+| 2026-10-19 | Database upgraded to a paid plan with all data kept; the API redeployed. **R2 milestone 1 in the demo: STORY-017, 018, 019, 020, 022, 023 and 024** (policy assistant with human oversight). Verified on the demo deployment (API 0ad66ad, site 82d3984): 59 routes in the access table, 21 migrations, all 32 protected GET routes refuse requests without a token, all 17 staff routes refuse a signed-in citizen, 26 of 26 page and role combinations pass WCAG 2.1 AA, 1,063 unit tests, 485 end-to-end API checks in 11 suites, evaluation 33 of 33. Our own review fixed review-form errors that stayed on screen after the fields were filled |
 
 Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_10355304599` · STORY-006 `#__recording_10362153151` · STORY-007 `#__recording_10363503258` · Ali's approval `#__recording_10365688982` · Ali's access `#__recording_10375070502` · STORY-008 `#__recording_10375183698` · STORY-009 `#__recording_10395976909` · STORY-010 `#__recording_10396171859` · STORY-011 `#__recording_10397764209` · STORY-012 `#__recording_10398133067` · milestone STORY-003, 013–016 `#__recording_10404013551` (BUILD ticket https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172)
 
@@ -163,6 +170,8 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 | Render DB password and JWT secret were shared in chat (2026-09-17) | Must not hold real PII as-is | Rotate both before any real data |
 | `npm audit` (2026-10-06): 44 findings, but only 3 in runtime dependencies after the non-breaking patch update (Express 4.22.3, proxy-addr, qs, body-parser) | Remaining critical (`tar`) runs only while bcrypt installs, never on requests; the rest are jest/eslint tooling | Dependency upgrade pass before go-live (consider bcryptjs to drop tar) |
 | Render free tier sleeps | ~50 s first load | Warm the site before demos, or upgrade |
+| `ANTHROPIC_API_KEY` not yet set on Render | The live assistant shows policy passages, not AI answers; the evaluation has not been run against the real model | Obi sets the key on Render (never in chat); then the evaluation runs in AI mode against all four thresholds |
+| Free Render services can lapse (the free database expired after 30 days on 2026-10-16 and took the API down for 3 days) | Demo outage | Database now paid; the deploy check finds an outage; watch Render emails |
 | No frontend unit tests; 8 old backend route-test suites are stale (they need a `sss_demo_test` database) | Regressions caught late | The UI is checked end to end by the evidence scripts; repair or retire the stale suites |
 | Case managers can give case-manager access to others (decided 2026-10-12; the email-list hole is closed) | A case manager could make a second account staff | Every grant is in the audit log with who and why; production should keep grants to an administrator or a second approver |
 | Colaberry's upload endpoint refuses requests over ~1 MB (nginx 413), although its tools say 10 MB | Whole evidence PDFs can't be attached to Basecamp | Raised with Ali in the STORY-009 post and with Ali and Ram in the STORY-011 and STORY-012 posts, and repeated in the STORY-003 to 016 milestone post; not yet answered, so every post repeats it; meanwhile each post attaches one composite image and links the full pack |
@@ -173,7 +182,6 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 | Norton HTTPS scanning on Obi's laptop corrupts some connectors | Colaberry works via local bridge; others fail | Optional Norton exclusion |
 | No MFA recovery codes yet | A person who loses their authenticator cannot sign in | Production needs recovery codes or a verified reset |
 | A stale Render service, `sss-modernization-platform`, fails its build on every push and has no running instance | Noise in Render and failed-deploy emails | Obi to delete it in the Render dashboard |
-| The repo now lives under OneDrive\Documents, since OneDrive folder backup moved Documents on 2026-10-13 | OneDrive syncing `node_modules` and `.git` can slow builds or lock files | Consider moving the repo out of OneDrive, or pause sync while building |
 
 ---
 
@@ -190,6 +198,8 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 - STORY-014 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-014
 - STORY-015 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-015
 - STORY-016 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-016
+- STORY-019, 023 and 024 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-019-024
+- STORY-020 evaluation results: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-020
 - Milestone evidence pack (STORY-003 to 016): https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/milestone-003-016
 - Milestone post (Basecamp): https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10404013551
 - Demo briefing (purpose, problems solved, walkthrough; source for the NotebookLM deck): artifact https://claude.ai/artifact/7uX47ceMBSxM2uVJK8smwo · PDF `docs/demo/SSS-Modernization-Demo-Briefing.pdf`
