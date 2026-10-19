@@ -111,6 +111,12 @@ export default function ReviewCard({ item, passages, loadPassage, onReviewed, on
     }
   };
 
+  // Like the sign-in and registration forms, a field's error goes away as soon as the field is changed
+  const change = (name, set) => (e) => {
+    set(e.target.value);
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
   const describe = (name) => [errors[name] && `${ids[name]}-error`].filter(Boolean).join(' ') || undefined;
 
   return (
@@ -157,7 +163,7 @@ export default function ReviewCard({ item, passages, loadPassage, onReviewed, on
                 id={ids.outcome}
                 ref={outcomeField}
                 value={outcome}
-                onChange={(e) => setOutcome(e.target.value)}
+                onChange={change('outcome', setOutcome)}
                 aria-invalid={errors.outcome ? 'true' : undefined}
                 aria-describedby={[`${ids.outcome}-hint`, describe('outcome')].filter(Boolean).join(' ')}
                 className="mt-1 w-full rounded-lg border border-gray-500 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 aria-invalid:border-red-700 sm:w-auto"
@@ -187,7 +193,7 @@ export default function ReviewCard({ item, passages, loadPassage, onReviewed, on
                   rows={4}
                   maxLength={ANSWER_MAX}
                   value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
+                  onChange={change('answer', setAnswer)}
                   aria-invalid={errors.answer ? 'true' : undefined}
                   aria-describedby={[`${ids.answer}-hint`, describe('answer')].filter(Boolean).join(' ')}
                   className="mt-1 w-full rounded-lg border border-gray-500 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 aria-invalid:border-red-700"
@@ -208,7 +214,7 @@ export default function ReviewCard({ item, passages, loadPassage, onReviewed, on
                 rows={2}
                 maxLength={NOTE_MAX}
                 value={note}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={change('note', setNote)}
                 aria-invalid={errors.note ? 'true' : undefined}
                 aria-describedby={[`${ids.note}-hint`, describe('note')].filter(Boolean).join(' ')}
                 className="mt-1 w-full rounded-lg border border-gray-500 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 aria-invalid:border-red-700"
