@@ -18,6 +18,8 @@ routes := {
 	"GET /api/cases/stats": {"roles": staff, "resource": null},
 	"GET /api/dashboards/admin": {"roles": ["admin"], "resource": null},
 	"GET /api/dashboards/leadership": {"roles": ["leadership", "admin"], "resource": null},
+	"GET /api/ai-quality": {"roles": staff, "resource": null},
+	"POST /api/ai-quality/evaluations": {"roles": ["admin"], "resource": null},
 	"GET /api/cases/:id": {"roles": signed_in, "resource": "case"},
 	"POST /api/cases/:id/status": {"roles": signed_in, "resource": "case"},
 	"PUT /api/cases/:id/assignment": {"roles": staff, "resource": "case"},
@@ -93,6 +95,18 @@ test_case_manager_allowed_on_a_staff_route if {
 test_route_restricted_to_admin_refuses_a_case_manager if {
 	decide(ask(manager_a, "read", "GET /api/dashboards/admin", null)) == {"allow": false, "rule": "route-roles", "reason": "Only administrators can use this route"}
 	decide(ask(admin, "read", "GET /api/dashboards/admin", null)).allow
+}
+
+# STORY-021 and 025: staff read the AI quality page, only an administrator starts a run that calls (and pays for) the model
+test_ai_quality_is_read_by_staff_and_run_by_admins_only if {
+	decide(ask(manager_a, "read", "GET /api/ai-quality", null)).allow
+	decide(ask(admin, "read", "GET /api/ai-quality", null)).allow
+	not decide(ask(citizen, "read", "GET /api/ai-quality", null)).allow
+	not decide(ask(leader, "read", "GET /api/ai-quality", null)).allow
+	not decide(ask(anonymous, "read", "GET /api/ai-quality", null)).allow
+	decide(ask(admin, "write", "POST /api/ai-quality/evaluations", null)).allow
+	decide(ask(manager_a, "write", "POST /api/ai-quality/evaluations", null)) == {"allow": false, "rule": "route-roles", "reason": "Only administrators can use this route"}
+	not decide(ask(leader, "write", "POST /api/ai-quality/evaluations", null)).allow
 }
 
 test_leadership_is_not_staff if {

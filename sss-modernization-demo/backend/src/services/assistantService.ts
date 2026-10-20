@@ -4,6 +4,7 @@ import { RateLimitError, ValidationError } from '../utils/errors';
 import { AssistantMode, askClaude, askStub, configuredMode } from './assistantModel';
 import { AuditAction, logAuditEvent, redactSsn } from './auditService';
 import { inTransaction } from './caseEvents';
+import { noteChange } from './changeMarkers';
 import { AnswerSegment, Unsupported, checkGrounding } from './groundingCheck';
 import { OversightLevel, isPersonalQuestion, levelFor } from './oversightLevel';
 import { CorpusInfo, RetrievedPassage, getCorpusInfo, searchPassages } from './policyCorpus';
@@ -323,6 +324,8 @@ export async function askAssistant(user: { id: string; email: string }, rawQuest
         produced.status,
       ]
     );
+    // STORY-021: a model that is not the one answered with before is a change worth marking on the trend. Never a reason to fail an answer.
+    if (produced.model) await noteChange('model', produced.model).catch(() => {});
     // Not the question: its words could be personal. The trace id finds the exchange, and the passages say what it was answered from.
     await logAuditEvent(AuditAction.AI_ANSWER, 'assistant', produced.grounded === false ? 'failure' : 'success', {
       actor: user.id,

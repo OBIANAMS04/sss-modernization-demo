@@ -2,6 +2,7 @@
 // mocked. Claude is never called.
 jest.mock('../database/connection', () => ({ __esModule: true, default: { query: jest.fn() } }));
 jest.mock('./caseEvents', () => ({ inTransaction: jest.fn() }));
+jest.mock('./changeMarkers', () => ({ noteChange: jest.fn().mockResolvedValue(false) }));
 jest.mock('./policyCorpus', () => ({ searchPassages: jest.fn(), getCorpusInfo: jest.fn() }));
 jest.mock('./auditService', () => ({ ...jest.requireActual('./auditService'), logAuditEvent: jest.fn() }));
 jest.mock('./assistantModel', () => {

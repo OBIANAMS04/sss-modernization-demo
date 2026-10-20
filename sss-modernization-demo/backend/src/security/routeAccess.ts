@@ -109,4 +109,12 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'GET /api/assistant/quality': 'staff',
   'GET /api/assistant/reviews': 'staff',
   'POST /api/assistant/reviews/:traceId': 'staff',
+
+  // STORY-021 and 025: AI quality. Staff read the drift signals, change markers, alerts and fairness figures; only an administrator starts a
+  // server-side run (it calls the model, so it costs money) or marks a baseline
+  'GET /api/ai-quality': 'staff',
+  'GET /api/ai-quality/fairness': 'staff',
+  'POST /api/ai-quality/evaluations': 'admin',
+  'POST /api/ai-quality/fairness-runs': 'admin',
+  'POST /api/ai-quality/runs/:id/baseline': 'admin',
 };

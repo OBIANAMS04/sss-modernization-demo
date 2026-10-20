@@ -2,6 +2,7 @@
 // database mocked, and against a real one by scripts/e2e/ai-quality.mjs.
 jest.mock('../database/connection', () => ({ __esModule: true, default: { query: jest.fn() } }));
 jest.mock('./caseEvents', () => ({ inTransaction: jest.fn() }));
+jest.mock('./changeMarkers', () => ({ noteChange: jest.fn().mockResolvedValue(false) }));
 jest.mock('./auditService', () => ({ AuditAction: { AI_EVAL_RUN: 'AI_EVAL_RUN', AI_EVAL_BASELINE: 'AI_EVAL_BASELINE' }, logAuditEvent: jest.fn().mockResolvedValue({}) }));
 jest.mock('./assistantService', () => ({ answerFor: jest.fn() }));
 jest.mock('./policyCorpus', () => ({ POLICY_DOCS_DIR: require('node:path').resolve(__dirname, '..', '..', 'policy-docs'), getCorpusInfo: jest.fn().mockResolvedValue({ version: 'abc123def456' }) }));

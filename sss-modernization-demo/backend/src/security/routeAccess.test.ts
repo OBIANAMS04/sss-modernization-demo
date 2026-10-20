@@ -122,7 +122,14 @@ describe('role rules', () => {
   // Guards against the filters above silently finding nothing, which would make every check below pass.
   it('finds routes for each of the three rules', () => {
     expect([staffRoutes.length > 0, adminRoutes.length > 0, leadershipRoutes.length > 0]).toEqual([true, true, true]);
-    expect(adminRoutes.map((r) => r.key)).toEqual(['GET /api/dashboards/admin', 'GET /api/policies', 'PUT /api/policies']);
+    expect(adminRoutes.map((r) => r.key)).toEqual([
+      'GET /api/dashboards/admin',
+      'GET /api/policies',
+      'PUT /api/policies',
+      'POST /api/ai-quality/evaluations',
+      'POST /api/ai-quality/fairness-runs',
+      'POST /api/ai-quality/runs/:id/baseline',
+    ]);
     expect(leadershipRoutes.map((r) => r.key)).toEqual(['GET /api/dashboards/leadership']);
   });
 
@@ -223,6 +230,7 @@ describe('access policy routes', () => {
     const noRecord = Object.keys(BASELINE_ROUTES).filter((key) => key.includes(':') && BASELINE_ROUTES[key].resource === null);
     expect(noRecord.sort()).toEqual([
       'GET /api/audit/resource/:resource/:resourceId', // staff reading the trail of any record
+      'POST /api/ai-quality/runs/:id/baseline', // an administrator marking a run of the evaluation set as the baseline
       'POST /api/assistant/:traceId/feedback', // the handler only touches the caller's own question
       'POST /api/assistant/reviews/:traceId', // staff work, never on a question the reviewer asked (the handler refuses it)
       'POST /api/compliance/reviews/:id/resolve', // a review, resolved by a second case manager

@@ -6,6 +6,7 @@ import { AssistantMode, configuredMode } from './assistantModel';
 import { answerFor } from './assistantService';
 import { AuditAction, logAuditEvent } from './auditService';
 import { inTransaction } from './caseEvents';
+import { noteChange } from './changeMarkers';
 import { POLICY_DOCS_DIR, RetrievedPassage, getCorpusInfo } from './policyCorpus';
 
 // STORY-021 and 025: runs of a question set on the server, started by an administrator. A run asks every question through answerFor(), the
@@ -283,6 +284,7 @@ export async function startRun(
 async function finishRun(id: string, kind: RunKind, actor: { id: string; email: string }, work: RunWork, after: (run: RunRow) => Promise<void>): Promise<void> {
   try {
     const outcome = await work();
+    if (outcome.model) await noteChange('model', outcome.model).catch(() => {});
     const s = outcome.scores;
     const updated = await pool.query(
       `UPDATE assistant_eval_runs
