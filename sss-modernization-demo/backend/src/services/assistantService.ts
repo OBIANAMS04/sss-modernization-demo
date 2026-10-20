@@ -99,7 +99,7 @@ export function dailyLimit(env: NodeJS.ProcessEnv = process.env): number {
 
 // ---- The limits
 
-type PassagesOnlyReason = 'off' | 'daily-cap';
+export type PassagesOnlyReason = 'off' | 'daily-cap';
 
 interface Reservation {
   traceId: string;
@@ -159,7 +159,7 @@ export async function reserveAsk(userId: string, question: string, env: NodeJS.P
 
 // ---- The answer
 
-interface Produced {
+export interface Produced {
   mode: AssistantMode;
   model: string | null;
   status: AssistantStatus;
@@ -214,7 +214,7 @@ function withoutAnswer(personal: boolean, mode: AssistantMode, fallback: string,
 }
 
 /** Produces the answer for a reserved question. Never throws for a failure of the model: that falls back to the passages. */
-async function produce(question: string, passages: RetrievedPassage[], reservation: Reservation): Promise<Produced> {
+async function produce(question: string, passages: RetrievedPassage[], reservation: Pick<Reservation, "mode" | "why">): Promise<Produced> {
   const personal = isPersonalQuestion(question);
   if (reservation.mode === 'passages-only') {
     const why = reservation.why ?? 'off';
@@ -256,6 +256,16 @@ async function produce(question: string, passages: RetrievedPassage[], reservati
   }
 }
 
+/**
+ * STORY-021 and 025: retrieval and the answer for a question, with no person, limit or record. This is the path askAssistant takes, so a
+ * server-side evaluation or fairness run measures exactly what a real question gets. It stores nothing and counts toward no limit.
+ */
+export async function answerFor(question: string, mode: AssistantMode, why: PassagesOnlyReason | null = null): Promise<{ passages: RetrievedPassage[]; produced: Produced }> {
+  const passages = await searchPassages(question);
+  const produced = await produce(question, passages, { mode, why: mode === 'passages-only' ? why ?? 'off' : null });
+  return { passages, produced };
+}
+
 function noAnswer(mode: AssistantMode, fallback: string): Produced {
   return { ...none, mode, status: 'no-answer', level: 1, grounding: { fallback }, message: NO_ANSWER_MESSAGE };
 }
@@ -292,8 +302,7 @@ export async function askAssistant(user: { id: string; email: string }, rawQuest
   const reservation = await reserveAsk(user.id, question);
 
   try {
-    const passages = await searchPassages(question);
-    const produced = await produce(question, passages, reservation);
+    const { passages, produced } = await answerFor(question, reservation.mode, reservation.why);
     const latencyMs = Date.now() - started;
 
     await pool.query(
