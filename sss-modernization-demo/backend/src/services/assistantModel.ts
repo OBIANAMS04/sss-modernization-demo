@@ -97,8 +97,17 @@ function toCitation(citation: Anthropic.Beta.Messages.BetaTextCitation, passages
 function unavailable(error: unknown): ModelOutcome {
   const known = (reason: string): ModelOutcome => {
     const api = error as InstanceType<typeof Anthropic.APIError>;
-    // The status and request id help with a support request; the message could echo the request, so it is not logged
-    console.error('Assistant model call failed', { reason, status: api.status ?? null, requestId: api.requestID ?? null });
+    // The status and request id help with a support request. Messages could echo the request, so most are not logged; a 400's names
+    // the parameter or account problem (such as a credit balance too low), and without it a bad request cannot be diagnosed, so it is
+    // logged with any quoted text removed (where an echo of the question would appear)
+    const body = (api.error as { error?: { type?: unknown; message?: unknown } } | undefined)?.error;
+    const detail = error instanceof Anthropic.BadRequestError && body
+      ? {
+          errorType: String(body.type ?? ''),
+          errorMessage: String(body.message ?? '').replace(/"[^"]*"|'[^']*'|`[^`]*`/g, '[quoted text removed]').slice(0, 300),
+        }
+      : {};
+    console.error('Assistant model call failed', { reason, status: api.status ?? null, requestId: api.requestID ?? null, ...detail });
     return { type: 'unavailable', reason };
   };
   if (error instanceof Anthropic.APIConnectionTimeoutError) return known('timeout');

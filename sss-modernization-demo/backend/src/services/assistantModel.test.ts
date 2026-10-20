@@ -337,11 +337,21 @@ describe('askClaude (the real SDK against a local stand-in for the API)', () => 
       [529, 'overloaded_error', 'server-error'],
       [413, 'request_too_large', 'status-413'],
     ])('HTTP %i (%s) is %s', async (status, type, reason) => {
-      reply = json(status, { type: 'error', error: { type, message: 'secret detail that must not be logged' } });
+      reply = json(status, { type: 'error', error: { type, message: 'messages.0: rejected "secret detail that must not be logged"' } });
       expect(await askClaude('q', PASSAGES, { client: client() })).toEqual({ type: 'unavailable', reason });
       const logged = JSON.stringify(errors.mock.calls);
       expect(logged).toContain('req_test_123'); // the request id is kept, for a support request
-      expect(logged).not.toContain('secret detail');
+      expect(logged).not.toContain('secret detail'); // quoted text could echo the question, so it never reaches the log
+      // Only a 400 keeps its explanation, without the quoted part: it names what was wrong, and nothing else can diagnose one
+      if (status === 400) expect(logged).toContain('messages.0: rejected [quoted text removed]');
+      else expect(logged).not.toContain('rejected');
+    });
+
+    it('a 400 for the account (a credit balance too low) is logged with its explanation', async () => {
+      const message = 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.';
+      reply = json(400, { type: 'error', error: { type: 'invalid_request_error', message } });
+      expect(await askClaude('q', PASSAGES, { client: client() })).toEqual({ type: 'unavailable', reason: 'bad-request' });
+      expect(JSON.stringify(errors.mock.calls)).toContain('Your credit balance is too low');
     });
 
     it('a call that takes too long is "timeout"', async () => {
