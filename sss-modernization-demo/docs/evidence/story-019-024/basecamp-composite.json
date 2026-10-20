@@ -1,0 +1,100 @@
+{
+  "out": "r2-milestone-1-screens.jpg",
+  "maxKb": 650,
+  "title": "R2 milestone 1 (STORY-017-020, 022-024): synthetic demo deployment",
+  "columns": 3,
+  "tileWidth": 600,
+  "tiles": [
+    {
+      "file": "15-live-ai-answer.png",
+      "label": "Live: Claude answers with citations, level 1",
+      "top": 720,
+      "height": 1100
+    },
+    {
+      "file": "01-assistant.png",
+      "label": "019-1 Ask about policy",
+      "top": 0,
+      "height": 900
+    },
+    {
+      "file": "02-assistant-answer.png",
+      "label": "018/022 Answer checked against the policy",
+      "top": 380,
+      "height": 1100
+    },
+    {
+      "file": "03-assistant-citation-open.png",
+      "label": "019-2 A citation opens the passage",
+      "top": 420,
+      "height": 1100
+    },
+    {
+      "file": "04-assistant-report.png",
+      "label": "019-3 Report a problem",
+      "top": 0,
+      "height": 1100
+    },
+    {
+      "file": "05-assistant-reported.png",
+      "label": "023-1 Reported: goes to a case manager",
+      "top": 0,
+      "height": 1100
+    },
+    {
+      "file": "06-reviews-queue.png",
+      "label": "022/023 Review queue and the 2% target",
+      "top": 0,
+      "height": 1100
+    },
+    {
+      "file": "07-reviews-correction.png",
+      "label": "023-2 Case manager corrects the draft",
+      "top": 1300,
+      "height": 1100
+    },
+    {
+      "file": "08-reviews-sent.png",
+      "label": "023-3 Review sent and audited",
+      "top": 0,
+      "height": 1100
+    },
+    {
+      "file": "09-assistant-history-reviewed.png",
+      "label": "023-4 Person sees the reviewed answer",
+      "top": 0,
+      "height": 1100
+    },
+    {
+      "file": "10-citizen-notification.png",
+      "label": "023-5 Person is notified",
+      "top": 0,
+      "height": 1100
+    },
+    {
+      "file": "11-assistant-320px.png",
+      "label": "019-4 Works at 320 px",
+      "top": 0,
+      "height": 1975,
+      "natural": true
+    },
+    {
+      "file": "12-admin-override-rate.png",
+      "label": "024-1 Override rate (admin)",
+      "top": 0,
+      "height": 1100
+    },
+    {
+      "file": "13-leadership-override-rate.png",
+      "label": "024-2 Override rate (leadership)",
+      "top": 0,
+      "height": 1100
+    },
+    {
+      "file": "14-audit-assistant.png",
+      "label": "Audit log: assistant events, no question text",
+      "top": 0,
+      "height": 1100
+    }
+  ]
+}
