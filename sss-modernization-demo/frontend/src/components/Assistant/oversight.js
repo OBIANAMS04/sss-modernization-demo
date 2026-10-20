@@ -12,14 +12,11 @@ export function oversightOf(item) {
   if (item.status === 'reviewed') return { label: 'Reviewed by a case manager', tone: 'blue', icon: 'person' };
   if (item.status === 'with-staff') return { label: 'A case manager will review this question and reply', tone: 'blue', icon: 'person' };
   if (item.mode === 'passages-only' && item.status === 'shown') {
-    return { label: 'AI answers are off in this demo; here are the matching policy sections', tone: 'gray', icon: 'document' };
+    return { label: 'Matching policy sections, not an AI answer', tone: 'gray', icon: 'document' };
   }
   if (item.level === 1) return { label: 'Please confirm with a case manager', tone: 'amber', icon: 'warning' };
   return { label: 'Checked against the policy', tone: 'green', icon: 'check' };
 }
-
-/** The server's note for AI being turned off says what the status already says in words, so it is not shown a second time. */
-export const repeatsStatus = (item) => item.mode === 'passages-only' && /^AI answers are turned off/.test(item.message ?? '');
 
 /** What a case manager did with a reviewed exchange, for the person. */
 export const REVIEW_NOTES = {

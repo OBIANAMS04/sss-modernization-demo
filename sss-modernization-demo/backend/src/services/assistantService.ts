@@ -385,7 +385,7 @@ async function sectionTitles(ids: string[]): Promise<Map<string, HistorySection>
 export async function getHistory(userId: string, limit: number = HISTORY_LENGTH): Promise<HistoryItem[]> {
   const result = await pool.query(
     `SELECT trace_id, question_redacted, mode, status, level, answer, citations, passage_ids, feedback, created_at,
-            review_outcome, reviewed_answer, reviewed_at
+            review_outcome, reviewed_answer, reviewed_at, grounding
      FROM assistant_interactions
      WHERE user_id = $1 AND status IN ('shown', 'no-answer', 'with-staff', 'reviewed')
      ORDER BY created_at DESC, id DESC LIMIT $2`,
@@ -413,6 +413,11 @@ export async function getHistory(userId: string, limit: number = HISTORY_LENGTH)
     if (withheld) item.message = STAFF_REPLY_MESSAGE;
     else if (declined) item.message = r.reviewed_answer ? `${DECLINED_MESSAGE} ${r.reviewed_answer}` : DECLINED_MESSAGE;
     else if (r.status === 'no-answer') item.message = NO_ANSWER_MESSAGE;
+    // Passages instead of an answer: say why, as when it was asked (AI turned off, the daily limit, the assistant unavailable or declining)
+    else if (r.mode === 'passages-only' || r.answer == null) {
+      const why = String(r.grounding?.fallback ?? '').split(':')[0] as keyof typeof PASSAGES_ONLY_MESSAGES;
+      if (PASSAGES_ONLY_MESSAGES[why]) item.message = PASSAGES_ONLY_MESSAGES[why];
+    }
     if (reviewed) item.reviewed = { outcome: r.review_outcome, at: r.reviewed_at };
     if (showsSections(r)) item.sections = (r.passage_ids ?? []).flatMap((id: string) => sections.get(id) ?? []);
     return item;

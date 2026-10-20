@@ -1,0 +1,982 @@
+{
+  "generatedAt": "2026-10-20T20:52:01.616Z",
+  "base": "https://sss-demo-backend.onrender.com/api",
+  "mode": "ai",
+  "modes": [
+    "ai"
+  ],
+  "corpusSha256": "0848bf58fa9ab9ef612ee8628ce15074cc7e83518f55af4e5d323907f843cfff",
+  "metrics": {
+    "questions": 33,
+    "retrievalHitRate": 1,
+    "factAccuracy": 1,
+    "questionsWithAllFacts": 33,
+    "citationValidity": 1,
+    "citations": 132,
+    "groundedRate": 1,
+    "shown": 33,
+    "withStaff": 0,
+    "noAnswer": 0,
+    "errors": 0,
+    "levels": {
+      "0": 15,
+      "1": 18,
+      "2": 0
+    },
+    "latencyMs": {
+      "median": 3106,
+      "p95": 4421
+    }
+  },
+  "thresholds": [
+    {
+      "name": "retrieval hit rate",
+      "value": 1,
+      "min": 0.9,
+      "enforced": true,
+      "passed": true
+    },
+    {
+      "name": "fact accuracy",
+      "value": 1,
+      "min": 0.85,
+      "enforced": true,
+      "passed": true
+    },
+    {
+      "name": "citation validity",
+      "value": 1,
+      "min": 1,
+      "enforced": true,
+      "passed": true
+    },
+    {
+      "name": "grounded rate",
+      "value": 1,
+      "min": 0.98,
+      "enforced": true,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "results": [
+    {
+      "id": "g01",
+      "question": "What do I need to create an account?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3636,
+      "expectedPassages": [
+        "registration-duty:creating-an-account"
+      ],
+      "retrieved": [
+        "registration-duty:creating-an-account",
+        "decisions-and-controls:what-a-decision-needs",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "registration-duty:what-the-registration-duty-is",
+        "exemption-type-a:proof-of-age"
+      ],
+      "retrievalHit": true,
+      "answer": "An account needs an email address, a password, a full name, a Social Security number in the format XXX-XX-XXXX and a date of birth. The password must have at least 12 characters, with an uppercase letter, a digit and a special character. The registrant must be at least 18 years old. Only synthetic Social Security numbers may be used in the demo.",
+      "facts": 2,
+      "factsFound": 2,
+      "factsMissing": [],
+      "citations": 4,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g02",
+      "question": "How old do I have to be to register?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3014,
+      "expectedPassages": [
+        "registration-duty:creating-an-account"
+      ],
+      "retrieved": [
+        "exemption-type-a:who-qualifies",
+        "registration-duty:creating-an-account",
+        "registration-duty:signing-in-and-roles"
+      ],
+      "retrievalHit": true,
+      "answer": "The registrant must be at least 18 years old.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 1,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g03",
+      "question": "What does the registration compliance check look at?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 2827,
+      "expectedPassages": [
+        "registration-duty:profile-fields-and-the-registration-compliance-check"
+      ],
+      "retrieved": [
+        "registration-duty:profile-fields-and-the-registration-compliance-check",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "decisions-and-controls:the-8-compliance-controls",
+        "exemption-type-a:proof-of-age",
+        "exemption-type-b:income-statement"
+      ],
+      "retrievalHit": true,
+      "answer": "The registration compliance check reads three things: age 18 or older, a phone number on file and an address on file. With all three the status is Eligible. If the phone number or the address is missing, the status is Pending Review. Under 18, the status is Ineligible.",
+      "facts": 2,
+      "factsFound": 2,
+      "factsMissing": [],
+      "citations": 4,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g04",
+      "question": "Is two-step verification required when I sign in?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 2773,
+      "expectedPassages": [
+        "registration-duty:signing-in-and-roles"
+      ],
+      "retrieved": [
+        "registration-duty:signing-in-and-roles",
+        "privacy-and-ssn:the-audit-log"
+      ],
+      "retrievalHit": true,
+      "answer": "Two-step verification with an authenticator app is optional. With it on, signing in needs the 6-digit code from the app.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g05",
+      "question": "Which role only sees summary figures and does no case work?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 2839,
+      "expectedPassages": [
+        "registration-duty:signing-in-and-roles"
+      ],
+      "retrieved": [
+        "registration-duty:signing-in-and-roles",
+        "privacy-and-ssn:who-can-see-what",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case"
+      ],
+      "retrievalHit": true,
+      "answer": "Leadership sees summary figures only and does no case work. Leadership cannot open individual cases.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g06",
+      "question": "Who qualifies for the senior exemption?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 3877,
+      "expectedPassages": [
+        "exemption-type-a:who-qualifies"
+      ],
+      "retrieved": [
+        "exemption-type-a:exemption-type-a-senior-65-or-older",
+        "exemption-type-a:who-qualifies",
+        "exemption-type-b:who-qualifies-the-income-limit",
+        "exemption-type-b:exemption-type-b-income-under-20-000",
+        "exemption-type-c:exemption-type-c-documented-hardship"
+      ],
+      "retrievalHit": true,
+      "answer": "Type A is the senior exemption. A registrant qualifies for Type A when they are 65 years old or older. Age is worked out in whole years from the date of birth on the profile, and a birthday counts on the day it falls. A registrant who is 64 does not qualify. A registrant with no valid date of birth does not qualify.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 5,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g07",
+      "question": "What proof do I need to be approved for Type A?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 3304,
+      "expectedPassages": [
+        "exemption-type-a:proof-of-age"
+      ],
+      "retrieved": [
+        "exemption-type-a:proof-of-age",
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "decisions-and-controls:what-a-decision-needs",
+        "exemption-type-b:income-statement",
+        "exemption-type-c:hardship-evidence"
+      ],
+      "retrievalHit": true,
+      "answer": "An approval of a Type A case needs proof of age on file. The registrant attaches it to the case as a document link of the type proof of age. The decision controls check for it at the moment of approval. An approval without proof of age fails the supporting evidence control and opens a compliance review. An approval follows the eligibility rules, so the exemption result must be Eligible or Pending Review at that time.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 5,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g08",
+      "question": "How is Type A eligibility worked out?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 3615,
+      "expectedPassages": [
+        "exemption-type-a:how-eligibility-is-decided"
+      ],
+      "retrieved": [
+        "exemption-type-b:how-eligibility-is-decided",
+        "exemption-type-a:how-eligibility-is-decided",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-a:exemption-type-a-senior-65-or-older"
+      ],
+      "retrievalHit": true,
+      "answer": "The system decides Type A automatically, with no case manager involved. It depends on one fact, the registrant's age. Each time the profile is saved, and each time the registrant selects Check Eligibility, the age rule is run again and the result is saved as Eligible or Not Eligible with a short reason. The reason says whether the registrant is 65 or older or under 65. It does not repeat the exact age.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 5,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g09",
+      "question": "Can I open a second case for the same exemption?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 4268,
+      "expectedPassages": [
+        "exemption-type-a:how-to-apply"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:how-a-case-moves",
+        "exemption-type-a:how-to-apply",
+        "registration-duty:what-the-registration-duty-is",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "case-statuses-and-timelines:who-moves-a-case"
+      ],
+      "retrievalHit": true,
+      "answer": "A registrant cannot open a second case for the same exemption, and cannot apply while the result is Not Eligible. Applying opens one case for Type A.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g10",
+      "question": "What is the income limit for the Type B exemption?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3108,
+      "expectedPassages": [
+        "exemption-type-b:who-qualifies-the-income-limit"
+      ],
+      "retrieved": [
+        "exemption-type-b:exemption-type-b-income-under-20-000",
+        "exemption-type-b:who-qualifies-the-income-limit",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "exemption-type-a:exemption-type-a-senior-65-or-older"
+      ],
+      "retrievalHit": true,
+      "answer": "A registrant qualifies for Type B when the annual income on the profile is below $20,000. An annual income of $20,000 or more does not qualify. The income is a whole number of dollars. If no annual income is on file, the result is Not Eligible and the reason asks the registrant to add it to the profile.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 4,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g11",
+      "question": "Which document do I attach for the income exemption?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3518,
+      "expectedPassages": [
+        "exemption-type-b:income-statement"
+      ],
+      "retrieved": [
+        "exemption-type-b:exemption-type-b-income-under-20-000",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-b:income-statement",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "exemption-type-b:who-qualifies-the-income-limit"
+      ],
+      "retrievalHit": true,
+      "answer": "An approval of a Type B case needs an income statement on file. The registrant attaches it to the case as a document link of the type income statement. The decision controls check for it at the moment of approval. An approval without an income statement fails the supporting evidence control and opens a compliance review.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 4,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g12",
+      "question": "What result do I get for Type B if I have no income on file?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 2672,
+      "expectedPassages": [
+        "exemption-type-b:who-qualifies-the-income-limit"
+      ],
+      "retrieved": [
+        "exemption-type-b:exemption-type-b-income-under-20-000",
+        "exemption-type-b:changing-the-income",
+        "exemption-type-b:who-qualifies-the-income-limit",
+        "exemption-type-b:income-statement",
+        "exemption-type-c:exemption-type-c-documented-hardship"
+      ],
+      "retrievalHit": true,
+      "answer": "If no annual income is on file, the result is Not Eligible and the reason asks the registrant to add it to the profile. A registrant who changes the annual income on the profile gets a fresh Type B result straight away.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g13",
+      "question": "Does the eligibility reason show my exact income?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 2901,
+      "expectedPassages": [
+        "exemption-type-b:how-eligibility-is-decided",
+        "privacy-and-ssn:reasons-that-avoid-exact-figures"
+      ],
+      "retrieved": [
+        "privacy-and-ssn:reasons-that-avoid-exact-figures",
+        "exemption-type-b:how-eligibility-is-decided",
+        "exemption-type-a:how-eligibility-is-decided",
+        "exemption-type-b:who-qualifies-the-income-limit",
+        "exemption-type-b:exemption-type-b-income-under-20-000"
+      ],
+      "retrievalHit": true,
+      "answer": "No. The reason shown with an eligibility result says whether the registrant is over or under the line, and never gives the exact age or income. For Type B, the reason says whether the income is below the $20,000 threshold or at or above it. It does not repeat the exact income. Reasons are shown on screen and kept in the audit log, so they leave the exact figures out.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 4,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g14",
+      "question": "How is the hardship exemption decided?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 4541,
+      "expectedPassages": [
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "exemption-type-c:who-is-considered"
+      ],
+      "retrieved": [
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "exemption-type-c:hardship-evidence",
+        "exemption-type-c:what-counts-as-hardship"
+      ],
+      "retrievalHit": true,
+      "answer": "Type C is the hardship exemption. Unlike Types A and B it is never decided by a rule alone, because a person has to look at the evidence. A case manager reads the hardship evidence and decides the case as Approved or Denied. Pending Review does not mean approved. An approval of a Type C case needs hardship evidence on file. The registrant attaches it to the case as a document link of the type hardship evidence. The decision controls check for it at the moment of approval. An approval without hardship evidence fails the supporting evidence control and opens a compliance review. The demo does not define hardship in detail. The case manager judges the evidence that was attached to the case. A Denied decision always records a reason and can be appealed.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 11,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g15",
+      "question": "Does Pending Review mean my hardship exemption is approved?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 2843,
+      "expectedPassages": [
+        "exemption-type-c:caseworker-review-how-type-c-is-decided"
+      ],
+      "retrieved": [
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-c:hardship-evidence",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "case-statuses-and-timelines:the-six-statuses"
+      ],
+      "retrievalHit": true,
+      "answer": "Pending Review does not mean approved. A case manager reads the hardship evidence and decides the case as Approved or Denied. A registrant can apply for Type C while the result is Pending Review. An approval of a Type C case needs hardship evidence on file. A Denied decision always records a reason and can be appealed.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 5,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g16",
+      "question": "What evidence is needed for Type C?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 4020,
+      "expectedPassages": [
+        "exemption-type-c:hardship-evidence"
+      ],
+      "retrieved": [
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "exemption-type-c:hardship-evidence",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08",
+        "exemption-type-a:proof-of-age"
+      ],
+      "retrievalHit": true,
+      "answer": "An approval of a Type C case needs hardship evidence on file. The registrant attaches it to the case as a document link of the type hardship evidence. The decision controls check for it at the moment of approval. CTRL-07 checks that an approval has its supporting document, which for Type C is hardship evidence. An approval without hardship evidence fails the supporting evidence control and opens a compliance review. A case manager reads the hardship evidence and decides the case as Approved or Denied.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 6,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g17",
+      "question": "How does the demo define hardship?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 3227,
+      "expectedPassages": [
+        "exemption-type-c:what-counts-as-hardship"
+      ],
+      "retrieved": [
+        "exemption-type-c:what-counts-as-hardship",
+        "exemption-type-c:hardship-evidence",
+        "exemption-type-c:exemption-type-c-documented-hardship",
+        "registration-duty:exemptions-a-registrant-can-apply-for",
+        "registration-duty:registration-duty-overview"
+      ],
+      "retrievalHit": true,
+      "answer": "The demo does not define hardship in detail. The profile only records whether the registrant has documented hardship, yes or no. The case manager judges the evidence that was attached to the case. Type C is the hardship exemption. Unlike Types A and B it is never decided by a rule alone, because a person has to look at the evidence. An approval of a Type C case needs hardship evidence on file. The registrant attaches it to the case as a document link of the type hardship evidence.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 7,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g18",
+      "question": "How many compliance controls are there?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3061,
+      "expectedPassages": [
+        "decisions-and-controls:the-8-compliance-controls"
+      ],
+      "retrieved": [
+        "decisions-and-controls:the-8-compliance-controls",
+        "decisions-and-controls:when-a-control-fails",
+        "decisions-and-controls:the-compliance-target",
+        "decisions-and-controls:controls-ctrl-01-to-ctrl-04",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08"
+      ],
+      "retrievalHit": true,
+      "answer": "There are 8 decision controls, CTRL-01 to CTRL-08. An approval is checked against 7 of them and a denial against 6.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g19",
+      "question": "What does CTRL-04 check?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3211,
+      "expectedPassages": [
+        "decisions-and-controls:controls-ctrl-01-to-ctrl-04"
+      ],
+      "retrieved": [
+        "decisions-and-controls:controls-ctrl-01-to-ctrl-04",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08",
+        "registration-duty:profile-fields-and-the-registration-compliance-check",
+        "decisions-and-controls:the-8-compliance-controls",
+        "registration-duty:exemptions-a-registrant-can-apply-for"
+      ],
+      "retrievalHit": true,
+      "answer": "CTRL-04 checks that the person who decides is not the applicant.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 1,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g20",
+      "question": "What happens when a compliance control fails?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 3106,
+      "expectedPassages": [
+        "decisions-and-controls:when-a-control-fails"
+      ],
+      "retrieved": [
+        "decisions-and-controls:when-a-control-fails",
+        "decisions-and-controls:the-8-compliance-controls",
+        "decisions-and-controls:the-compliance-target",
+        "exemption-type-a:proof-of-age",
+        "exemption-type-b:income-statement"
+      ],
+      "retrievalHit": true,
+      "answer": "A failed control opens a compliance review. A different case manager resolves it, never the person who made the decision and never the applicant, and must write a justification note. The reviewer either accepts the result as an exception, which is recorded as an override in the audit log, or reopens the case, which returns it to In Review and notifies the applicant. A decision that failed keeps counting against the rate after its review is resolved. A rate below 99% raises an alert on the compliance dashboard.",
+      "facts": 2,
+      "factsFound": 2,
+      "factsMissing": [],
+      "citations": 5,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g21",
+      "question": "What is the compliance target for decisions?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3199,
+      "expectedPassages": [
+        "decisions-and-controls:the-compliance-target"
+      ],
+      "retrieved": [
+        "decisions-and-controls:the-compliance-target",
+        "decisions-and-controls:the-8-compliance-controls",
+        "decisions-and-controls:what-a-decision-needs",
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes",
+        "registration-duty:profile-fields-and-the-registration-compliance-check"
+      ],
+      "retrievalHit": true,
+      "answer": "The target is that at least 99% of decisions pass every control that applies to them. A rate below 99% raises an alert on the compliance dashboard. A decision that failed keeps counting against the rate after its review is resolved.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 3,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g22",
+      "question": "Who is allowed to decide a case?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 3977,
+      "expectedPassages": [
+        "decisions-and-controls:who-decides"
+      ],
+      "retrieved": [
+        "decisions-and-controls:who-decides",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "exemption-type-c:caseworker-review-how-type-c-is-decided",
+        "exemption-type-a:how-eligibility-is-decided"
+      ],
+      "retrievalHit": true,
+      "answer": "Only case managers and administrators decide cases. A case manager reviews a case that is In Review and decides it as Approved or Denied. Nobody decides their own case: a case manager's own application only allows the applicant actions. The system decides Type A automatically, with no case manager involved.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 4,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g23",
+      "question": "How do I appeal a denial?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 4421,
+      "expectedPassages": [
+        "appeals:how-to-appeal"
+      ],
+      "retrieved": [
+        "appeals:reading-the-denial-reason",
+        "appeals:who-can-appeal-and-when",
+        "appeals:how-to-appeal",
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:how-a-case-moves"
+      ],
+      "retrievalHit": true,
+      "answer": "Only the applicant can appeal, and only while the case is Denied. The reason is the place to start when deciding whether to appeal. Open the case from the Cases page. On a Denied case, select Appeal this decision and confirm. Because an appeal has legal effect, the demo asks for confirmation before it is sent. The appeal is made on the same case, and no new case is opened. The demo sets no deadline for an appeal. More evidence can be attached to the case as a document link before the appeal is decided. The case status changes to Appealed and the case waits for a case manager. A case manager moves it back to In Review and decides it again as Approved or Denied. Each step shows on the case timeline, and the applicant is notified when the status changes.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 11,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g24",
+      "question": "Is there a deadline to appeal?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 2262,
+      "expectedPassages": [
+        "appeals:who-can-appeal-and-when"
+      ],
+      "retrieved": [
+        "appeals:who-can-appeal-and-when",
+        "appeals:how-to-appeal",
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "appeals:reading-the-denial-reason"
+      ],
+      "retrievalHit": true,
+      "answer": "The demo sets no deadline for an appeal. Only the applicant can appeal, and only while the case is Denied.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g25",
+      "question": "What happens to a case after the applicant appeals?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 3487,
+      "expectedPassages": [
+        "appeals:what-happens-after-an-appeal"
+      ],
+      "retrieved": [
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "appeals:who-can-appeal-and-when",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case"
+      ],
+      "retrievalHit": true,
+      "answer": "The case status changes to Appealed and the case waits for a case manager. Appealed says the appeal is waiting for review. A case manager moves it back to In Review and decides it again as Approved or Denied. Each step shows on the case timeline, and the applicant is notified when the status changes. Nobody can decide their own case.",
+      "facts": 2,
+      "factsFound": 2,
+      "factsMissing": [],
+      "citations": 5,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g26",
+      "question": "Is my Social Security number stored in the system?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3498,
+      "expectedPassages": [
+        "privacy-and-ssn:social-security-numbers"
+      ],
+      "retrieved": [
+        "privacy-and-ssn:social-security-numbers",
+        "privacy-and-ssn:what-the-assistant-never-sees",
+        "privacy-and-ssn:the-audit-log",
+        "registration-duty:creating-an-account",
+        "registration-duty:profile-fields-and-the-registration-compliance-check"
+      ],
+      "retrievalHit": true,
+      "answer": "It is turned into a one-way hash before it is stored, so the number itself is never saved. The hash is never shown, never returned by the API and never written to the audit log. A Social Security number is asked for once, at registration. The demo accepts synthetic numbers only, and a real Social Security number must not be entered.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 4,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g27",
+      "question": "Does the assistant send my SSN to the AI model?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 2296,
+      "expectedPassages": [
+        "privacy-and-ssn:what-the-assistant-never-sees"
+      ],
+      "retrieved": [
+        "privacy-and-ssn:what-the-assistant-never-sees"
+      ],
+      "retrievalHit": true,
+      "answer": "Before a question reaches the policy assistant, anything shaped like a Social Security number is removed. The cleaned question is what is stored and what is sent to the AI model. Personal details do not belong in a question.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 3,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g28",
+      "question": "How long are audit log entries kept?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 2863,
+      "expectedPassages": [
+        "privacy-and-ssn:the-audit-log"
+      ],
+      "retrieved": [
+        "privacy-and-ssn:the-audit-log",
+        "privacy-and-ssn:reasons-that-avoid-exact-figures",
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08",
+        "decisions-and-controls:when-a-control-fails"
+      ],
+      "retrievalHit": true,
+      "answer": "Each entry is kept for at least 7 years. Entries are write-once, so the database refuses edits and deletes.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g29",
+      "question": "Who can read internal case notes?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 2618,
+      "expectedPassages": [
+        "privacy-and-ssn:who-can-see-what"
+      ],
+      "retrieved": [
+        "appeals:reading-the-denial-reason",
+        "privacy-and-ssn:who-can-see-what",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "case-statuses-and-timelines:what-the-applicant-sees"
+      ],
+      "retrievalHit": true,
+      "answer": "Internal case notes are visible to staff only. A registrant sees only their own profile, cases, documents and notifications. Leadership sees summary figures only and cannot open individual cases.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 3,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g30",
+      "question": "What are the six case statuses?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3020,
+      "expectedPassages": [
+        "case-statuses-and-timelines:the-six-statuses"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:the-six-statuses",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:what-the-applicant-sees"
+      ],
+      "retrievalHit": true,
+      "answer": "A case has one of six statuses. Draft means the case is not yet submitted. Submitted means it is waiting for a case manager. In Review means a case manager is looking at it. Approved means the exemption is granted and final. Denied means it was refused with a reason. Appealed means the applicant has asked for another look.",
+      "facts": 6,
+      "factsFound": 6,
+      "factsMissing": [],
+      "citations": 7,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g31",
+      "question": "When is a case marked overdue?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3072,
+      "expectedPassages": [
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes",
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "decisions-and-controls:who-decides",
+        "appeals:how-to-appeal"
+      ],
+      "retrievalHit": true,
+      "answer": "A case with no update for more than 5 days is marked overdue for the case manager, and it counts as stuck on the leadership dashboard. The demo promises no decision time.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g32",
+      "question": "How long does a decision take?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 1,
+      "latencyMs": 3009,
+      "expectedPassages": [
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:typical-timelines-how-long-a-decision-takes",
+        "decisions-and-controls:what-a-decision-needs",
+        "decisions-and-controls:the-8-compliance-controls",
+        "decisions-and-controls:controls-ctrl-05-to-ctrl-08",
+        "decisions-and-controls:the-compliance-target"
+      ],
+      "retrievalHit": true,
+      "answer": "The demo promises no decision time. A case with no update for more than 5 days is marked overdue for the case manager, and it counts as stuck on the leadership dashboard.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 2,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    },
+    {
+      "id": "g33",
+      "question": "Can an approved case be changed afterwards?",
+      "httpStatus": 200,
+      "mode": "ai",
+      "status": "shown",
+      "level": 0,
+      "latencyMs": 2190,
+      "expectedPassages": [
+        "case-statuses-and-timelines:how-a-case-moves",
+        "case-statuses-and-timelines:the-six-statuses"
+      ],
+      "retrieved": [
+        "case-statuses-and-timelines:how-a-case-moves",
+        "appeals:what-happens-after-an-appeal",
+        "case-statuses-and-timelines:what-the-applicant-sees",
+        "case-statuses-and-timelines:who-moves-a-case",
+        "exemption-type-b:changing-the-income"
+      ],
+      "retrievalHit": true,
+      "answer": "Approved has no further moves. No other change of status is allowed. Approved says the exemption is granted and nothing more is needed.",
+      "facts": 1,
+      "factsFound": 1,
+      "factsMissing": [],
+      "citations": 3,
+      "invalidCitations": [],
+      "grounded": true,
+      "error": null
+    }
+  ]
+}

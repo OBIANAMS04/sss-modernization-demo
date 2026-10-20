@@ -497,6 +497,25 @@ describe('getHistory', () => {
     expect(params).toEqual(['user-1', 20]);
   });
 
+  it('says why passages were shown instead of an answer, as when the question was asked', async () => {
+    const passages = { answer: null, citations: [], passage_ids: [] };
+    poolQuery.mockResolvedValue({
+      rows: [
+        row({ ...passages, trace_id: 't1', mode: 'passages-only', grounding: { fallback: 'unavailable:bad-request' } }),
+        row({ ...passages, trace_id: 't2', mode: 'passages-only', grounding: { fallback: 'off' } }),
+        row({ ...passages, trace_id: 't3', mode: 'ai', grounding: { fallback: 'declined:refusal' } }),
+        row({ trace_id: 't4' }), // an answer has no such note
+      ],
+    });
+    const history = await getHistory('user-1');
+    expect(history.map((h) => h.message)).toEqual([
+      'The AI assistant is not available right now, so here are the most relevant policy passages instead.',
+      'AI answers are turned off in this demo, so here are the most relevant policy passages instead.',
+      'The assistant could not give a reliable answer, so here are the most relevant policy passages instead.',
+      undefined,
+    ]);
+  });
+
   it('shows an answer with its citations, minus the internal version, and never a withheld answer', async () => {
     poolQuery.mockResolvedValue({
       rows: [

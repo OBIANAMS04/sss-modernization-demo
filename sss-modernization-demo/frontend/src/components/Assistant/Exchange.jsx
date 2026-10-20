@@ -2,7 +2,7 @@ import { useId, useRef, useState } from 'react';
 import Citations from './Citations';
 import Feedback from './Feedback';
 import { formatTime, sourceButtonId, sourceName } from './format';
-import { REVIEW_NOTES, TONES, canRate, oversightOf, repeatsStatus } from './oversight';
+import { REVIEW_NOTES, TONES, canRate, oversightOf } from './oversight';
 
 const ICONS = {
   check: (
@@ -99,7 +99,7 @@ export default function Exchange({ item, passages, loadPassage, onFeedback, cita
           {REVIEW_NOTES[item.reviewed.outcome]} Reviewed {formatTime(item.reviewed.at)}.
         </p>
       )}
-      {item.message && !sameWords(item.message, oversightOf(item).label) && !repeatsStatus(item) && (
+      {item.message && !sameWords(item.message, oversightOf(item).label) && (
         <p className="mt-3 text-gray-800 wrap-anywhere">{item.message}</p>
       )}
       {item.status === 'with-staff' && (
