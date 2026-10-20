@@ -190,12 +190,25 @@ const SEARCH_SQL = `
   LIMIT $2`;
 
 /**
+ * The part of a question that passages are searched with (STORY-025). People often say who they are before they ask ("My name is ...",
+ * "I am a student.", "English is my second language."). Those words are not about the policy, yet joined with OR they pull in passages
+ * that happen to share them and push the right ones down, so the same question was answered from different passages depending on who
+ * said it. Sentences before the first one that asks (ends with "?") are left out of the search; the model still reads the whole
+ * question. A question with no such lead-in, or with no question mark, is searched whole.
+ */
+export function retrievalText(question: string): string {
+  const sentences = question.trim().split(/(?<=[.!?])\s+/);
+  const asking = sentences.findIndex((sentence) => sentence.endsWith('?'));
+  return asking > 0 ? sentences.slice(asking).join(' ') : question;
+}
+
+/**
  * The passages that best match a question. websearch_to_tsquery reads the question as people write it (quotes, "or", a leading
  * minus) and drops stop words; it joins the remaining words with AND, which would find nothing for a question that uses one word
  * the documents do not, so the words are joined with OR and ts_rank puts the passages with the most (and heaviest) matches first.
  */
 export async function searchPassages(question: string, limit: number = RETRIEVED_PASSAGES): Promise<RetrievedPassage[]> {
-  const result = await pool.query(SEARCH_SQL, [question, limit]);
+  const result = await pool.query(SEARCH_SQL, [retrievalText(question), limit]);
   return result.rows.map((r: any) => ({
     id: r.id,
     docSlug: r.doc_slug,

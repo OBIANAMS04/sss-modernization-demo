@@ -94,6 +94,11 @@ export enum AuditAction {
   // review of a withheld or reported one. Neither entry holds the question, the answer or the person's comment.
   AI_FEEDBACK = 'AI_FEEDBACK',
   AI_REVIEW = 'AI_REVIEW',
+  // STORY-021 and 025: an administrator starts a server-side evaluation or fairness run (it calls the model, so it costs money), the run
+  // finishes, a run is marked as the baseline, and a drift alert opens or clears. None holds a question or an answer.
+  AI_EVAL_RUN = 'AI_EVAL_RUN',
+  AI_EVAL_BASELINE = 'AI_EVAL_BASELINE',
+  AI_DRIFT_ALERT = 'AI_DRIFT_ALERT',
 
   // Infrastructure
   DEPLOYMENT = 'DEPLOYMENT',

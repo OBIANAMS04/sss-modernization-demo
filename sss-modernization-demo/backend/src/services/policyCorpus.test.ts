@@ -7,7 +7,7 @@ jest.mock('./auditService', () => ({ ...jest.requireActual('./auditService'), lo
 import pool from '../database/connection';
 import { logAuditEvent, sanitizeDetails } from './auditService';
 import { inTransaction } from './caseEvents';
-import { MAX_PASSAGE_CHARS, chunkDocument, contentHash, getCorpusInfo, getPassage, ingestPolicyDocs, readPolicyDocs, searchPassages, slugify } from './policyCorpus';
+import { MAX_PASSAGE_CHARS, chunkDocument, contentHash, getCorpusInfo, getPassage, ingestPolicyDocs, readPolicyDocs, retrievalText, searchPassages, slugify } from './policyCorpus';
 
 const query = pool.query as unknown as jest.Mock;
 const audit = logAuditEvent as jest.Mock;
@@ -221,6 +221,30 @@ describe('searchPassages', () => {
   it('returns nothing when no passage matches', async () => {
     query.mockResolvedValueOnce({ rows: [] });
     expect(await searchPassages('weather')).toEqual([]);
+  });
+});
+
+// STORY-025: who the asker says they are must not change which passages are found
+describe('retrievalText', () => {
+  it.each([
+    ['My name is Jamal Washington. How do I appeal a denial?', 'How do I appeal a denial?'],
+    ['I am a college student. English is my second language. How do I appeal a denial?', 'How do I appeal a denial?'],
+    ['I use a wheelchair.   What is the income limit? And the deadline?', 'What is the income limit? And the deadline?'],
+  ])('leaves out what comes before the question: %s', (question, searched) => {
+    expect(retrievalText(question)).toBe(searched);
+  });
+
+  it.each(['How do I appeal a denial?', 'appeal denial deadline', 'What is the limit? Is it per year?', 'Tell me about appeals. Thanks'])(
+    'searches a question with no lead-in whole: %s',
+    (question) => {
+      expect(retrievalText(question)).toBe(question);
+    }
+  );
+
+  it('searches with the part that asks', async () => {
+    query.mockResolvedValueOnce({ rows: [] });
+    await searchPassages('My name is Wei Zhang. Who qualifies for the senior exemption?');
+    expect(query.mock.calls[0][1]).toEqual(['Who qualifies for the senior exemption?', 5]);
   });
 });
 
