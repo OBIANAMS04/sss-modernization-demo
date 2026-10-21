@@ -84,7 +84,8 @@ if (shotsDir) {
     await page.signIn(SITE, session);
     await page.goto(`${SITE}/dashboard`);
     await page.waitForText('Release Progress', 60_000);
-    check('live dashboard lists the latest shipped story (citizen dashboard) as done', await page.hasText('R1: Citizen dashboard'));
+    check('live dashboard lists the latest shipped release (R2) as done', await page.hasText('R2: Observability'));
+    check('live dashboard shows how current the page is (STORY-005)', await page.hasText('How current this page is'));
     check('no staff links for a citizen', await page.evaluate(`!document.querySelector('a[href="/compliance"], a[href="/freshness"], a[href="/cases"], a[href="/audit"], a[href="/staff"]')`));
     await page.screenshot(join(shotsDir, 'live-01-citizen-dashboard.png'));
     await page.goto(`${SITE}/compliance`);

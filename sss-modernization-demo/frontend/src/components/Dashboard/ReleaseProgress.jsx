@@ -13,7 +13,10 @@ const RELEASE_PROGRESS = [
   { done: true, text: 'R1: Admin dashboard: all cases, team performance, system health' },
   { done: true, text: 'R1: Leadership dashboard: KPIs, trends, bottlenecks, team performance' },
   { done: true, text: 'R1: API access policies (OPA): rules checked on every request, changeable without a deploy' },
-  { done: false, text: 'R2 (next): AI and governance' },
+  { done: true, text: 'R2: Policy assistant: answers from the policy documents, each sentence cited, with human review' },
+  { done: true, text: 'R2: AI quality: accuracy runs, drift alerts and fairness checks across groups' },
+  { done: true, text: 'R2: Observability: request tracing, latency targets and alerts' },
+  { done: false, text: 'R3 (in progress): load tested, keeps running if its database fails, uptime checked from outside, data status on this page' },
 ];
 
 // Shared by the citizen and admin dashboards. `className` sets the spacing around the card.
