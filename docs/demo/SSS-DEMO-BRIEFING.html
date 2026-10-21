@@ -119,8 +119,8 @@
     <p class="lede">A working platform for the Selective Service System's registrant services: online accounts, exemption eligibility, case management with appeals, and automatic compliance checks on every decision.</p>
     <div class="facts">
       <span>Demo site <strong><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></strong></span>
-      <span>Status as of <strong>October 14, 2026</strong></span>
-      <span>Working in the demo <strong>3 of 5 R0 stories, 11 of 11 R1 stories</strong></span>
+      <span>Status as of <strong>October 21, 2026</strong></span>
+      <span>Working in the demo <strong>3 of 5 R0 stories, 11 of 11 R1 stories, 11 of 11 R2 stories</strong></span>
     </div>
     <p class="notice">Everything described here is demonstrated on a synthetic demo deployment; none of it is operating in production. Synthetic data only. The exemption types shown (A senior, B income, C hardship) are illustrative rules built to exercise the workflow. They are not Selective Service policy.</p>
   </header>
@@ -201,6 +201,16 @@
         <span class="pill live">In the demo</span>
       </div>
       <div class="problem">
+        <div><h3>AI answers no one can check</h3><p class="need">An assistant may only say what the policy says, and people, not the assistant, must decide a person's case.</p></div>
+        <p>Claude answers only from the policy documents, with a citation on every statement, and each answer is checked before it is shown. Questions about a person's own case, failed checks and reported answers go to a case manager.</p>
+        <span class="pill live">In the demo</span>
+      </div>
+      <div class="problem">
+        <div><h3>AI and systems that drift unnoticed</h3><p class="need">Quality, fairness and service levels must be watched after go-live, with alerts and evidence.</p></div>
+        <p>Answer quality is tracked daily and re-tested against a baseline; fairness is tested by changing only details that must not matter; every request is traced, and objectives are checked every minute with alerts and a runbook.</p>
+        <span class="pill live">In the demo</span>
+      </div>
+      <div class="problem">
         <div><h3>Hosting that meets federal requirements</h3><p class="need">Production must run on FedRAMP-authorized cloud with multi-factor sign-in.</p></div>
         <p>The demo runs on commercial hosting today. AWS GovCloud infrastructure (STORY-004) waits on approval. Multi-factor sign-in is already in the demo (scene 13).</p>
         <span class="pill plan">Planned</span>
@@ -210,7 +220,7 @@
 
   <section id="walkthrough" aria-labelledby="walkthrough-h">
     <p class="eyebrow">Demo walkthrough</p>
-    <h2 id="walkthrough-h">Seventeen scenes, about twenty minutes</h2>
+    <h2 id="walkthrough-h">Twenty-two scenes, about twenty-five minutes</h2>
     <ol class="scenes">
       <li class="scene">
         <h3>A registrant creates an account</h3>
@@ -353,6 +363,47 @@
         </ul>
         <figure><img src="screens/tour-22-policy-refusal.png" width="1280" height="900" alt="Access denied message: no rule lets a case manager view a case assigned to someone else" loading="lazy"><figcaption>The refusal names the rule: no rule lets a case manager view a case assigned to someone else.</figcaption></figure>
       </li>
+      <li class="scene">
+        <h3>Policy answers that cite their source</h3>
+        <ul>
+          <li>On Ask about policy, a registrant asks in plain words. Claude answers only from eight synthetic policy documents (labelled as not Selective Service policy), and every statement carries a numbered citation that opens the quoted passage.</li>
+          <li>Before anyone sees it, a check confirms that every sentence sits under a citation and every number appears in a cited passage. An answer that fails is withheld. A thinner answer is shown with "Please confirm with a case manager". SSN-shaped text is removed before anything is searched or stored.</li>
+        </ul>
+        <figure><img src="screens/tour-34-live-answer.png" width="1280" height="900" alt="An answer about the Type B income limit with four numbered citations quoting the policy, marked Please confirm with a case manager" loading="lazy"><figcaption>A live answer from Claude on the demo deployment, with four citations.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>People decide, not the assistant</h3>
+        <ul>
+          <li>A question about the asker's own eligibility or case, an answer that fails the check and any answer a person reports go to the Assistant Reviews queue. A case manager, never the person who asked, approves, corrects or declines, with a note for the record; the person is notified and sees the reviewed answer.</li>
+          <li>The override rate, how often staff went against what the system said, is tracked on the admin and leadership dashboards with a 12-week trend against a 20% target.</li>
+        </ul>
+        <figure><img src="screens/tour-25-review-queue.png" width="1280" height="2730" alt="Assistant Reviews: answer quality against the 2% target, a reported answer and a withheld personal question waiting" loading="lazy"><figcaption>The review queue: answer quality against its target, then the questions waiting for a case manager.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Quality is watched after go-live</h3>
+        <ul>
+          <li>The AI Quality page tracks nine signals from real answers, such as the grounded rate, withheld answers, latency and negative feedback, comparing the last seven days with the 28 before. A change of model or policy documents is marked on the trend.</li>
+          <li>An administrator can re-run the 33-question golden set on the server and mark a run as the baseline. A run below a threshold, or more than 5 points under the baseline, alerts the administrators.</li>
+          <li>The first run on the demo deployment failed: some answers opened with an uncited sentence of the model's own, which the check rightly withheld. The model's instructions were fixed, and the re-run scored 100% on retrieval, facts, citations and grounding.</li>
+        </ul>
+        <figure><img src="screens/tour-32-live-evaluation.png" width="1356" height="890" alt="Evaluation against the golden set: passed with 100% on all four measures, marked as the baseline" loading="lazy"><figcaption>The real run on the demo deployment, now the baseline.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Who asks must not change the answer</h3>
+        <ul>
+          <li>The demo collects no race, sex, ethnicity, religion, disability or national origin. Fairness is tested by changing only a detail that must not matter: 383 automated tests cover names, every US region and address formats for the decision rules.</li>
+          <li>The assistant is asked ten questions unchanged and with a statement about the asker (a name, gender, ethnicity, age wording, disability or limited English). On the demo deployment the same passages and the same outcome came back in 60 of 60 pairs. Approval rates by age band and region are compared with the four-fifths rule.</li>
+        </ul>
+        <figure><img src="screens/tour-33-live-fairness.png" width="1357" height="892" alt="Fairness check passed: the same passages and the same outcome in 60 of 60 pairs, the key facts in every answer" loading="lazy"><figcaption>The real fairness run on the demo deployment.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Every request can be traced</h3>
+        <ul>
+          <li>Every request, database query and Claude call is traced with OpenTelemetry; each response, log line and audit entry carries its trace id, and no question text or personal data is recorded. Latency, errors and AI cost are measured per route and per call.</li>
+          <li>Objectives (availability 99.5%, 95% of requests under 2 seconds, errors under 1%, AI spend under budget, plus drift and fairness) are checked every minute; a breach opens an alert with a runbook entry. Export to Datadog or any OpenTelemetry backend is one setting.</li>
+        </ul>
+        <figure><img src="screens/tour-31-observability.png" width="1280" height="900" alt="Observability page with open alerts, each linked to its runbook entry" loading="lazy"><figcaption>A test run with deliberate server faults: the alerts open with their runbook links, and close on recovery.</figcaption></figure>
+      </li>
     </ol>
   </section>
 
@@ -386,6 +437,8 @@
       <li><strong>Staff access granted, not claimed.</strong> Access is given in the app, with a reason, by an existing case manager or an administrator, never by registering an address; nobody can change their own access, and every change is in the audit log.</li>
       <li><strong>Two steps to sign in.</strong> An authenticator app supplies a 6-digit code after the password. The pending sign-in is refused everywhere, each code works once, and the key and codes never enter the log.</li>
       <li><strong>A policy decides every request.</strong> Open Policy Agent, compiled to WebAssembly inside the API, decides each request before any route and can only narrow what the code allows. Administrators change the rules without a deploy, and every version, change and refusal is on the record.</li>
+      <li><strong>AI under human control.</strong> The assistant answers only from the policy, cites every statement and is checked before an answer is shown; it never decides a case. It is re-tested against a baseline, tested for fairness, and every call is traced with its cost.</li>
+      <li><strong>Watched in operation.</strong> Every request carries a trace id; service objectives are checked every minute, and a breach alerts the administrators with a runbook entry.</li>
       <li><strong>Accessible by design.</strong> Every page is checked against WCAG 2.1 AA (Section 508) for each kind of user: keyboard, screen-reader names and errors, contrast, reflow at 320 pixels, a session warning, and confirmation before an application is sent.</li>
       <li><strong>Write-once audit trail.</strong> Every sign-in, refusal, data read, export, change, role grant, deployment and configuration change is recorded with who, when and from where, alongside every compliance result. The database refuses edits and deletions, entries are kept seven years, and no SSN, password or secret is written to the log.</li>
       <li><strong>Verified releases.</strong> After each deploy the team checks the demo deployment automatically: the running version, the database, all protected routes refusing anonymous requests, and every staff route refusing an ordinary registrant. Each story ships with screenshots and a written conclusion.</li>
@@ -406,13 +459,13 @@
         <h3>R1 · Core services</h3>
         <div class="meter" role="img" aria-label="11 of 11 working in the demo"><span style="width:100%"></span></div>
         <p class="count">11 of 11 in the demo (complete)</p>
-        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness, security audit logging, accessibility (Section 508), the citizen, case manager, admin and leadership dashboards, and API access policies with Open Policy Agent. Next: R2.</p>
+        <p>In the demo: exemption eligibility, case management, compliance validation, data freshness, security audit logging, accessibility (Section 508), the citizen, case manager, admin and leadership dashboards, and API access policies with Open Policy Agent.</p>
       </div>
       <div class="release">
         <h3>R2 · AI and governance</h3>
-        <div class="meter" role="img" aria-label="Not started"><span style="width:0%"></span></div>
-        <p class="count">Not started</p>
-        <p>Policy question answering with cited sources, drift and hallucination monitoring, human-in-the-loop review, override tracking and bias testing.</p>
+        <div class="meter" role="img" aria-label="11 of 11 working in the demo"><span style="width:100%"></span></div>
+        <p class="count">11 of 11 in the demo (complete)</p>
+        <p>In the demo: policy answers from Claude with cited sources, hallucination and drift monitoring, human-in-the-loop review, override tracking, fairness testing and observability. The real-model evaluation and fairness runs passed on the demo deployment on October 21. Next: R3.</p>
       </div>
       <div class="release">
         <h3>R3 · Scale and launch</h3>
@@ -430,7 +483,7 @@
     <ol class="outline">
       <li>Title: SSS Modernization Demo, Colaberry, solicitation 90MC26R0004</li>
       <li>Why it matters: the registry, who depends on accurate registration status</li>
-      <li>The problems: eleven challenges and how the platform answers each</li>
+      <li>The problems: thirteen challenges and how the platform answers each</li>
       <li>Who uses it: registrants, case managers, compliance, administrators and leadership</li>
       <li>Registrant journey: account, eligibility with reasons, apply, follow the case (scenes 1, 2 and 8)</li>
       <li>Case management: one queue, decisions with reasons, appeals (scenes 3 and 4)</li>
@@ -443,6 +496,8 @@
       <li>Two steps to sign in: authenticator app, one-time codes, a pending sign-in nothing accepts (scene 13)</li>
       <li>Each role's view: case manager work list, administrator operations, leadership program numbers (scenes 14 to 16)</li>
       <li>Access rules that change without a release: Open Policy Agent decides every request (scene 17)</li>
+      <li>AI with human control: cited policy answers, the review queue and the override rate (scenes 18 and 19)</li>
+      <li>AI watched in operation: drift against a baseline, fairness tests, tracing and alerts (scenes 20 to 22)</li>
       <li>Security and trust: protected SSNs, per-endpoint access, verified releases</li>
       <li>Status and roadmap: what works in the demo today and what comes next</li>
     </ol>
