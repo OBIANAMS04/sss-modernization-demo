@@ -1,0 +1,45 @@
+{
+  "id": "r3-m2",
+  "title": "R3 milestone 2 (STORY-037 to 042): security, accessibility and operations: evidence",
+  "capturedBy": "scripts/evidence/r3-milestone-2.mjs on a local copy of the deployed code (screens 01 to 03 through the real pages)",
+  "summary": [
+    "Synthetic demo deployment; not operating in production. Our own security testing, not a third-party penetration test."
+  ],
+  "shots": [
+    {
+      "file": "01-recovery-codes-shown-once.png",
+      "title": "Recovery codes, shown once",
+      "caption": "Turning two-step verification on gives ten one-time codes, with copy and download; only their hashes are kept."
+    },
+    {
+      "file": "02-recovery-codes-status.png",
+      "title": "Codes left, and new ones",
+      "caption": "Sign-in security counts the unused codes; new codes need a current code and stop the old ones working."
+    },
+    {
+      "file": "03-sign-in-with-recovery-code.png",
+      "title": "Lost authenticator",
+      "caption": "The code step offers a recovery code instead; it works once and shares the five tries."
+    },
+    {
+      "file": "04-attack-suite.png",
+      "title": "The attack suite",
+      "caption": "Sign-in bypass, token tampering, other people's records, injection, guessing, sign-out, recovery codes, headers and CORS."
+    },
+    {
+      "file": "05-what-the-suite-tries.png",
+      "title": "What was tried",
+      "caption": "Every area tried and its result, from the security testing report."
+    },
+    {
+      "file": "06-dependencies.png",
+      "title": "Dependencies",
+      "caption": "bcrypt 6 (drops tar), uuid removed, axios patched; one finding accepted with its reason."
+    },
+    {
+      "file": "07-conformance-report-aa.png",
+      "title": "Conformance report",
+      "caption": "WCAG 2.1 AA: each criterion with its conformance and remarks; screen-reader testing still owed."
+    }
+  ]
+}

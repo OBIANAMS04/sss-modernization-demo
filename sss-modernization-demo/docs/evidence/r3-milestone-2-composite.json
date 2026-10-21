@@ -1,0 +1,18 @@
+{
+  "out": "r3-m2/r3-milestone-2-screens.jpg",
+  "maxKb": 650,
+  "title": "R3 milestone 2 (STORY-037 to 042): synthetic demo deployment",
+  "columns": 2,
+  "tileWidth": 900,
+  "packs": ["r3-m2"],
+  "tiles": [
+    { "file": "r3-m2/01-recovery-codes-shown-once.png", "label": "041 Recovery codes, shown once", "top": 100, "height": 1084 },
+    { "file": "r3-m2/02-recovery-codes-status.png", "label": "041 Codes left, and new ones", "top": 100, "height": 960 },
+    { "file": "r3-m2/03-sign-in-with-recovery-code.png", "label": "041 Lost authenticator: recovery code", "top": 220, "height": 460 },
+    { "file": "r3-m2/04-attack-suite.png", "label": "041 Attack suite: 52 of 52", "top": 0, "height": 698 },
+    { "file": "r3-m2/05-what-the-suite-tries.png", "label": "041 What was tried, and the result", "top": 0, "height": 639 },
+    { "file": "r3-m2/06-dependencies.png", "label": "041 Dependency pass", "top": 0, "height": 378 },
+    { "file": "r3-m2/07-conformance-report-aa.png", "label": "042 Conformance report (VPAT 2.5)", "top": 0, "height": 823 },
+    { "file": "r3-m2-a11y-live/live-a11y-report.png", "label": "042 Live audit + site policy: all pass", "top": 0, "height": 910 }
+  ]
+}
