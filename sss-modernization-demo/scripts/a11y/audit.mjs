@@ -61,7 +61,7 @@ async function setup() {
       { role: 'Applicant', path: '/mfa', session: citizen },
     ];
   }
-  const { account, adminAccount, call, exemptionId, leadershipAccount, PASSWORD, staffAccount } = await import('../e2e/lib.mjs');
+  const { account, adminAccount, call, exemptionId, leadershipAccount, PASSWORD, serverErrors, staffAccount } = await import('../e2e/lib.mjs');
   const applicant = await account(`a11y-applicant-${Date.now()}@example.com`, 'Avery Lane', '1950-03-14');
   await call('PUT', `/users/${applicant.user.id}`, applicant.token, { phone: '555-0111', address: '12 Elm Street, Dayton, OH' });
   const caseId = (await call('POST', '/cases', applicant.token, { exemptionId: await exemptionId(applicant.token, 'Type A') })).data.id;
@@ -76,9 +76,9 @@ async function setup() {
   // STORY-021 and 025: a run of the golden set and of the counterfactual set (through the stand-in), so /ai-quality has figures to check; a second pass within the hour is refused and keeps the first
   await call('POST', '/ai-quality/evaluations', morgan.token);
   await call('POST', '/ai-quality/fairness-runs', morgan.token);
-  // STORY-026 to 029: server errors (a malformed id reaches PostgreSQL as a uuid and is refused with a 500 today) and the objectives check, so
+  // STORY-026 to 029: server errors (serverErrors() in lib.mjs makes a request fail inside the local database) and the objectives check, so
   // /observability has errors with trace ids and an open alert to check
-  for (let i = 0; i < 25; i++) await call('GET', '/audit?actor=not-a-uuid', morgan.token);
+  await serverErrors(morgan.token, 25);
   await call('POST', '/observability/evaluate', morgan.token);
   await call('PUT', `/cases/${caseId}/assignment`, dana.token, { assignedTo: dana.user.email });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'In Review' });

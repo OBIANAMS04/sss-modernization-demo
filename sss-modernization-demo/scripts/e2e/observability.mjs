@@ -6,13 +6,13 @@
 //     CASE_MANAGER_EMAILS="manager-local-test@example.com,reviewer-local-test@example.com" npm start
 //   DATABASE_NAME=<the backend's database> node scripts/e2e/observability.mjs
 //
-// The server error is made with GET /audit?actor=not-a-uuid, which today answers 500 (a malformed id reaches PostgreSQL as a uuid, which refuses
-// it). If that route is ever fixed to answer 400, this suite says so and needs another route that fails.
+// The server error is real: serverErrors() (lib.mjs) renames the notifications table of the local database for one request, so GET
+// /notifications fails inside PostgreSQL, then puts it back. A malformed id is checked to be a 400, not a server error.
 // The objective breaches are made with synthetic rows in route_metrics_minute (a route that does not exist, 30 minutes back) and a fixture
 // assistant answer, all removed at the end, so they do not depend on how much real traffic the backend has had.
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { account, adminAccount, BASE, call, expect, leadershipAccount, MANAGER, run, stamp, staffAccount } from './lib.mjs';
+import { account, adminAccount, BASE, call, expect, leadershipAccount, MANAGER, run, serverErrors, stamp, staffAccount } from './lib.mjs';
 
 const require = createRequire(new URL('../../backend/package.json', import.meta.url));
 const { Client } = require('pg');
@@ -112,16 +112,17 @@ async function checks(db, users) {
 
   // ---- 026 and 027: a forced server error shows with its trace id
 
-  const failed = await call('GET', '/audit?actor=not-a-uuid', admin.token);
-  expect('a malformed id is a server error today (the route used to force one)', failed.status, 500);
+  expect("a malformed id is the caller's mistake (400), not a server error", [(await call('GET', '/audit?actor=not-a-uuid', admin.token)).status, (await call('GET', '/audit/user/not-a-uuid', admin.token)).status], [400, 400]);
+  const [failed] = await serverErrors(admin.token);
+  expect('a fault inside the database is a server error', failed.status, 500);
   const failedTrace = ids(failed).trace;
   let seen;
   for (let i = 0; i < 20 && !seen; i++) {
     await sleep(250);
     seen = (await view()).recentErrors.find((e) => e.traceId === failedTrace);
   }
-  expect('the server error shows in recent errors with its trace id and route template', seen && [seen.route, seen.status], ['GET /api/audit', 500]);
-  expect('the error record holds the class and code of the error, never its message', seen && [typeof seen.errorName, seen.errorCode], ['string', '22P02']);
+  expect('the server error shows in recent errors with its trace id and route template', seen && [seen.route, seen.status], ['GET /api/notifications', 500]);
+  expect('the error record holds the class and code of the error, never its message', seen && [typeof seen.errorName, seen.errorCode], ['string', '42P01']);
   const errorsLeak = (await db.query(`SELECT COUNT(*)::int AS n FROM server_errors WHERE route ~* '[0-9a-f]{8}-[0-9a-f]{4}' OR route LIKE '%@%' OR route LIKE '%not-a-uuid%'`)).rows[0].n;
   expect('no server error record holds the value that was sent', errorsLeak, 0);
 

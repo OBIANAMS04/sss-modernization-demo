@@ -148,3 +148,24 @@ export function run(main) {
     process.exit(1);
   });
 }
+
+/**
+ * STORY-026 to 029: real server errors, for the checks of how they are recorded. The notifications table of the LOCAL database is renamed
+ * for the moment of the requests, so GET /notifications fails inside PostgreSQL (42P01, no such table) like any unexpected fault would, and
+ * it is put back whatever happens. Local databases only, like everything in this file; DATABASE_NAME names the backend's database.
+ */
+export async function serverErrors(token, count = 1) {
+  const { createRequire } = await import('node:module');
+  const { Client } = createRequire(new URL('../../backend/package.json', import.meta.url))('pg');
+  const db = new Client({ host: 'localhost', database: process.env.DATABASE_NAME || 'sss_demo', user: 'admin', password: 'dev_password' });
+  await db.connect();
+  const responses = [];
+  try {
+    await db.query('ALTER TABLE notifications RENAME TO notifications_e2e_off');
+    for (let i = 0; i < count; i++) responses.push(await call('GET', '/notifications', token));
+  } finally {
+    await db.query('ALTER TABLE IF EXISTS notifications_e2e_off RENAME TO notifications');
+    await db.end();
+  }
+  return responses;
+}

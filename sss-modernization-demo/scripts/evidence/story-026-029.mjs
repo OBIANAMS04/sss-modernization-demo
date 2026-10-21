@@ -9,14 +9,14 @@
 //   cd frontend && VITE_API_BASE_URL=http://localhost:3012/api npx vite build --outDir <dir> --emptyOutDir
 //                && npx vite preview --outDir <dir> --port 4173 --strictPort
 //   DATABASE_NAME=sss_demo_m3c E2E_BASE=http://localhost:3012/api node scripts/evidence/story-026-029.mjs
-// The server errors are real: GET /audit?actor=not-a-uuid answers 500 today (see scripts/e2e/observability.mjs). The alert is opened by the
+// The server errors are real: serverErrors() (scripts/e2e/lib.mjs) makes GET /notifications fail inside the local database. The alert is opened by the
 // objectives check on that real traffic, and closed by correcting the stored counts of the failed minute once it has closed (the one step
 // that is not live traffic, said so on this script's output). The AI cost comes from the stand-in's made-up token counts. Screenshots land in
 // docs/evidence/story-026-029/ (EVIDENCE_OUT names another folder). Everything is synthetic demo data.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { account, adminAccount, call, expect, MANAGER, run, stamp, staffAccount } from '../e2e/lib.mjs';
+import { account, adminAccount, call, expect, MANAGER, run, serverErrors, stamp, staffAccount } from '../e2e/lib.mjs';
 import { launch } from './browser.mjs';
 
 const require = createRequire(new URL('../../backend/package.json', import.meta.url));
@@ -58,7 +58,7 @@ async function shots(db) {
     await sleep(500);
   }
   // Server errors: a malformed id reaches PostgreSQL as a uuid and is refused with a 500
-  for (let i = 0; i < 25; i++) await call('GET', '/audit?actor=not-a-uuid', admin.token);
+  await serverErrors(admin.token, 25);
   const opened = (await call('POST', '/observability/evaluate', admin.token)).data;
   console.log(`      objectives checked: opened ${opened.opened.join(', ') || 'nothing'}`);
 

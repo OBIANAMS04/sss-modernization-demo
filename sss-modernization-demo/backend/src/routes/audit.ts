@@ -41,6 +41,9 @@ function authMiddleware(req: any, _res: Response, next: NextFunction) {
   }
 }
 
+// A malformed id would reach PostgreSQL as a uuid, which refuses it with a server error; it is the caller's mistake, so a 400
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // Apply auth middleware to all routes
 router.use(authMiddleware);
 
@@ -63,6 +66,7 @@ router.get('/', requireStaff, async (req: any, res: Response, next: NextFunction
     for (const [name, value] of [['startDate', startDate], ['endDate', endDate]]) {
       if (value && !DATE.test(value)) throw new AppError(400, `${name} must be a date as YYYY-MM-DD`, 'VALIDATION_ERROR');
     }
+    if (actor && !UUID_PATTERN.test(actor)) throw new AppError(400, 'actor must be a user id', 'VALIDATION_ERROR');
     if (status && status !== 'success' && status !== 'failure') {
       throw new AppError(400, 'status must be success or failure', 'VALIDATION_ERROR');
     }
@@ -104,6 +108,7 @@ router.get('/user/:userId', async (req: any, res: Response, next: NextFunction) 
   try {
     const { userId } = req.params;
     const { limit = 50 } = req.query;
+    if (!UUID_PATTERN.test(userId)) throw new AppError(400, 'userId must be a user id', 'VALIDATION_ERROR');
 
     // Users can only view their own logs (staff can view anyone's)
     const requestingUserId = req.user?.sub;
