@@ -5,6 +5,7 @@ import { getApiErrorMessage } from '../../utils/apiError';
 import { dashboardService } from '../../services/dashboardService';
 import { notificationService } from '../../services/notificationService';
 import NotificationsCard from './NotificationsCard';
+import DataFreshnessCard from './DataFreshnessCard';
 import ReleaseProgress from './ReleaseProgress';
 import AppNav from '../Common/AppNav';
 import StatusBadge from '../Common/StatusBadge';
@@ -175,7 +176,10 @@ export default function CitizenDashboard() {
                   </section>
                 </div>
 
-                <NotificationsCard inbox={inbox} onMarkAllRead={handleMarkAllRead} />
+                <div className="space-y-6">
+                  <NotificationsCard inbox={inbox} onMarkAllRead={handleMarkAllRead} />
+                  <DataFreshnessCard />
+                </div>
               </div>
 
               <ReleaseProgress className="mt-6" />

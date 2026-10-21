@@ -90,6 +90,8 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'GET /api/notifications': 'signed-in',
   'POST /api/notifications/read-all': 'signed-in',
   'POST /api/notifications/:id/read': 'signed-in',
+  // STORY-005: the caller's own data status (their last change, and service-wide visibility times)
+  'GET /api/data/pipeline-status': 'signed-in',
 
   'GET /api/dashboards/citizen': 'signed-in',
   'GET /api/dashboards/case-manager': 'staff',
