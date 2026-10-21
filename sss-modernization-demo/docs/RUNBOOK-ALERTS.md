@@ -14,7 +14,7 @@ How alerts work, in short:
 - With fewer than 20 requests in a window the service cannot judge, so it reports "no data" and does not alert.
 - The AI quality alerts (drift, fairness) are opened by the AI quality checks of STORY-021 and STORY-025. They are run on the same
   timer every five minutes, so an alert no longer waits for someone to open the page.
-- "Check now" on the Observability page evaluates everything immediately.
+- "Check objectives now" on the Observability page evaluates everything immediately.
 - Trace ids: every response carries `X-Request-Id` (the trace id); every log line is JSON with a `trace_id`; every audit entry made by
   a request records it. "Recent server errors" on the page lists the trace id of each failure.
 

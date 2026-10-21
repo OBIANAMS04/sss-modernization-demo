@@ -2,7 +2,7 @@ Demonstrated on a synthetic demo deployment; not operating in production.
 
 # Operator runbook (STORY-038)
 
-For the person who runs the service. Written against commit `e0f664c`. Companion documents: `INCIDENT-PLAYBOOK.md` (what to do when something is wrong), `RUNBOOK-ALERTS.md` (one entry per in-app alert), `FAILOVER.md`, `OBSERVABILITY.md`.
+For the person who runs the service. Written against commit `e0f664c` and updated for STORY-041 (sign-out on the server, throttling, recovery codes, migration 027). Companion documents: `INCIDENT-PLAYBOOK.md` (what to do when something is wrong), `RUNBOOK-ALERTS.md` (one entry per in-app alert), `FAILOVER.md`, `OBSERVABILITY.md`.
 
 ## Demo limit and production practice
 
@@ -182,3 +182,20 @@ Verification scripts read `API_URL` and `SITE_URL` to point at another deploymen
 - That GitHub emails the owner when the uptime issue opens, and that the schedule is running.
 - Whether `JWT_SECRET` and the database password have been rotated since 2026-09-17.
 - This runbook was written from the source code at commit `e0f664c` and the project records. It was not checked against a running copy of the service.
+
+## Security operations (STORY-041)
+
+- **Sign-out ends a session on the server.** It is recorded in `revoked_sessions` until the session could have expired (12 hours after
+  its sign-in). To end every session of everyone at once, rotate `JWT_SECRET` (section 4). There is no per-person "end all my
+  sessions" button in the demo.
+- **A person locked out by sign-in throttling** (10 attempts for one account in 15 minutes) can wait it out. To clear it at once, after
+  confirming who is asking: `DELETE FROM rate_limits WHERE key = 'sign-in:account:<their email in lower case>';` (Render dashboard,
+  sss-demo-db, Shell or a psql connection). An address that is throttled: `key = 'sign-in-failures:address:<address>'`. Every
+  throttled sign-in is in the Security Audit Log as a failed sign-in.
+- **A person who has lost their authenticator and their recovery codes** cannot sign in to that account in the demo. Production needs a
+  verified reset; the demo has none on purpose (no identity check exists to base it on).
+- **Security headers** come from the API (every response) and, for the site, from a content security policy in the page. Framing
+  protection for the site needs a header set in the Render dashboard: static site `sss-demo-frontend`, Settings, Headers, path `/*`:
+  `X-Frame-Options: DENY` and `Content-Security-Policy: frame-ancestors 'none'`.
+- **Re-run the attack suite** against a local copy after any change to sign-in, sessions or access: `node scripts/e2e/security.mjs`
+  (docs/SECURITY-TESTING.md).

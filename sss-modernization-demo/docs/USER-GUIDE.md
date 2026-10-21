@@ -8,7 +8,7 @@ This guide shows how to use the SSS Platform demo: create an account, protect it
 
 - **It is a demonstration.** Everything here is made up. The policy documents are written for the demo and are not Selective Service System policy. The eligibility rules are demo rules.
 - **Use made-up details.** A yellow banner on every page says: "Demo environment. Synthetic data only. Do not enter a real SSN." Use a made-up Social Security number in the form 123-45-6789. Never type a real one, on any page, in a question or in a comment.
-- **No one can reset your password in the demo.** If you forget it, make a new account. If you lose your phone with the authenticator app, you cannot sign in to that account. A real service would have a recovery process.
+- **No one can reset your password in the demo.** If you forget it, make a new account. If you lose your phone with the authenticator app, sign in with one of your recovery codes (section 3); without them you cannot sign in to that account. A real service would also have a verified reset process.
 - **In a real service** you would also confirm your email address and identity, and could get help by phone or in person. The demo does not do these things.
 
 ## 1. Create an account
@@ -31,7 +31,9 @@ Your Social Security number is stored as a one-way scrambled value (a hash), and
 1. Open the **Welcome back** page.
 2. Enter your **Email Address** and **Password**, then choose **Sign In**.
 3. If you have turned on two-step verification (section 3), you go on to **Two-step verification**: enter the 6-digit code from your authenticator app and choose **Verify and sign in**.
-4. To leave, choose **Logout** at the top right.
+4. To leave, choose **Logout** at the top right. Signing out ends your session on the server too: a copy of it would no longer work.
+
+After 10 sign-in attempts for one account in 15 minutes, or many failed ones from one network, the page says "Too many sign-in attempts for this account. Try again in N minutes." Wait that long and sign in again.
 
 Your session lasts about an hour. Two minutes before it ends, a box says **Your session is about to end** and the time you will be signed out. Choose **Stay signed in** to continue, or **Sign out**. If you do nothing you are signed out and the sign-in page says "Your session ended. Please sign in again."
 
@@ -45,10 +47,15 @@ Two-step verification asks for a code from an app on your phone after your passw
 3. Install an authenticator app on your phone, such as Google Authenticator, Authy or Microsoft Authenticator.
 4. In the app, add an account and scan the QR code on the page. If you cannot scan it, choose to enter a key in the app and type the **setup key** shown below the code.
 5. Type the 6-digit code the app shows now into **Authentication code**, and choose **Verify and turn on**. You see: "Two-step verification is now on."
+6. **Save your recovery codes.** The page shows ten codes like ABCD-EFGH-JKLM-NPQR. Each works once if you lose your authenticator app. Choose **Copy codes** or **Download as a text file**, keep them somewhere safe, then choose **I have saved them**. This is the only time they are shown.
 
 The code changes every 30 seconds. You can type it with or without a space in the middle. Choose **Cancel** to stop the setup.
 
 **Signing in afterwards.** After your password you are asked for a code. You have 5 tries. After five wrong codes, or if you wait more than 5 minutes, you go back to the password step with a message and start again.
+
+**Lost your authenticator?** On the code page choose **Lost your authenticator? Use a recovery code**, type one of your recovery codes into **Recovery code** (capitals, dashes and spaces do not matter) and choose **Verify and sign in**. That code is then used up; it shares the 5 tries.
+
+**New recovery codes.** On **Sign-in security**, under **Recovery codes**, the page says how many unused codes you have. To get new ones, enter a current code from your app and choose **Make new recovery codes**. The old codes stop working.
 
 **Turn it off.** Open **Sign-in security**. Under **Turn off two-step verification**, enter a current code and choose **Turn off two-step verification**. A code that was just used will not work again: wait for the next one.
 
@@ -147,6 +154,9 @@ The card updates itself every 30 seconds. If it says "The data status could not 
 | "The service is very busy right now. Nothing you sent was saved." | Try again in a few seconds. |
 | "Your session ended. Please sign in again." | Sign in again. |
 | "Too many incorrect codes. Please sign in again." | Sign in again and enter the newest code. |
+| "That recovery code is not correct, or it was already used." | Check the code, or use another of your recovery codes. |
+| "Too many sign-in attempts for this account. Try again in N minutes." | Wait the minutes shown, then sign in. |
+| "Your session has ended. Please sign in again." (after signing out elsewhere) | Sign in again. |
 | A red message under a field | Fix that field. The message says what is needed. |
 
 The demo can be slow for the first minute after it has been idle.

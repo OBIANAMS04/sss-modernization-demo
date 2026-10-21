@@ -9,7 +9,7 @@ For running the service itself (deploys, secrets, backups) see `OPERATOR-RUNBOOK
 ## Demo limit and production practice
 
 - **Demo limit.** Everything here uses synthetic data. Anyone can register an account, the first administrator is created from a setting (`ADMIN_EMAILS`), email addresses are not verified, and there is no password reset or recovery codes for two-step sign-in. These are limits of the demo.
-- **Production practice.** Mentioned in the sections below where it differs: administrator access given by a second approver, verified identities, recovery codes, an append-only copy of the audit log.
+- **Production practice.** Mentioned in the sections below where it differs: administrator access given by a second approver, verified identities, an append-only copy of the audit log. (Two-step recovery codes are in the demo since STORY-041.)
 
 ## What an administrator can open
 

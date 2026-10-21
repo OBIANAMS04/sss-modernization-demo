@@ -15,7 +15,7 @@ demo itself does today is in "What runs today".
 - **Outages are noticed from outside.** `.github/workflows/uptime.yml` checks the API and the site every 30 minutes from GitHub's
   runners and opens an issue (an email to the owner) when either fails (STORY-036).
 - **What the demo does not have:** a second region, a standby database or automatic regional failover. Render's paid database
-  takes daily backups; restore is a manual step (`docs/RUNBOOK-ALERTS.md`, and the readiness drill in R3 milestone 3).
+  takes daily backups; restore is a manual step (`docs/OPERATOR-RUNBOOK.md`, section 5, and the readiness drill in R3 milestone 3).
 
 ## Production design (AWS GovCloud, us-gov-west-1 primary, us-gov-east-1 secondary)
 | Layer | Design | Failure handled |
@@ -36,7 +36,7 @@ database (above), so during a regional switch it answers 503 with `Retry-After` 
 zone loss; recovery point objective under 1 minute (Aurora Global replication) and 5 minutes for backups.
 
 ## Failover runbook (production, to be rehearsed before go-live)
-1. Route 53 health checks fail for the primary; the alert opens (STORY-029) and the on-call person follows `docs/INCIDENT-RESPONSE.md`.
+1. Route 53 health checks fail for the primary; the alert opens (STORY-029) and the on-call person follows `docs/INCIDENT-PLAYBOOK.md`.
 2. Confirm the primary database is lost, not just slow: Aurora console, the Observability page, CloudWatch.
 3. Promote the secondary Aurora cluster (managed failover, or detach-and-promote for a full region loss).
 4. Point the secondary region's API tasks at the promoted writer (a parameter in Secrets Manager); they reconnect by themselves,
