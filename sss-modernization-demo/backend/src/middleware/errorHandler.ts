@@ -1,19 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
 import { AuditAction, recordAudit } from '../services/auditService';
-import { routeTemplate } from '../observability/scrub';
+import { requestRoute } from '../observability/requestMetrics';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   // STORY-026: the route template, not the raw URL (record ids, query strings); the trace id is added to the line by the logger
   console.error('Error:', {
     message: err.message,
     stack: err.stack,
-    route: routeTemplate(req.method, req.baseUrl, req.route?.path),
+    route: requestRoute(req, res),
     method: req.method,
   });
 
   // STORY-026: what the request metrics keep about a server error: the class of the error and its code, never its message
-  res.locals.errorInfo = { name: err.name, code: typeof (err as any).code === 'string' ? (err as any).code : undefined };
+  if (res.locals) res.locals.errorInfo = { name: err.name, code: typeof (err as any).code === 'string' ? (err as any).code : undefined };
 
   if (err instanceof AppError) {
     // STORY-010: every refusal (no valid sign-in, or not allowed) is an audited security event

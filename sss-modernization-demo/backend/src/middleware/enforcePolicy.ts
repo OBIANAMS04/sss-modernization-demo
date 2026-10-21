@@ -102,10 +102,12 @@ function refusal(subject: Subject, decision: PolicyDecision): AppError {
  * This is a first layer. The guards on each route (authenticate, requireStaff, requireRole) and the checks in the handlers stay,
  * so the policy can refuse what the code would allow and never allow what the code refuses.
  */
-export async function enforcePolicy(req: any, _res: Response, next: NextFunction) {
+export async function enforcePolicy(req: any, res: Response, next: NextFunction) {
   try {
     const route = servedRoute(req);
     if (!route) return next();
+    // STORY-027: the route's template, known here whether the request goes on or is refused, is what the metrics and logs name the request by
+    if (res?.locals) res.locals.routeKey = route.key;
 
     const subject = await subjectOf(req);
     const record = await recordToLoad(route.key, subject.role);

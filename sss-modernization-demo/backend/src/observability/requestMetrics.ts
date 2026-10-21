@@ -13,12 +13,21 @@ export interface ErrorInfo {
   code?: string;
 }
 
+/**
+ * The template of the route a request was served by ("GET /api/cases/:id"). The access policy sets it before any router runs, so it is known
+ * for a refusal and for a request that failed inside a router (Express has by then reset the router's base URL); the router's own path is the fallback.
+ */
+export function requestRoute(req: Request, res: Response): string {
+  const key = res.locals?.routeKey;
+  return typeof key === 'string' ? key : routeTemplate(req.method, req.baseUrl, req.route?.path);
+}
+
 export function requestMetrics(req: Request, res: Response, next: NextFunction) {
   const started = process.hrtime.bigint();
   const traceId = currentTraceId();
   res.on('finish', () => {
     const ms = Math.round((Number(process.hrtime.bigint() - started) / 1e6) * 10) / 10;
-    const route = routeTemplate(req.method, req.baseUrl, req.route?.path);
+    const route = requestRoute(req, res);
     recordRequest(route, res.statusCode, ms);
     console.log('Request', { route, status: res.statusCode, ms });
     if (res.statusCode >= 500) {
