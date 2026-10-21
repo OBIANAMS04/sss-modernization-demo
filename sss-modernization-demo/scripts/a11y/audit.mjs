@@ -151,7 +151,8 @@ async function open(path, session, before) {
   }
   await sleep(500);
   // Transitions would make a focus ring read as "not there yet"; they change timing only
-  await page.evaluate(`(() => { const s = document.createElement('style'); s.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}'; document.head.append(s); return true; })()`);
+  // A constructed stylesheet, not a <style> element, so the site's content security policy (STORY-041) has nothing to block
+  await page.evaluate(`(() => { const s = new CSSStyleSheet(); s.replaceSync('*,*::before,*::after{transition:none!important;animation:none!important}'); document.adoptedStyleSheets = [...document.adoptedStyleSheets, s]; return true; })()`);
 }
 
 /** STORY-019: /assistant once a question is answered: the answer, the first source's passage open, and the report form open. */
@@ -429,6 +430,11 @@ try {
   writeFileSync(report, renderReport(summary, results, forms, apiTree));
   await page.goto(pathToFileURL(report).href);
   await page.screenshot(join(OUT, `${live ? 'live' : '01'}-a11y-report.png`));
+  // STORY-041: the site carries a content security policy; anything it blocks on any page or role is a failure
+  const blocked = page.cspViolations;
+  console.log(`${blocked.length ? 'FAIL' : 'PASS'}  content security policy: ${blocked.length} violation(s) across every page and role`);
+  for (const v of blocked.slice(0, 10)) console.log(`      ${v.text}`);
+  if (blocked.length) failures.push('content security policy');
 } finally {
   await page.close();
 }

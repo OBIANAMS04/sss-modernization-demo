@@ -47,8 +47,13 @@ export async function launch({ width = 1280, height = 900 } = {}) {
   let nextId = 0;
   const pending = new Map();
   const waiters = new Set();
+  // STORY-041: every content-security-policy violation the page reports, so a check can fail on any
+  const cspViolations = [];
   ws.onmessage = ({ data }) => {
     const msg = JSON.parse(data);
+    if (msg.method === 'Log.entryAdded' && /Content Security Policy/i.test(msg.params?.entry?.text ?? '')) {
+      cspViolations.push({ text: msg.params.entry.text, url: msg.params.entry.url });
+    }
     if (msg.id && pending.has(msg.id)) {
       const { resolve, reject } = pending.get(msg.id);
       pending.delete(msg.id);
@@ -73,6 +78,7 @@ export async function launch({ width = 1280, height = 900 } = {}) {
 
   await send('Page.enable');
   await send('Runtime.enable');
+  await send('Log.enable');
   await send('Emulation.setFocusEmulationEnabled', { enabled: true });
   const viewport = (h) => send('Emulation.setDeviceMetricsOverride', { width, height: h, deviceScaleFactor: 1, mobile: false });
   await viewport(height);
@@ -84,6 +90,7 @@ export async function launch({ width = 1280, height = 900 } = {}) {
   };
 
   const page = {
+    cspViolations,
     send,
     evaluate,
 
