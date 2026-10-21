@@ -21,6 +21,7 @@ import StaffAccess from './components/Staff/StaffAccess';
 import AccessPolicies from './components/Admin/AccessPolicies';
 import Assistant from './components/Assistant/Assistant';
 import ReviewQueue from './components/Assistant/ReviewQueue';
+import AiQuality from './components/AiQuality/AiQuality';
 import './App.css';
 
 // A signed-in person is sent on to the dashboard. The check is made each time the route renders, not once when the app
@@ -186,6 +187,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ReviewQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-quality"
+          element={
+            <ProtectedRoute>
+              <AiQuality />
             </ProtectedRoute>
           }
         />
