@@ -102,6 +102,8 @@ export enum AuditAction {
   AI_EVAL_RUN = 'AI_EVAL_RUN',
   AI_EVAL_BASELINE = 'AI_EVAL_BASELINE',
   AI_DRIFT_ALERT = 'AI_DRIFT_ALERT',
+  // STORY-029: a service level objective was breached (phase opened) or recovered (phase cleared)
+  SLO_ALERT = 'SLO_ALERT',
 
   // Infrastructure
   DEPLOYMENT = 'DEPLOYMENT',

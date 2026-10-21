@@ -129,6 +129,8 @@ describe('role rules', () => {
       'POST /api/ai-quality/evaluations',
       'POST /api/ai-quality/fairness-runs',
       'POST /api/ai-quality/runs/:id/baseline',
+      'GET /api/observability',
+      'POST /api/observability/evaluate',
     ]);
     expect(leadershipRoutes.map((r) => r.key)).toEqual(['GET /api/dashboards/leadership']);
   });

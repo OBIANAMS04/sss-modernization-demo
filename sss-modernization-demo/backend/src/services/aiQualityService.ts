@@ -119,7 +119,8 @@ export async function syncAlerts(drift: SignalDrift[], evalRun: RunRow | undefin
   const fairnessProblems = runProblems(fairnessRun, undefined);
   if (fairnessProblems.length) wanted.set('fairness:latest-run', { kind: 'fairness', key: 'latest-run', message: fairnessProblems.join(' ') });
 
-  const open = (await pool.query('SELECT * FROM assistant_quality_alerts WHERE cleared_at IS NULL')).rows;
+  // STORY-029: service-level alerts (kind 'slo') live in the same table but are opened and cleared by the SLO check, never by this one
+  const open = (await pool.query('SELECT * FROM assistant_quality_alerts WHERE cleared_at IS NULL')).rows.filter((a: any) => a.kind !== 'slo');
   const openKeys = new Set(open.map((a: any) => `${a.kind}:${a.key}`));
 
   for (const [id, alert] of wanted) {
@@ -143,7 +144,7 @@ export async function syncAlerts(drift: SignalDrift[], evalRun: RunRow | undefin
   const now = await pool.query(
     `SELECT * FROM assistant_quality_alerts WHERE cleared_at IS NULL OR cleared_at >= NOW() - INTERVAL '30 days' ORDER BY opened_at DESC LIMIT 30`
   );
-  return now.rows.map(toAlert);
+  return now.rows.filter((a: any) => a.kind !== 'slo').map(toAlert);
 }
 
 // ---- The page

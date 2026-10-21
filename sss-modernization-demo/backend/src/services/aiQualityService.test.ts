@@ -69,6 +69,12 @@ describe('syncAlerts: once until it clears', () => {
     expect(notice[1][0]).toBe('AI quality alert: groundedRate moved from 100% to 90%. Open AI Quality to see it.');
   });
 
+  it('never clears a service-level (slo) alert: those belong to the objectives check (STORY-029)', async () => {
+    database([{ id: 's1', kind: 'slo', key: 'latency:1h' }]);
+    await syncAlerts([], undefined, undefined, undefined);
+    expect(sqls().some((s) => /UPDATE assistant_quality_alerts/.test(s))).toBe(false);
+  });
+
   it('does nothing again while the same drift lasts', async () => {
     database([{ id: 'a1', kind: 'signal', key: 'groundedRate' }]);
     await syncAlerts([drift('groundedRate')], undefined, undefined, undefined);

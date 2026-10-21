@@ -117,4 +117,9 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'POST /api/ai-quality/evaluations': 'admin',
   'POST /api/ai-quality/fairness-runs': 'admin',
   'POST /api/ai-quality/runs/:id/baseline': 'admin',
+
+  // STORY-028 and 029: the Observability page. Administrators only: it shows the service's errors with trace ids and what the AI costs, and
+  // "evaluate" opens and closes alerts (and notifies every administrator).
+  'GET /api/observability': 'admin',
+  'POST /api/observability/evaluate': 'admin',
 };

@@ -19,10 +19,10 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { BatchSpanProcessor, NodeTracerProvider, ReadableSpan, SpanExporter } from '@opentelemetry/sdk-trace-node';
 import { scrubSpan } from './scrub';
+import { exportEndpoint } from './exportSetting';
 
 dotenv.config();
 
-export const exportEndpoint = (): string | undefined => process.env.OTEL_EXPORTER_OTLP_ENDPOINT?.trim() || undefined;
 
 /** Wraps an exporter so no span leaves the server with a raw path, query string, address or SQL text on it. */
 export class ScrubbingExporter implements SpanExporter {

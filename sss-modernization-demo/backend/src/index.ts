@@ -11,6 +11,7 @@ import { recordConfigChanges } from './services/configAuditService';
 import { startPolicy } from './services/policyService';
 import { ingestPolicyDocs, getCorpusInfo } from './services/policyCorpus';
 import { noteChange } from './services/changeMarkers';
+import { startObservabilityTimer } from './observability/scheduler';
 
 dotenv.config();
 
@@ -46,6 +47,9 @@ async function start() {
     console.log(`📍 http://localhost:${PORT}`);
     console.log(`🔐 CORS origin: ${process.env.CORS_ORIGIN || 'http://localhost:5173, http://localhost:3000'}`);
   });
+
+  // STORY-027 and 029: metrics flushed and objectives evaluated every minute; the AI-quality drift check every few minutes
+  startObservabilityTimer();
 
   // Graceful shutdown
   process.on('SIGTERM', () => {
