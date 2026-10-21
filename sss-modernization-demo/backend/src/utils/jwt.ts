@@ -24,6 +24,8 @@ export interface JWTPayload {
   purpose?: string;
   /** STORY-003: names one pending sign-in so its wrong codes can be counted. */
   jti?: string;
+  /** STORY-041: names the sign-in (the session). Every token of one sign-in carries it, extended ones too, so signing out ends them all. */
+  sid?: string;
   iat: number;
   exp: number;
 }
@@ -35,7 +37,7 @@ export interface PendingClaims {
   jti: string;
 }
 
-export function generateToken(userId: string, email: string, authTime?: number): string {
+export function generateToken(userId: string, email: string, authTime?: number, sid: string = randomUUID()): string {
   // A bare numeric string (e.g. "3600") is parsed by jsonwebtoken as
   // milliseconds, not seconds — convert explicitly so JWT_EXPIRY=3600
   // means a 1-hour token, not a ~3.6-second one.
@@ -46,6 +48,7 @@ export function generateToken(userId: string, email: string, authTime?: number):
       sub: userId,
       email,
       auth_time: authTime ?? Math.floor(Date.now() / 1000),
+      sid,
     },
     JWT_SECRET,
     { expiresIn } as any
@@ -53,11 +56,11 @@ export function generateToken(userId: string, email: string, authTime?: number):
 }
 
 /** The replacement token for an extended session: same sign-in time, never valid past MAX_SESSION_SECONDS after it. */
-export function extendToken(userId: string, email: string, authTime: number): string {
-  const token = generateToken(userId, email, authTime);
+export function extendToken(userId: string, email: string, authTime: number, sid: string = randomUUID()): string {
+  const token = generateToken(userId, email, authTime, sid);
   const end = authTime + MAX_SESSION_SECONDS;
   if ((jwt.decode(token) as JWTPayload).exp <= end) return token;
-  return jwt.sign({ sub: userId, email, auth_time: authTime }, JWT_SECRET, { expiresIn: Math.max(end - Math.floor(Date.now() / 1000), 1) });
+  return jwt.sign({ sub: userId, email, auth_time: authTime, sid }, JWT_SECRET, { expiresIn: Math.max(end - Math.floor(Date.now() / 1000), 1) });
 }
 
 /** Checks the signature and expiry. Throws a 401 AppError for any bad token (see verifyToken). */

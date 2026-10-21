@@ -104,8 +104,17 @@ export async function bootstrapStaffRoles(): Promise<void> {
   await bootstrapAdmins();
 }
 
-export async function getUserRole(userId: string): Promise<Role | null> {
-  const result = await pool.query('SELECT role FROM users WHERE id = $1', [userId]);
+/**
+ * The person's role, read from the database. With sid (the session a token belongs to, STORY-041), null also when that session was
+ * ended by signing out: the same single statement checks the deny list, so a signed-out token costs no extra round trip to refuse.
+ */
+export async function getUserRole(userId: string, sid?: string): Promise<Role | null> {
+  const result = sid
+    ? await pool.query(
+        'SELECT role FROM users WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM revoked_sessions WHERE sid = $2::uuid)',
+        [userId, sid]
+      )
+    : await pool.query('SELECT role FROM users WHERE id = $1', [userId]);
   return result.rows[0]?.role ?? null;
 }
 

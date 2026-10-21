@@ -81,7 +81,9 @@ async function subjectOf(req: any): Promise<Subject> {
   }
   req.user = claims; // so a refusal names the person in the audit log
   const role = await getRequestRole(req);
-  return role ? { id: claims.sub, role } : { id: null, role: 'anonymous' };
+  if (role) return { id: claims.sub, role };
+  // STORY-041: no role for a valid token means the person no longer exists or this sign-in was ended by signing out
+  return { id: null, role: 'anonymous', tokenError: new AppError(401, 'Your session has ended. Please sign in again.', 'UNAUTHORIZED') };
 }
 
 /** The error that answers a refusal. It carries the policy's decision, which the error handler writes to the audit log. */

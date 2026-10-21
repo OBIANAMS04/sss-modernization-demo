@@ -151,7 +151,7 @@ describe('a caller who is not signed in', () => {
 
     const res = await request(app).get('/api/dashboards/citizen').set(session());
 
-    expect([res.status, res.body.error.message]).toEqual([401, 'Missing or invalid authorization header']);
+    expect([res.status, res.body.error.message]).toEqual([401, 'Your session has ended. Please sign in again.']);
     expect(audited.mock.calls[0][3]).toMatchObject({ actor: CITIZEN.id, actorEmail: CITIZEN.email }); // the token still names who tried
   });
 });
@@ -194,7 +194,7 @@ describe('a signed-in caller the policy refuses', () => {
 
     expect(statuses).toEqual([200, 403, 403, 403]);
     expect(roleOf).toHaveBeenCalledTimes(4);
-    expect(roleOf).toHaveBeenCalledWith(ALDER.id);
+    expect(roleOf).toHaveBeenCalledWith(ALDER.id, expect.any(String)); // STORY-041: with the session id, for the deny list
   });
 
   it('refuses the request when the policy cannot be asked, rather than let it through', async () => {

@@ -23,7 +23,7 @@ describe('requireRole', () => {
     const { req, error } = await run(requireRole('admin'), { sub: 'u-1', email: 'a@example.com' });
     expect(error).toBeUndefined();
     expect(req.user.role).toBe('admin');
-    expect(roleInDatabase).toHaveBeenCalledWith('u-1');
+    expect(roleInDatabase).toHaveBeenCalledWith('u-1', undefined);
   });
 
   it.each([

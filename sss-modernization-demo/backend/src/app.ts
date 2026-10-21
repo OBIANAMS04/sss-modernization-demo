@@ -18,6 +18,7 @@ import assistantRoutes from './routes/assistant';
 import aiQualityRoutes from './routes/aiQuality';
 import observabilityRoutes from './routes/observability';
 import { enforcePolicy } from './middleware/enforcePolicy';
+import { securityHeaders } from './middleware/securityHeaders';
 import { errorHandler } from './middleware/errorHandler';
 import { auditDataAccess } from './middleware/auditAccess';
 import { clientAddress, requestContextMiddleware } from './utils/requestContext';
@@ -34,8 +35,12 @@ const app = express();
 // proxies makes req.ip the caller's address, which every audit entry records.
 app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 
+// STORY-041: no framework banner, security headers on every response (errors included), and a stated body limit
+app.disable('x-powered-by');
+app.use(securityHeaders);
+
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 app.use(requestContextMiddleware);
 // STORY-026: the trace id goes on the response (traceparent, X-Request-Id) before anything can answer
 app.use(traceContextMiddleware);

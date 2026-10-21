@@ -174,7 +174,7 @@ describe('role rules', () => {
     query.mockImplementation(async (sql: string) => (String(sql).startsWith('SELECT role FROM users WHERE id') ? { rows: [] } : { rows: [{}] }));
     const route = adminRoutes[0];
     const res = await call(route.method, route.path).set({ Authorization: `Bearer ${generateToken(USER_ID, 'gone@example.com')}` });
-    expect([res.status, res.body.error]).toEqual([401, { message: 'Missing or invalid authorization header', code: 'UNAUTHORIZED' }]);
+    expect([res.status, res.body.error]).toEqual([401, { message: 'Your session has ended. Please sign in again.', code: 'UNAUTHORIZED' }]);
   });
 
   it('writes an ACCESS_DENIED audit entry naming who was refused (STORY-010)', async () => {

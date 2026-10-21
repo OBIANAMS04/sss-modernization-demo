@@ -65,6 +65,9 @@ export async function registerUser(input: RegisterInput): Promise<RegisterRespon
   };
 }
 
+// A bcrypt hash (cost 12, the cost the app uses) of a random value that was thrown away: no password matches it
+const NO_ACCOUNT_HASH = '$2b$12$NGoH61XdFYqLlu4tOylohu99YzC4havwbkqnufhV.UQA3WvR8dVGG';
+
 export async function loginUser(email: string, password: string) {
   const result = await pool.query(
     'SELECT id, email, password_hash, full_name, role, mfa_enabled, created_at FROM users WHERE email = $1',
@@ -72,6 +75,8 @@ export async function loginUser(email: string, password: string) {
   );
 
   if (result.rows.length === 0) {
+    // STORY-041: the same bcrypt work as a real account, so the time an answer takes does not tell whether an address is registered
+    await bcrypt.compare(password, NO_ACCOUNT_HASH);
     throw new ValidationError('Invalid email or password');
   }
 
