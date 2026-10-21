@@ -49,7 +49,10 @@ async function audits() {
   await settle();
   return query.mock.calls
     .filter(([sql]) => String(sql).startsWith('INSERT INTO audit_logs'))
-    .map(([, p]) => ({ action: p[0], actor: p[1], email: p[2], resource: p[3], resourceId: p[4], status: p[5], details: p[6] ? JSON.parse(p[6]) : null }));
+    // STORY-033: entries recorded in the same turn of the event loop are written by one INSERT, eleven parameters per entry
+    .flatMap(([, params]) =>
+      Array.from({ length: params.length / 11 }, (_, i) => params.slice(i * 11, i * 11 + 11)).map((p: any[]) => ({ action: p[0], actor: p[1], email: p[2], resource: p[3], resourceId: p[4], status: p[5], details: p[6] ? JSON.parse(p[6]) : null }))
+    );
 }
 const actions = async () => (await audits()).map((a) => `${a.action}:${a.status}`);
 

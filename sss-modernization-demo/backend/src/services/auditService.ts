@@ -170,11 +170,66 @@ export async function recordServerStart(commit: string, migrationsApplied: strin
 /**
  * Writes an audit entry without holding up the response (reads, denials, logins). A write that
  * fails is reported on the server log; the action it describes has already happened.
+ *
+ * STORY-033: the entries are collected until the event loop has finished the work it has in hand (setImmediate) and written with one INSERT. Every read of the API is audited (STORY-010),
+ * so one statement and one pooled connection per read was the largest single user of the connection pool under load. Each entry keeps
+ * the time, the caller's address, the browser and the trace id of the moment it was recorded, and nothing about it is dropped or changed.
+ * The cost: an entry is in the database one turn of the event loop after the action (a few milliseconds when the server is busy), and a process
+ * that is killed outright (not stopped with SIGTERM, which writes the pending entries first) can lose the entries of that last turn.
  */
+const AUDIT_BATCH_MAX = 100;
+const AUDIT_COLUMNS = 11;
+let pendingAudit: unknown[][] = [];
+let auditTimer: NodeJS.Immediate | undefined;
+
 export function recordAudit(...args: Parameters<typeof logAuditEvent>): void {
-  logAuditEvent(...args).catch((error) =>
-    console.error('Audit entry not written', { action: args[0], resource: args[1], message: (error as Error).message })
-  );
+  const [action, resource, status, options] = args;
+  const sanitizedDetails = sanitizeDetails(options?.details);
+  const context = getRequestContext();
+  pendingAudit.push([
+    action,
+    options?.actor || null,
+    options?.actorEmail || null,
+    resource,
+    options?.resourceId || null,
+    status,
+    sanitizedDetails ? JSON.stringify(sanitizedDetails) : null,
+    options?.ipAddress || context?.ip || null,
+    options?.userAgent || context?.userAgent || null,
+    currentTraceId() || null,
+    Date.now(),
+  ]);
+  if (pendingAudit.length >= AUDIT_BATCH_MAX) {
+    void flushAuditEntries();
+  } else if (!auditTimer) {
+    auditTimer = setImmediate(() => void flushAuditEntries());
+  }
+}
+
+const AUDIT_INSERT = 'INSERT INTO audit_logs (action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, trace_id, timestamp) VALUES';
+const rowSql = (n: number) =>
+  '(' + Array.from({ length: AUDIT_COLUMNS }, (_, i) => (i === AUDIT_COLUMNS - 1 ? `to_timestamp($${n + i}::double precision / 1000.0)::timestamp` : `$${n + i}`)).join(', ') + ')';
+
+/** Writes the entries collected so far. If the batch is refused (one entry names an actor that no longer exists), the entries go one at a time so only the bad one is lost. */
+export async function flushAuditEntries(): Promise<void> {
+  if (auditTimer) clearImmediate(auditTimer);
+  auditTimer = undefined;
+  const rows = pendingAudit;
+  pendingAudit = [];
+  if (rows.length === 0) return;
+  const report = (row: unknown[], error: unknown) =>
+    console.error('Audit entry not written', { action: row[0], resource: row[3], message: (error as Error).message });
+  try {
+    await pool.query(`${AUDIT_INSERT} ${rows.map((_, i) => rowSql(i * AUDIT_COLUMNS + 1)).join(', ')}`, rows.flat());
+  } catch (batchError) {
+    for (const row of rows) {
+      try {
+        await pool.query(`${AUDIT_INSERT} ${rowSql(1)}`, row);
+      } catch (error) {
+        report(row, error);
+      }
+    }
+  }
 }
 
 /** True when the database itself refuses updates and deletes of audit entries (migration 015). */

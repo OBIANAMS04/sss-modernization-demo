@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
-import { Role, getUserRole } from '../services/roleService';
+import { Role } from '../services/roleService';
+import { getRequestRole } from '../services/requestRole';
 
 const ROLE_NAMES: Record<Role, string> = { citizen: 'citizen', case_manager: 'case manager', leadership: 'leadership', admin: 'administrator' };
 
@@ -12,7 +13,7 @@ const ROLE_NAMES: Record<Role, string> = { citizen: 'citizen', case_manager: 'ca
 export function requireRole(...roles: Role[]) {
   return async function requireRole(req: any, _res: Response, next: NextFunction) {
     try {
-      const role = req.user?.sub ? await getUserRole(req.user.sub) : null;
+      const role = req.user?.sub ? await getRequestRole(req) : null;
       if (!role || !roles.includes(role)) {
         throw new AppError(403, `Access requires the ${roles.map((r) => ROLE_NAMES[r]).join(' or ')} role`, 'FORBIDDEN');
       }

@@ -1,6 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import pool from '../database/connection';
 import { AuditAction, recordAudit } from './auditService';
+import { coalesce } from '../utils/coalesce';
 
 /**
  * STORY-009 data freshness: how long until a change is readable by the next request.
@@ -226,7 +227,9 @@ export function summarize(rows: MeasurementRow[], targetMs = FRESHNESS_TARGET_MS
   return { targetMs, sloPercent, overall, types, slowest, alert: problems.length ? problems.join(' ') : null };
 }
 
-export async function getFreshnessDashboard(hours = 24) {
+// STORY-033: callers that overlap and ask for the same window share one computation
+export const getFreshnessDashboard = (hours = 24) => coalesce(`freshness:${hours}`, () => computeFreshnessDashboard(hours));
+async function computeFreshnessDashboard(hours = 24) {
   const windowHours = Math.min(Math.max(Math.floor(hours) || 24, 1), 720);
   // latency_metrics.timestamp has no time zone: read it in the session's zone so it stays exact.
   const result = await pool.query(

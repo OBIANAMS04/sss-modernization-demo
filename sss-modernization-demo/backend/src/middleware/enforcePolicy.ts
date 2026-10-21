@@ -3,7 +3,7 @@ import { PolicyRole } from '../security/accessPolicy';
 import { listRoutes } from '../security/listRoutes';
 import { loadResource } from '../services/policyResources';
 import { PolicyDecision, decide, recordToLoad } from '../services/policyService';
-import { getUserRole } from '../services/roleService';
+import { getRequestRole } from '../services/requestRole';
 import { AppError } from '../utils/errors';
 import { verifyToken } from '../utils/jwt';
 
@@ -80,7 +80,7 @@ async function subjectOf(req: any): Promise<Subject> {
     return { id: null, role: 'anonymous', tokenError: error as AppError };
   }
   req.user = claims; // so a refusal names the person in the audit log
-  const role = await getUserRole(claims.sub);
+  const role = await getRequestRole(req);
   return role ? { id: claims.sub, role } : { id: null, role: 'anonymous' };
 }
 

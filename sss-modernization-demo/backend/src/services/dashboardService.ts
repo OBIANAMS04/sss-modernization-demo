@@ -8,6 +8,7 @@ import { Notification, listNotifications } from './notificationService';
 import { OverrideRateReport, getOverrideRate } from './overrideRateService';
 import { Role } from './roleService';
 import { determineCompliance, getUserById } from './userService';
+import { coalesce } from '../utils/coalesce';
 
 // STORY-012: one response with everything a registrant needs on their dashboard. Every query is scoped
 // to the signed-in user's id, and each field is picked by name, so an SSN, a staff member's identity or
@@ -442,7 +443,9 @@ const toTeamMember = (row: any): TeamMember => ({
 });
 
 /** Every case, how each case manager is doing, and whether the system is healthy. */
-export async function getAdminDashboard(): Promise<AdminDashboard> {
+// STORY-033: the same for every administrator, so callers that overlap share one computation
+export const getAdminDashboard = (): Promise<AdminDashboard> => coalesce('dashboard:admin', computeAdminDashboard);
+async function computeAdminDashboard(): Promise<AdminDashboard> {
   const [byStatus, byType, decided, team, health, freshness, compliance, refusals, staff, overrideRate] = await Promise.all([
     pool.query('SELECT status, COUNT(*)::int AS count FROM cases GROUP BY status'),
     pool.query(`SELECT x.exemption_type, COUNT(*)::int AS count FROM cases c LEFT JOIN exemptions x ON x.id = c.exemption_id GROUP BY x.exemption_type`),
@@ -603,7 +606,8 @@ export function weeklyTrend(
 // Weeks start on Monday, in the database's time zone, and the current week counts as the last of the twelve
 const WEEKS_BACK = TREND_WEEKS - 1;
 
-export async function getLeadershipDashboard(): Promise<LeadershipDashboard> {
+export const getLeadershipDashboard = (): Promise<LeadershipDashboard> => coalesce('dashboard:leadership', computeLeadershipDashboard);
+async function computeLeadershipDashboard(): Promise<LeadershipDashboard> {
   const [totals, processing, appeals, thisWeek, applications, decisions, stages, stuck, team, overrideRate] = await Promise.all([
     pool.query(
       `SELECT COUNT(*)::int AS total,

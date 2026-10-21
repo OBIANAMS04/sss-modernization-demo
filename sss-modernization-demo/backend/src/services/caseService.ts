@@ -4,6 +4,7 @@ import { AuditAction, logAuditEvent } from './auditService';
 import { isStaff } from './roleService';
 import { Actor, inTransaction, notify, recordEvent } from './caseEvents';
 import { evaluateDecision } from './complianceService';
+import { coalesce } from '../utils/coalesce';
 
 export type CaseStatus = 'Draft' | 'Submitted' | 'In Review' | 'Approved' | 'Denied' | 'Appealed';
 
@@ -443,12 +444,16 @@ export async function getStaffMembers(): Promise<{ email: string; fullName: stri
   return result.rows.map((r: any) => ({ email: r.email, fullName: r.full_name }));
 }
 
-export async function getCaseStats(): Promise<{
+export interface CaseStats {
   total: number;
   open: number;
   byStatus: Record<string, number>;
   averageTimeInReview: number;
-}> {
+}
+
+// STORY-033: the same for every staff member, so callers that overlap share one computation
+export const getCaseStats = (): Promise<CaseStats> => coalesce('cases:stats', computeCaseStats);
+async function computeCaseStats(): Promise<CaseStats> {
   const byStatusResult = await pool.query(`SELECT status, COUNT(*) AS count FROM cases GROUP BY status`);
   const timeResult = await pool.query(
     `SELECT AVG(EXTRACT(EPOCH FROM (approved_at - submitted_at))) AS avg_seconds

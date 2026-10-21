@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
-import { getUserRole, isStaff } from '../services/roleService';
+import { isStaff } from '../services/roleService';
+import { getRequestRole } from '../services/requestRole';
 
 /**
  * Allows only case managers and admins. Must run after a JWT middleware has set req.user.
@@ -9,7 +10,7 @@ import { getUserRole, isStaff } from '../services/roleService';
  */
 export async function requireStaff(req: any, _res: Response, next: NextFunction) {
   try {
-    const role = req.user?.sub ? await getUserRole(req.user.sub) : null;
+    const role = req.user?.sub ? await getRequestRole(req) : null;
     if (!isStaff(role)) {
       throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
     }

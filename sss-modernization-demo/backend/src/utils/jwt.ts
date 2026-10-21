@@ -1,8 +1,11 @@
-import { randomUUID } from 'node:crypto';
+import { createSecretKey, randomUUID } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { AppError } from './errors';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key';
+const JWT_SECRET_TEXT = process.env.JWT_SECRET || 'dev_secret_key';
+// STORY-033: handed to jsonwebtoken as a key object. Given a string, it first tries to parse it as a public key (and fails, and falls back)
+// on every single verification, which was about 6% of the CPU of a read-heavy load. Same HMAC, same tokens.
+const JWT_SECRET = createSecretKey(Buffer.from(JWT_SECRET_TEXT, 'utf8'));
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '3600';
 
 // STORY-011 (WCAG 2.2.1): a sign-in can be extended, but never past this long after the original sign-in.
@@ -44,7 +47,7 @@ export function generateToken(userId: string, email: string, authTime?: number):
       email,
       auth_time: authTime ?? Math.floor(Date.now() / 1000),
     },
-    JWT_SECRET as string,
+    JWT_SECRET,
     { expiresIn } as any
   );
 }

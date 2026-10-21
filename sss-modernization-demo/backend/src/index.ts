@@ -15,6 +15,7 @@ import { startObservabilityTimer } from './observability/scheduler';
 import pool from './database/connection';
 import { beginStartup } from './database/availability';
 import { startSupervisor } from './database/startup';
+import { flushAuditEntries } from './services/auditService';
 
 dotenv.config();
 
@@ -78,7 +79,8 @@ async function start() {
     console.log('SIGTERM signal received: closing HTTP server');
     server.close(() => {
       console.log('HTTP server closed');
-      process.exit(0);
+      // STORY-033: audit entries are written in small batches; the pending ones are written before the process ends
+      flushAuditEntries().finally(() => process.exit(0));
     });
   });
 }

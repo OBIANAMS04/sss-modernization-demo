@@ -2,7 +2,8 @@ import { Router, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
 import { authenticate } from '../middleware/authenticate';
 import { requireStaff } from '../middleware/requireStaff';
-import { getUserRole, isStaff } from '../services/roleService';
+import { isStaff } from '../services/roleService';
+import { getRequestRole } from '../services/requestRole';
 import {
   Actor,
   CaseFilters,
@@ -29,7 +30,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 router.use(authenticate);
 
 async function actorFrom(req: any): Promise<Actor> {
-  return { id: req.user.sub, email: req.user.email, role: await getUserRole(req.user.sub) };
+  return { id: req.user.sub, email: req.user.email, role: await getRequestRole(req) };
 }
 
 function filtersFrom(query: any): CaseFilters {
@@ -122,7 +123,7 @@ router.get('/', async (req: any, res: Response, next: NextFunction) => {
   try {
     const { scope, page = 1, limit = 25 } = req.query;
     if (scope === 'all') {
-      if (!isStaff(await getUserRole(req.user.sub))) {
+      if (!isStaff(await getRequestRole(req))) {
         throw new AppError(403, 'Case manager access required', 'FORBIDDEN');
       }
       res.json(await listCases(filtersFrom(req.query), parseInt(page, 10) || 1, parseInt(limit, 10) || 25));
