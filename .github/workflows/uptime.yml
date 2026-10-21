@@ -1,0 +1,78 @@
+# STORY-036: an uptime check that runs outside Render, so an outage is noticed even when the API cannot raise its own alerts (on
+# 2026-10-16 the database expired and nothing outside the demo said so for three days). Every 30 minutes, and on demand, it reads the
+# API's /health and the site's /version.json. A failure opens one issue labelled "uptime" (GitHub emails the repository's owner); later
+# failures comment on it; the first success closes it. It uses only the runner's own curl and gh with the built-in token: no secrets,
+# no third-party actions. The free instance sleeps when idle, so each check allows a cold start (about a minute) and tries twice.
+name: Uptime check
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      API: https://sss-demo-backend.onrender.com/health
+      SITE: https://sss-demo-frontend.onrender.com/version.json
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Check the API and the site
+        id: check
+        run: |
+          problems=""
+          probe() {
+            # $1 = name, $2 = url, $3 = jq-free test on the body (a grep pattern)
+            for attempt in 1 2; do
+              body=$(curl -sS --max-time 90 -w '\n%{http_code}' "$2" 2>&1) || true
+              code=$(printf '%s' "$body" | tail -n1)
+              text=$(printf '%s' "$body" | sed '$d')
+              if [ "$code" = "200" ] && printf '%s' "$text" | grep -q "$3"; then
+                echo "$1: OK ($code) $(printf '%s' "$text" | head -c 200)"
+                return 0
+              fi
+              echo "$1: attempt $attempt failed (HTTP $code): $(printf '%s' "$text" | head -c 200)"
+              sleep 20
+            done
+            problems="$problems- $1 at $2 failed twice (last HTTP status $code)."$'\n'
+            return 1
+          }
+          # The API is up when /health answers 200 with the database ok (status "degraded" means up but the database is away)
+          probe "API" "$API" '"database":"ok"' || true
+          probe "Site" "$SITE" '"commit"' || true
+          {
+            echo "problems<<EOF"
+            printf '%s' "$problems"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open, update or close the uptime issue
+        env:
+          PROBLEMS: ${{ steps.check.outputs.problems }}
+        run: |
+          gh label create uptime --color B60205 --description "Demo uptime check (STORY-036)" 2>/dev/null || true
+          open=$(gh issue list --label uptime --state open --json number --jq '.[0].number')
+          now=$(date -u '+%Y-%m-%d %H:%M UTC')
+          run="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "$PROBLEMS" ]; then
+            body="The uptime check failed at $now ($run):"$'\n\n'"$PROBLEMS"$'\n'"First checks: the Observability page, the Render dashboard (service and database status), and docs/RUNBOOK-ALERTS.md."
+            if [ -n "$open" ]; then
+              gh issue comment "$open" --body "$body"
+            else
+              gh issue create --title "Demo is down or degraded" --label uptime --body "$body"
+            fi
+            exit 1
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Recovered: the API and the site answered at $now ($run)."
+          fi
