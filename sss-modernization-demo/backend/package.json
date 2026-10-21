@@ -30,15 +30,14 @@
     "@opentelemetry/sdk-metrics": "2.11.0",
     "@opentelemetry/sdk-trace-node": "2.11.0",
     "@opentelemetry/semantic-conventions": "1.43.0",
-    "bcrypt": "^5.1.0",
+    "bcrypt": "6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "pg": "^8.9.0",
     "qrcode": "^1.5.3",
-    "speakeasy": "^2.0.0",
-    "uuid": "^9.0.0"
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
