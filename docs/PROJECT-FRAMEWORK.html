@@ -295,10 +295,10 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       </article>
 
       <article class="release">
-        <div class="release-head"><h3>R3 · Scale and Launch</h3><span class="range">STORY-030 – 046</span></div>
+        <div class="release-head"><h3>R3 · Scale and Launch</h3><span class="range">STORY-030 – 046 · in progress</span></div>
         <div class="bar" role="img" aria-label="Not started"></div>
         <ul class="stories">
-          <li><span class="id">STORY-030–034</span><span class="name">Load testing (10K users), p95 under 2 s, multi-region failover</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-030–034</span><span class="name">Load testing, p95 under 2 s, failover<small>Milestone 1, with 036 and R0 005: being built since Oct 21 (docs/R3-PLAN.md)</small></span><span class="pill warn">In progress</span></li>
           <li><span class="id">STORY-035–040</span><span class="name">Training portal, monitoring, incident playbook, runbooks</span><span class="pill idle">Not started</span></li>
           <li><span class="id">STORY-041–046</span><span class="name">Penetration test, accessibility audit, go-live review</span><span class="pill idle">Not started</span></li>
         </ul>
@@ -417,6 +417,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td class="num">2026-10-14</td><td>Effort level Medium for both Opus and Sonnet, one helper agent at a time</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-14</td><td>The owner made his own case-manager account the demo's administrator through ADMIN_EMAILS</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-15</td><td>R2 milestone 1 = STORY-017 to 020 and 022 to 024, with our own acceptance criteria. Claude through the official SDK with native citations; PostgreSQL full-text retrieval; no LangChain or LangSmith; synthetic policy documents; without a key the assistant shows passages; the assistant never decides eligibility</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-21</td><td>R3 in three milestones with our own acceptance criteria; what the demo cannot have (GovCloud, a second region, 10,000 real users, a third-party pen test, a screen-reader user) is built up to and stated plainly</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-21</td><td>The claude.ai Project reads this framework straight from the GitHub repo, current after every push</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-20</td><td>R2 milestone 2: drift from the demo's own records (no LangSmith); fairness tested counterfactually without collecting protected data; OpenTelemetry built in and Datadog-ready over OTLP. The demo slide deck and briefing are updated at the end of R2</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-20</td><td>The API key lives only in Render's environment and an Anthropic workspace; a key that was shown in a screenshot was revoked and replaced the same day</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-19</td><td>The free Render database expired on Oct 16 and the API went down; upgraded to the paid Basic plan ($6/month), which kept all data and does not expire</td><td>Obi</td></tr>
@@ -459,7 +461,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <table>
         <thead><tr><th>Severity</th><th>Risk</th><th>Action</th><th>Owner</th></tr></thead>
         <tbody>
-          <tr><td><span class="pill bad">High</span></td><td>Five proposal tasks wait on Ali and the deadline is not recorded</td><td>Confirm the deadline; work through the task checklist</td><td>Ali</td></tr>
+          <tr><td><span class="pill bad">High</span></td><td>Five proposal tasks wait on Ali and the deadline is not recorded. Basecamp shows the PROPOSAL list as completed; its tasks could not be read from here, and the Technical Volume file is not in the repository</td><td>Confirm with Ali whether the proposal was submitted, and where the Technical Volume lives if Task 5 is still open</td><td>Ali</td></tr>
           <tr><td><span class="pill bad">High</span></td><td>AWS approval pending</td><td>Unblocks STORY-004, real document upload and an append-only copy of the audit log</td><td>Ram</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>Database password and session secret were shared in chat on Sep 17</td><td>Rotate both before any real data</td><td>Obi</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>Dependency advisories: 3 remain in the running server after the Oct 6 patch update; the critical one only runs while bcrypt installs</td><td>Upgrade pass before go-live</td><td>Obi</td></tr>
@@ -474,7 +476,6 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td><span class="pill idle">Low</span></td><td>No one has used the app with JAWS, NVDA or VoiceOver yet; automated checks cover only part of WCAG</td><td>Hands-on screen-reader audit and a VPAT/ACR with STORY-042 (R3)</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page</td><td>verify-deploy waits until every page path serves the current build; a Render header rule could shorten it</td><td>Obi</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>No MFA recovery codes yet</td><td>Production needs recovery codes or a verified reset</td><td>Obi</td></tr>
-          <tr><td><span class="pill idle">Low</span></td><td>A stale Render service, sss-modernization-platform, fails its build on every push and has no running instance</td><td>Delete it in the Render dashboard</td><td>Obi</td></tr>
         </tbody>
       </table>
     </div>

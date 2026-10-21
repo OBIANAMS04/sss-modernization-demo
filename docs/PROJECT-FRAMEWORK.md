@@ -48,7 +48,7 @@ Submission deadline: **not recorded yet** (confirm with Ali).
 | **R0 Walking Skeleton** | 001 Registration & login · 002 Profile & compliance · 003 Two-step sign-in (MFA) · 004 Cloud infra (AWS, L5) · 005 Data pipeline (L2) | 001 ✅ in the demo (+ Ali's guards) · 002 ✅ in the demo · 003 ✅ 2026-10-14 in the demo (two-step sign-in) · 004 🚩 blocked on Ram's AWS approval (demo runs on Render) · 005 backend only, unverified |
 | **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API access policies (OPA) | 006 ✅ · 007 ✅ (both approved by Ali, 2026-10-02) · 008 ✅ 2026-10-06 (reviewed by Ali 2026-10-07) · 009 ✅ and 010 ✅ 2026-10-12 (both accepted by Ali, 2026-10-12) · 011 ✅ 2026-10-12 (posted) · 012 ✅ 2026-10-12 (posted) · 013 ✅, 014 ✅, 015 ✅ and 016 ✅ 2026-10-14 (posted). **R1 is complete: 11 of 11 in the demo.** |
 | **R2 AI & Governance** | 017–020 RAG policy Q&A · 021 drift · 022 hallucination monitoring · 023 HITL ladder · 024 override tracking · 025 bias testing · 026–029 observability | **Milestone 1 ✅ 2026-10-19: 017, 018, 019, 020, 022, 023, 024**, Claude answers live since 2026-10-20 (real-model evaluation 100% on all four measures). **Milestone 2 ✅ 2026-10-21: 021, 025, 026, 027, 028, 029. R2 is complete: 11 of 11 in the demo**; real-model evaluation 100% on all four measures (baseline) and fairness 60 of 60 pairs, Oct 21; posted `#__recording_10426289975` |
-| **R3 Scale & Launch** | 030–032 load testing · 033 performance · 034 failover · 035 training · 036 monitoring · 037 incident playbook · 038–040 docs · 041 pen test · 042 accessibility audit · 043–046 go-live review | Not started |
+| **R3 Scale & Launch** | 030–032 load testing · 033 performance · 034 failover · 035 training · 036 monitoring · 037 incident playbook · 038–040 docs · 041 pen test · 042 accessibility audit · 043–046 go-live review | **In progress since 2026-10-21** (plan and our acceptance criteria: docs/R3-PLAN.md). Milestone 1 performance and reliability (030–034, 036, R0 005) is being built; milestone 2 security, accessibility and operations (037–042); milestone 3 launch readiness (035, 043–046, R0 004 as infrastructure code) |
 
 ### What the demo does today
 - Register/login (bcrypt passwords **and SSNs**, 1-hour JWT), demo-data banner, masked SSN entry.
@@ -134,6 +134,8 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-14 | Effort level Medium for both Opus and Sonnet, one helper agent at a time | Obi |
 | 2026-10-14 | The owner made his own case-manager account the demo's administrator through ADMIN_EMAILS | Obi |
 | 2026-10-15 | R2 milestone 1 = STORY-017 to 020 and 022 to 024, with our own acceptance criteria (the story list has one line each). Claude through the official SDK with native citations; PostgreSQL full-text retrieval; no LangChain or LangSmith; synthetic policy documents; without a key the assistant shows passages; the assistant never decides eligibility | Obi |
+| 2026-10-21 | R3 in three milestones with our own acceptance criteria (docs/R3-PLAN.md). What the demo cannot have (AWS GovCloud, a second region, 10,000 real users, a third-party pen test, a screen-reader user) is built up to and stated plainly | Obi |
+| 2026-10-21 | The claude.ai Project "SSS Modernization." reads this framework straight from the GitHub repo (connected under Project repositories), so it is current after every push; no uploads | Obi |
 | 2026-10-20 | R2 milestone 2 = STORY-021, 025, 026–029 with our own acceptance criteria (docs/R2-MILESTONE-2-PLAN.md): drift from the demo's own records (no LangSmith); fairness tested counterfactually without collecting protected data; OpenTelemetry built in and Datadog-ready over OTLP, with the demo's own dashboard and alerts. The demo slide deck and briefing are updated at the end of R2 | Obi |
 | 2026-10-20 | The API key lives only in Render's environment and in an Anthropic workspace; a key that was shown in a screenshot was revoked and replaced the same day | Obi |
 | 2026-10-19 | The free Render database expired on 2026-10-16 and the API went down; `sss-demo-db` upgraded to the paid Basic plan ($6/month), which kept all data and does not expire | Obi |
@@ -174,7 +176,7 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 
 | Risk / follow-up | Impact | Action |
 |---|---|---|
-| Proposal Tasks 4, 6–9 waiting on Ali; deadline unknown | Submission at risk | Confirm deadline; Ali's checklist in TASK_COMPLETION_STATUS.md |
+| Proposal Tasks 4, 6–9 waiting on Ali; deadline unknown. Basecamp shows the "Selective Service Modernization - PROPOSAL" list as completed (Oct 21), but the tasks there could not be read from here, and the Technical Volume file (Task 5) is not in this repository | Proposal status unclear | Obi to confirm with Ali whether the proposal was submitted, and where the Technical Volume lives if Task 5 is still open |
 | AWS approval (Ram) pending | Blocks STORY-004, real document upload, CloudWatch metrics for STORY-009 and an append-only copy of the audit log for STORY-010 | Ram decision |
 | Render DB password and JWT secret were shared in chat (2026-09-17) | Must not hold real PII as-is | Rotate both before any real data |
 | `npm audit` (2026-10-06): 44 findings, but only 3 in runtime dependencies after the non-breaking patch update (Express 4.22.3, proxy-addr, qs, body-parser) | Remaining critical (`tar`) runs only while bcrypt installs, never on requests; the rest are jest/eslint tooling | Dependency upgrade pass before go-live (consider bcryptjs to drop tar) |
@@ -191,7 +193,6 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 | For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page | A reviewer opening a deep link right after a deploy can see the previous version | verify-deploy waits until every page path serves the current build; a Render header rule could shorten it |
 | Norton HTTPS scanning on Obi's laptop corrupts some connectors | Colaberry works via local bridge; others fail | Optional Norton exclusion |
 | No MFA recovery codes yet | A person who loses their authenticator cannot sign in | Production needs recovery codes or a verified reset |
-| A stale Render service, `sss-modernization-platform`, fails its build on every push and has no running instance | Noise in Render and failed-deploy emails | Obi to delete it in the Render dashboard |
 
 ---
 
