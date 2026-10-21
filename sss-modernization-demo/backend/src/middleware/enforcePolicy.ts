@@ -104,6 +104,12 @@ function refusal(subject: Subject, decision: PolicyDecision): AppError {
  */
 export async function enforcePolicy(req: any, res: Response, next: NextFunction) {
   try {
+    // STORY-034: /health is public in the access table and must answer when the database is down, when the policy cannot be loaded.
+    // It is the one route that skips the lookup; it reads no record and returns no personal data.
+    if (req.method === 'GET' && req.path === '/health') {
+      if (res?.locals) res.locals.routeKey = 'GET /health';
+      return next();
+    }
     const route = servedRoute(req);
     if (!route) return next();
     // STORY-027: the route's template, known here whether the request goes on or is refused, is what the metrics and logs name the request by

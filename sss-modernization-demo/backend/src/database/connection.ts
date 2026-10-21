@@ -11,6 +11,11 @@ const pool = new Pool({
   user: process.env.DATABASE_USER || 'admin',
   password: process.env.DATABASE_PASSWORD || 'dev_password',
   ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+  // STORY-033: connections kept open (the pg default is 10; DATABASE_POOL_MAX changes it)
+  max: parseInt(process.env.DATABASE_POOL_MAX || '10', 10),
+  // STORY-034: a database that does not answer fails a request after 10 s instead of hanging it for ever
+  connectionTimeoutMillis: 10_000,
+  keepAlive: true,
 });
 
 pool.on('error', (err) => {

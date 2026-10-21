@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 import pool from './connection';
+import { isDatabaseUnavailable } from './availability';
 
 // Resolves to backend/src/database/migrations from both src/ (ts-node) and dist/ (compiled),
 // since tsc does not copy .sql files into dist.
@@ -43,7 +44,13 @@ export async function runMigrations(): Promise<string[]> {
         applied.push(file);
         console.log(`✅ Applied migration ${file}`);
       } catch (error) {
-        await client.query('ROLLBACK');
+        // Best effort: when the connection itself is gone there is nothing to roll back, and the server already discarded the transaction
+        await client.query('ROLLBACK').catch(() => {});
+        // STORY-034: a connection that dropped mid-migration is not a failed migration. Nothing was committed (a migration and its
+        // schema_migrations row commit together), so the error is passed on as it is and the whole run is tried again when the database
+        // is back. A migration whose SQL the database rejected IS a failed migration: it is wrapped and the process exits, so the deploy
+        // fails and the previous version keeps serving (docs/SECURITY-RULES.md rule 3). startup.ts tells the two apart.
+        if (isDatabaseUnavailable(error)) throw error;
         throw new Error(`Migration ${file} failed: ${(error as Error).message}`);
       }
     }

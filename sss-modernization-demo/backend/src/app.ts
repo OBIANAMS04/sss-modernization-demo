@@ -23,6 +23,7 @@ import { clientAddress, requestContextMiddleware } from './utils/requestContext'
 import { traceContextMiddleware } from './observability/traceContext';
 import { requestMetrics } from './observability/requestMetrics';
 import pool from './database/connection';
+import { availability, isDatabaseUnavailable, markDatabaseDown, requireDatabase } from './database/availability';
 
 dotenv.config();
 
@@ -49,6 +50,10 @@ app.use(cors({
 // per-minute rollup, and keeps a server error with its trace id
 app.use(requestMetrics);
 
+// STORY-034: while the start is unfinished or the database is down, every API route answers 503 with a clear message, before anything
+// (the access policy, the sign-in check) asks the database a question. /health is let through by the gate itself and answers on its own.
+app.use(requireDatabase);
+
 // STORY-016: the access policy decides every request before any router sees it. The guards on the routes stay as a second layer.
 app.use(enforcePolicy);
 
@@ -71,30 +76,45 @@ app.use('/api/observability', observabilityRoutes);
 
 // Health check. It used to answer "database: checking..." without checking anything; now it reports
 // what is actually true, plus the deployed commit so a deploy can be verified from outside.
+// enforcePolicy lets GET /health through without asking the database (it is public in the access table), so it still answers when the policy cannot load.
+// STORY-034: it answers whatever the database is doing. With the database down it is 200 with database "down" and status "degraded"
+// (the API is up and says so; data routes answer 503). While the start is still running with the database reachable (migrations,
+// roles, policy) it is 503 with database "starting", so a deploy that sets Render's health check path to /health is not promoted
+// until the schema is current; a migration that fails exits the process instead, and the previous version keeps serving.
 app.get('/health', async (req, res) => {
-  let timer: NodeJS.Timeout | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error('timeout')), 3000);
-  });
-  let database = 'ok';
+  const state = availability();
+  const commit = (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7);
+  let database: 'ok' | 'down' | 'starting' = state.database;
   let migrations: { applied: number; latest: string | null } | null = null;
-  try {
-    const result: any = await Promise.race([
-      pool.query('SELECT COUNT(*)::int AS applied, MAX(filename) AS latest FROM schema_migrations'),
-      timeout,
-    ]);
-    migrations = { applied: result.rows[0].applied, latest: result.rows[0].latest };
-  } catch {
-    database = 'unreachable';
-  } finally {
-    clearTimeout(timer);
+
+  if (database === 'ok' && state.startup === 'pending') {
+    database = 'starting';
+  } else if (database === 'ok') {
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('timeout')), 3000);
+    });
+    try {
+      const result: any = await Promise.race([
+        pool.query('SELECT COUNT(*)::int AS applied, MAX(filename) AS latest FROM schema_migrations'),
+        timeout,
+      ]);
+      migrations = { applied: result.rows[0].applied, latest: result.rows[0].latest };
+    } catch (error) {
+      database = 'down';
+      // A refused or dropped connection closes the data routes at once; the probe in startup.ts reopens them when the database is back
+      if (isDatabaseUnavailable(error) || (error as Error).message === 'timeout') markDatabaseDown(error);
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
-  res.json({
-    status: database === 'ok' ? 'ok' : 'degraded',
+  res.status(database === 'starting' ? 503 : 200).json({
+    status: database === 'ok' ? 'ok' : database === 'starting' ? 'starting' : 'degraded',
     timestamp: new Date().toISOString(),
-    commit: (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7),
+    commit,
     database,
+    startup: state.startup,
     migrations,
     // The address the audit log records for this caller, so a deploy check can confirm it is the caller's own
     callerAddress: clientAddress(req),
