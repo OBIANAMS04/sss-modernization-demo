@@ -1,0 +1,55 @@
+PASS  headers on health: CSP, nosniff, frame DENY, HSTS, no-referrer, no-store, no X-Powered-By: got [true,"nosniff","DENY",true,"no-referrer","no-store",null]
+PASS  headers on a refusal: CSP, nosniff, frame DENY, HSTS, no-referrer, no-store, no X-Powered-By: got [true,"nosniff","DENY",true,"no-referrer","no-store",null]
+PASS  headers on a signed-in read: CSP, nosniff, frame DENY, HSTS, no-referrer, no-store, no X-Powered-By: got [true,"nosniff","DENY",true,"no-referrer","no-store",null]
+PASS  CORS: a preflight from another site is not allowed (neither its origin nor *): got false
+PASS  CORS: a read from another site is not allowed (neither its origin nor *): got false
+PASS  token tampering: garbage is a 401: got 401
+PASS  token tampering: alg "none" (no signature) is a 401: got 401
+PASS  token tampering: a payload changed to another person, old signature is a 401: got 401
+PASS  token tampering: a signature from another key is a 401: got 401
+PASS  token tampering: HS256 header swapped for RS256 is a 401: got 401
+PASS  no token: 401: got 401
+PASS  setup: B has a case: got "string"
+PASS  another person: GET /users/:id: got 403
+PASS  another person: PUT /users/:id: got 403
+PASS  another person: GET /cases/:id: got true
+PASS  another person: GET /audit/user/:id: got 403
+PASS  a citizen's case list holds none of B's cases: got false
+PASS  SQL injection in case filters (' OR '1'='1): no server error: got true
+PASS  SQL injection in case filters ('; DROP TABLE users; --): no server error: got true
+PASS  SQL injection in case filters (%): no server error: got true
+PASS  SQL injection in case filters (\): no server error: got true
+PASS  SQL injection in case filters ("): no server error: got true
+PASS  SQL injection in case filters (${7*7}): no server error: got true
+PASS  SQL injection in case filters (<script>alert(1)</script>): no server error: got true
+PASS  SQL injection at sign-in: refused, not a 500: got 400
+PASS  objects in place of strings at sign-in: refused, not a 500: got true
+PASS  stored script comes back as JSON text (application/json, nosniff): got [true,true]
+PASS  a body over 100 kB is refused (413): got 413
+PASS  malformed JSON is a 400, not a 500: got 400
+      timing: account 278 ms, no account 309 ms
+PASS  timing: no account takes at least half as long as a wrong password (bcrypt either way): got true
+PASS  guessing: ten wrong passwords are each refused as wrong (400): got true
+PASS  guessing: the eleventh try is throttled, the right password too (429, Retry-After): got [429,true]
+PASS  guessing: the account in another case is the same account: got 429
+PASS  spraying: thirty failures from one address are refused as wrong: got 400
+PASS  spraying: the next sign-in from that address is throttled: got 429
+PASS  spraying: another address is not affected: got 200
+PASS  registration: ten from one address are processed, the eleventh is throttled: got [true,429]
+PASS  sign-out: the extended token belongs to the same session: got "035a1b89-5cf3-4e8c-b6a9-b83d7403ea95"
+PASS  sign-out: 204: got 204
+PASS  sign-out: the signed-out token is refused: got [401,"Your session has ended. Please sign in again."]
+PASS  sign-out: the extended token is refused too: got 401
+PASS  sign-out: it cannot be extended again: got 401
+PASS  sign-out: other sessions of the person still work: got 200
+PASS  recovery: ten codes come back once, when two-step verification is turned on: got [200,10,10]
+PASS  recovery: status counts them: got 10
+PASS  a pending sign-in token is not a session: got 401
+PASS  recovery: a code signs in (any case) and says how many are left: got [200,"string",9]
+PASS  recovery: the same code is refused the second time: got [400,"INVALID_RECOVERY_CODE"]
+PASS  recovery: new codes need a current code, and replace the old ones: got [200,10]
+PASS  recovery: an old code no longer works: got 400
+PASS  recovery: guesses share the five tries of a sign-in: got [400,400,400,400,429]
+PASS  recovery: making and using codes is in the audit log, the codes are not: got [true,true,false]
+
+ALL PASSED

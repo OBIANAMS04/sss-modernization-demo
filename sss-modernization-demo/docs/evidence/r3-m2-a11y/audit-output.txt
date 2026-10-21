@@ -1,0 +1,41 @@
+PASS  Signed out   /login             axe 0 (+0 advisory), Tab 4/4, all checks
+PASS  Signed out   /register          axe 0 (+0 advisory), Tab 8/8, all checks
+PASS  Applicant    /dashboard         axe 0 (+0 advisory), Tab 15/15, all checks
+PASS  Applicant    /profile           axe 0 (+0 advisory), Tab 15/15, all checks
+PASS  Applicant    /mfa               axe 0 (+0 advisory), Tab 7/7, all checks
+PASS  Applicant    /mfa (setup started) axe 0 (+0 advisory), Tab 9/9, all checks
+PASS  Signed out   /mfa/verify        axe 0 (+0 advisory), Tab 4/4, all checks
+PASS  Applicant    /cases/:id         axe 0 (+0 advisory), Tab 10/10, all checks
+PASS  Applicant    /assistant         axe 0 (+0 advisory), Tab 18/18, all checks
+PASS  Applicant    /assistant (answered) axe 0 (+0 advisory), Tab 35/35, all checks
+PASS  Case manager /dashboard         axe 0 (+0 advisory), Tab 24/24, all checks
+PASS  Case manager /cases             axe 0 (+0 advisory), Tab 22/22, all checks
+PASS  Case manager /cases/:id         axe 0 (+0 advisory), Tab 23/23, all checks
+PASS  Case manager /compliance        axe 0 (+0 advisory), Tab 19/19, all checks
+PASS  Case manager /compliance/audit  axe 0 (+0 advisory), Tab 49/49, all checks
+PASS  Case manager /freshness         axe 0 (+0 advisory), Tab 17/17, all checks
+PASS  Case manager /audit             axe 0 (+0 advisory), Tab 22/22, all checks
+PASS  Case manager /assistant         axe 0 (+0 advisory), Tab 18/18, all checks
+PASS  Case manager /assistant/reviews axe 0 (+0 advisory), Tab 23/23, all checks
+PASS  Case manager /ai-quality        axe 0 (+0 advisory), Tab 14/14, all checks
+PASS  Case manager /observability     axe 0 (+0 advisory), Tab 13/13, all checks
+PASS  Case manager /staff             axe 0 (+0 advisory), Tab 18/18, all checks
+PASS  Admin        /dashboard         axe 0 (+0 advisory), Tab 24/24, all checks
+PASS  Admin        /my-work           axe 0 (+0 advisory), Tab 29/29, all checks
+PASS  Admin        /leadership        axe 0 (+0 advisory), Tab 19/19, all checks
+PASS  Admin        /admin             axe 0 (+0 advisory), Tab 24/24, all checks
+PASS  Admin        /admin/policies    axe 0 (+0 advisory), Tab 196/196, all checks
+PASS  Admin        /ai-quality        axe 0 (+0 advisory), Tab 22/22, all checks
+PASS  Admin        /observability     axe 0 (+0 advisory), Tab 24/24, all checks
+PASS  Admin        /ai-quality (run confirmation) axe 0 (+0 advisory), Tab 23/23, all checks
+PASS  Leadership   /dashboard         axe 0 (+0 advisory), Tab 8/8, all checks
+PASS  Sign in, wrong password         alert: yes, invalid fields 0, described 0, focus on first: false, axe 0
+PASS  Sign-in code, empty             alert: yes, invalid fields 1, described 1, focus on first: true, axe 0
+PASS  Registration, empty             alert: no, invalid fields 5, described 5, focus on first: true, axe 0
+PASS  Question, too short             alert: yes, invalid fields 1, described 1, focus on first: true, axe 0
+PASS  Review, empty                   alert: yes, invalid fields 2, described 2, focus on first: true, axe 0
+PASS  Session warning (WCAG 2.2.1)       {"shown":true,"axe":0,"modal":true,"labelled":true,"described":true,"focusOnStay":true,"focusTrapped":true,"extended":true,"authTimeKept":true,"newLifetime":3599,"signedOutWithMessage":true,"pass":true}
+PASS  Sign-out from the UI is logged     {"recorded":true,"refused":false,"pass":true}
+PASS  content security policy: 0 violation(s) across every page and role
+
+ALL PASSED
