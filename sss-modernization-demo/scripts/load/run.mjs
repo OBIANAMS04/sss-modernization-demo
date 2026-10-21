@@ -3,6 +3,7 @@
 //
 //   cd scripts/load && npm ci
 //   LOCAL (the harness starts the compiled backend itself, with a sampler for CPU / event-loop delay / DB pool):
+//     (--dist dist-before runs an earlier build kept next to dist; --pool-max sets DATABASE_POOL_MAX)
 //     node run.mjs --spawn-db sss_load_a --port 3002 --profile ramp --steps 5,10,20,40,80,160 --step-seconds 20 --label before
 //   LIVE (light, read-mostly, one synthetic account, no AI; needs E2E_ALLOW_REMOTE=1):
 //     E2E_ALLOW_REMOTE=1 node run.mjs --live --base https://sss-demo-backend.onrender.com/api --connections 25 --duration 60 --label live
@@ -38,7 +39,7 @@ const profile = args.profile || (live ? 'hold' : 'ramp');
 const scenarioName = args.scenario || (live ? 'live' : 'mixed');
 const label = args.label || `${profile}-${scenarioName}`;
 const port = num('port', 3002);
-const base = args.base || `http://localhost:${port}/api`;
+const base = args.base || `http://127.0.0.1:${port}/api`;
 const stepSeconds = num('step-seconds', 20);
 const steps = String(args.steps || '5,10,20,40,80,160').split(',').map(Number);
 const runId = Date.now().toString(36);
@@ -148,11 +149,11 @@ async function main() {
   if (!live && args['spawn-db']) {
     if (samplerFile && existsSync(samplerFile)) rmSync(samplerFile);
     const env = {
-      ...process.env, DATABASE_NAME: args['spawn-db'], PORT: String(port), CORS_ORIGIN: 'http://localhost:4173', AI_PROVIDER: 'stub', AI_DAILY_LIMIT: '100000000',
+      ...process.env, DATABASE_NAME: args['spawn-db'], DATABASE_HOST: '127.0.0.1', PORT: String(port), CORS_ORIGIN: 'http://localhost:4173', AI_PROVIDER: 'stub', AI_DAILY_LIMIT: '100000000',
       ADMIN_EMAILS: 'morgan.lee@example.com', CASE_MANAGER_EMAILS: 'manager-local-test@example.com,reviewer-local-test@example.com',
-      SAMPLER_OUT: samplerFile, SAMPLER_BACKEND_DIR: BACKEND, ...(args['pool-max'] ? { DATABASE_POOL_MAX: String(args['pool-max']) } : {}),
+      SAMPLER_OUT: samplerFile, ...(args.queries ? { SAMPLER_QUERIES: resolve(OUT_DIR, `${label}.queries.json`) } : {}), SAMPLER_BACKEND_DIR: BACKEND, ...(args['pool-max'] ? { DATABASE_POOL_MAX: String(args['pool-max']) } : {}),
     };
-    child = spawn(process.execPath, ['-r', resolve(here, 'sampler.cjs'), 'dist/index.js'], { cwd: BACKEND, env, stdio: ['ignore', 'pipe', 'pipe'] });
+    child = spawn(process.execPath, ['-r', resolve(here, 'sampler.cjs'), `${args.dist || 'dist'}/index.js`], { cwd: BACKEND, env, stdio: ['ignore', 'pipe', 'pipe'] });
     child.stdout.on('data', () => {});
     child.stderr.on('data', () => {});
     await waitFor(`${origin}/health`, 90000);

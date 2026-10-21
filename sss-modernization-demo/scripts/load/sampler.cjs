@@ -14,6 +14,38 @@ if (out) {
       (globalThis.__samplerPools ||= []).push(this);
     }
   };
+  // SAMPLER_QUERIES=<file>: which statements run, how often and for how long (the first 90 characters of the text, no parameters, so no personal data)
+  if (process.env.SAMPLER_QUERIES) {
+    const stats = new Map();
+    const wrap = (proto) => {
+      const original = proto.query;
+      proto.query = function (...args) {
+        const text = typeof args[0] === 'string' ? args[0] : args[0] && args[0].text;
+        const started = process.hrtime.bigint();
+        const key = text ? text.split(/[ \t\r\n]+/).join(' ').trim().slice(0, 90) : null;
+        const done = () => {
+          if (!key) return;
+          const entry = stats.get(key) || { n: 0, ms: 0 };
+          entry.n++;
+          entry.ms += Number(process.hrtime.bigint() - started) / 1e6;
+          stats.set(key, entry);
+        };
+        // pg's Pool.query() passes a callback to the client; transactions use promises. Time both.
+        const last = args.length - 1;
+        if (typeof args[last] === 'function') {
+          const cb = args[last];
+          args[last] = function (...a) { done(); return cb.apply(this, a); };
+          return original.apply(this, args);
+        }
+        const result = original.apply(this, args);
+        if (result && typeof result.then === 'function') result.then(done, done);
+        return result;
+      };
+    };
+    wrap(pg.Client.prototype);
+    setInterval(() => fs.writeFileSync(process.env.SAMPLER_QUERIES, JSON.stringify([...stats].map(([q, e]) => ({ q, n: e.n, totalMs: Math.round(e.ms), avgMs: Math.round((e.ms / e.n) * 10) / 10 })).sort((a, b) => b.totalMs - a.totalMs), null, 1)), 3000).unref();
+  }
+
   const histogram = monitorEventLoopDelay({ resolution: 10 });
   histogram.enable();
   let last = process.cpuUsage();

@@ -70,7 +70,7 @@ export async function setupLive({ base, runId }) {
 /** Local only: gives the assistant users their hourly allowance back between steps (the e2e suite does the same to its own rows). */
 export async function resetAssistantRows(dbName, userIds) {
   const { Client } = createRequire(new URL('../../backend/package.json', import.meta.url))('pg');
-  const db = new Client({ host: 'localhost', database: dbName, user: 'admin', password: process.env.PGPASSWORD || 'dev_password' });
+  const db = new Client({ host: '127.0.0.1', database: dbName, user: 'admin', password: process.env.PGPASSWORD || 'dev_password' });
   await db.connect();
   try {
     await db.query('DELETE FROM assistant_interactions WHERE user_id = ANY($1::uuid[])', [userIds]);
