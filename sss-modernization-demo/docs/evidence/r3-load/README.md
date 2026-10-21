@@ -141,7 +141,7 @@ Findings and fixes, in the order they mattered:
 3. **Pool size**: default raised from 10 to 25 (`DATABASE_POOL_MAX`). Same 16-connection hold: 26.6 to 43.3 requests/s, p95 1.93 to 1.27 s.
    Keep instances x pool under the database's connection limit; the sizing document uses a pooler.
 4. **Overlapping identical dashboard computations** (admin, leadership, freshness, case stats) now share one computation. Nothing is kept
-   once it finishes, so a request after a write sees the write. 20 admins at once: 17.1 to 2.55 statements each, and 7 pool
+   once it finishes: a request that starts after a computation ends sees every write before it, and one that joins a running computation sees the data as of when that computation started (a few hundred milliseconds at most). 20 admins at once: 17.1 to 2.55 statements each, and 7 pool
    connections each no longer taken.
 5. **Role read once per request** instead of by the policy, the route guard and the handler. Still read from the database on every
    request, never cached between requests, so Staff Access changes apply on the next request as before.
