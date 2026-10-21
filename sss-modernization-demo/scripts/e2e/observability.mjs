@@ -166,7 +166,7 @@ async function checks(db, users) {
   expect('each breach opens an alert', first.opened.filter((k) => SIX.includes(k)).sort(), fresh);
   const open = (await view()).alerts.open.filter((a) => a.kind === 'slo' && SIX.includes(a.key));
   expect('the open alerts are on the page with their runbook entries', open.map((a) => [a.key, a.runbook]).sort(), SIX.map((k) => [k, k.split(':')[0]]));
-  expect('each opened alert is an audit event', (await sloAudit('opened')).map((l) => l.details.key).filter((k) => SIX.includes(k)).sort(), fresh);
+  expect('each opened alert is an audit event', (await sloAudit('opened')).map((l) => l.details.key).filter((k) => SIX.includes(k) && !alreadyOpen.has(k)).sort(), fresh);
   const after = (await call('GET', '/notifications', admin.token)).data;
   expect('every administrator is notified, once per alert', after.unread - before, fresh.length);
   expect('the notification says what is wrong and where to look', after.notifications[0].message.startsWith('Service alert: ') && after.notifications[0].message.endsWith('Open Observability to see it.'), true);
