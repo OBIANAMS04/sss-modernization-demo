@@ -26,6 +26,8 @@ export default function MfaVerify() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // STORY-041: someone who has lost their authenticator signs in with one of their recovery codes instead
+  const [useRecovery, setUseRecovery] = useState(false);
   const inputRef = useRef(null);
 
   // Back to the password step, and say why on that page
@@ -62,15 +64,17 @@ export default function MfaVerify() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const entered = code.replace(/\s/g, ''); // an app shows "123 456"; spaces are not part of the code
-    if (!/^\d{6}$/.test(entered)) {
-      setError('Enter the 6-digit code from your authenticator app.');
+    if (useRecovery ? !/^[A-Za-z2-7-]{16,19}$/.test(entered) : !/^\d{6}$/.test(entered)) {
+      setError(useRecovery ? 'Enter one of your recovery codes, like ABCD-EFGH-JKLM-NPQR.' : 'Enter the 6-digit code from your authenticator app.');
       inputRef.current?.focus();
       return;
     }
 
     setLoading(true);
     try {
-      const response = await authService.verifyMfa(pendingToken, entered);
+      const response = useRecovery
+        ? await authService.verifyMfaRecovery(pendingToken, entered)
+        : await authService.verifyMfa(pendingToken, entered);
       clearPendingMfaToken();
       setToken(response.token);
       setUser(response.user);
@@ -92,11 +96,18 @@ export default function MfaVerify() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-xl p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">Two-step verification</h1>
-          <p className="text-gray-600 text-center mb-6">Enter the 6-digit code from your authenticator app to finish signing in.</p>
+          <p className="text-gray-600 text-center mb-6">
+            {useRecovery
+              ? 'Enter one of the recovery codes you saved when you turned on two-step verification. Each works once.'
+              : 'Enter the 6-digit code from your authenticator app to finish signing in.'}
+          </p>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <CodeField
-              id="mfa-code"
+              key={useRecovery ? 'recovery' : 'code'}
+              id={useRecovery ? 'mfa-recovery-code' : 'mfa-code'}
+              label={useRecovery ? 'Recovery code' : 'Authentication code'}
+              recovery={useRecovery}
               inputRef={inputRef}
               value={code}
               onChange={(value) => {
@@ -104,7 +115,7 @@ export default function MfaVerify() {
                 if (error) setError('');
               }}
               error={error}
-              hint="6 digits. The app shows a new code every 30 seconds."
+              hint={useRecovery ? '16 letters and digits; dashes and spaces are optional.' : '6 digits. The app shows a new code every 30 seconds.'}
             />
 
             <button
@@ -115,6 +126,21 @@ export default function MfaVerify() {
               {loading ? 'Checking...' : 'Verify and sign in'}
             </button>
           </form>
+
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setUseRecovery(!useRecovery);
+                setCode('');
+                setError('');
+                setTimeout(() => inputRef.current?.focus(), 0);
+              }}
+              className="text-blue-700 hover:text-blue-800 text-sm font-semibold underline focus:outline-none focus:ring-2 focus:ring-blue-600 rounded"
+            >
+              {useRecovery ? 'Use the code from my authenticator app' : 'Lost your authenticator? Use a recovery code'}
+            </button>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600 text-sm">

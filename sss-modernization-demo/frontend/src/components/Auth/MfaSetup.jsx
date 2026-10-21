@@ -4,11 +4,13 @@ import { mfaService } from '../../services/mfaService';
 import AppNav from '../Common/AppNav';
 import DemoEnvironmentBanner from '../DemoEnvironmentBanner';
 import CodeField from './CodeField';
+import RecoveryCodes from './RecoveryCodes';
 
 // STORY-003: turn two-step verification (MFA) on or off. An authenticator app (Google Authenticator, Authy, Microsoft
 // Authenticator) scans the QR code, or takes the setup key typed in; the 6-digit code it then shows confirms the setup.
 
 const CODE_FIELD_ID = 'mfa-setup-code';
+const NEW_CODES_FIELD_ID = 'mfa-new-recovery-codes-code';
 const buttonClass = 'px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 transition duration-200';
 
 // "ABCDEFGH..." as "ABCD EFGH ...", which is easier to read out and to copy by eye
@@ -16,6 +18,11 @@ const grouped = (secret) => secret.match(/.{1,4}/g).join(' ');
 
 export default function MfaSetup() {
   const [enabled, setEnabled] = useState(null); // null until the status has loaded
+  const [codesLeft, setCodesLeft] = useState(null); // STORY-041: unused recovery codes
+  const [recoveryCodes, setRecoveryCodes] = useState(null); // shown once, after turning on or making new ones
+  const [newCodesCode, setNewCodesCode] = useState('');
+  const [newCodesError, setNewCodesError] = useState('');
+  const newCodesRef = useRef(null);
   const [setup, setSetup] = useState(null); // { secret, qrCode } while a setup waits for its code
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState(''); // about the code field: not 6 digits, or not accepted
@@ -32,7 +39,10 @@ export default function MfaSetup() {
   useEffect(() => {
     mfaService
       .status()
-      .then((status) => setEnabled(status.mfaEnabled))
+      .then((status) => {
+        setEnabled(status.mfaEnabled);
+        setCodesLeft(status.recoveryCodesLeft ?? null);
+      })
       .catch((err) => setError(getApiErrorMessage(err, 'Could not load your two-step verification status.')));
   }, []);
 
@@ -109,13 +119,48 @@ export default function MfaSetup() {
   };
 
   const handleConfirm = submitCode(
-    mfaService.confirmSetup,
+    async (entered) => {
+      const result = await mfaService.confirmSetup(entered);
+      setRecoveryCodes(result.recoveryCodes ?? null);
+      setCodesLeft(result.recoveryCodes?.length ?? null);
+    },
     'Two-step verification is now on. You will be asked for a code from your authenticator app each time you sign in.',
     () => {
       setSetup(null);
       setEnabled(true);
     }
   );
+
+  // STORY-041: new recovery codes need a current code too; the field is its own, so it never shares an id with the one below it
+  const handleNewCodes = async (e) => {
+    e.preventDefault();
+    const entered = newCodesCode.replace(/\s/g, '');
+    if (!/^\d{6}$/.test(entered)) {
+      setNewCodesError('Enter the 6-digit code from your authenticator app.');
+      newCodesRef.current?.focus();
+      return;
+    }
+    setError('');
+    setNotice('');
+    setBusy(true);
+    try {
+      const result = await mfaService.newRecoveryCodes(entered);
+      setNewCodesCode('');
+      setNewCodesError('');
+      setRecoveryCodes(result.recoveryCodes);
+      setCodesLeft(result.recoveryCodes.length);
+    } catch (err) {
+      const message = getApiErrorMessage(err, 'We could not check that code. Please try again.');
+      setNewCodesCode('');
+      if (err.response?.status === 429) setError(message);
+      else {
+        setNewCodesError(message);
+        newCodesRef.current?.focus();
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleDisable = submitCode(
     mfaService.disable,
@@ -185,6 +230,16 @@ export default function MfaSetup() {
           )}
         </section>
 
+        {recoveryCodes && (
+          <RecoveryCodes
+            codes={recoveryCodes}
+            onDone={() => {
+              setRecoveryCodes(null);
+              statusHeadingRef.current?.focus();
+            }}
+          />
+        )}
+
         {setup && (
           <section aria-labelledby="mfa-setup-heading" className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 id="mfa-setup-heading" ref={setupHeadingRef} tabIndex={-1} className="text-xl font-bold text-gray-900 focus:outline-none">
@@ -221,6 +276,35 @@ export default function MfaSetup() {
                   Cancel
                 </button>
               </div>
+            </form>
+          </section>
+        )}
+
+        {enabled && !recoveryCodes && (
+          <section aria-labelledby="mfa-recovery-heading" className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 id="mfa-recovery-heading" className="text-xl font-bold text-gray-900">Recovery codes</h2>
+            <p className="mt-1 text-gray-700">
+              {codesLeft === null
+                ? 'Recovery codes let you sign in if you lose your authenticator app.'
+                : `You have ${codesLeft} unused recovery code${codesLeft === 1 ? '' : 's'}. Each works once if you lose your authenticator app.`}
+              {codesLeft !== null && codesLeft <= 2 && <strong className="block mt-1 text-amber-800">Make new codes soon.</strong>}
+            </p>
+            <p className="mt-1 text-sm text-gray-600">Making new codes stops the old ones from working. Enter a current code from your authenticator app to confirm it is you.</p>
+            <form onSubmit={handleNewCodes} noValidate className="mt-4 max-w-sm space-y-4">
+              <CodeField
+                id={NEW_CODES_FIELD_ID}
+                inputRef={newCodesRef}
+                value={newCodesCode}
+                onChange={(value) => {
+                  setNewCodesCode(value);
+                  if (newCodesError) setNewCodesError('');
+                }}
+                error={newCodesError}
+                hint="6 digits from your authenticator app."
+              />
+              <button type="submit" disabled={busy} className={`${buttonClass} border border-gray-500 bg-white text-gray-700 hover:bg-gray-50`}>
+                {busy ? 'Checking...' : 'Make new recovery codes'}
+              </button>
             </form>
           </section>
         )}

@@ -1,7 +1,8 @@
 // STORY-003: referenced here, not only included by tsconfig, so ts-node (npm run dev) finds them as well as tsc and jest
 /// <reference path="../types/speakeasy.d.ts" />
 /// <reference path="../types/qrcode.d.ts" />
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
+import type { PoolClient } from 'pg';
 import { toDataURL } from 'qrcode';
 import { totp } from 'speakeasy';
 import pool from '../database/connection';
@@ -92,14 +93,16 @@ const tooMany = (attempt: number) =>
   new CodeRefusedError(429, 'Too many incorrect codes. Please sign in again.', 'TOO_MANY_ATTEMPTS', attempt);
 
 /** A refused code. The last allowed try ends the sign-in at once, so the person is not left to find out on the next one. */
-function refusal(attempt: number, reason: 'INVALID_CODE' | 'CODE_ALREADY_USED'): CodeRefusedError {
+function refusal(attempt: number, reason: 'INVALID_CODE' | 'CODE_ALREADY_USED' | 'INVALID_RECOVERY_CODE'): CodeRefusedError {
   if (attempt >= MAX_CODE_ATTEMPTS) return tooMany(attempt);
   const left = MAX_CODE_ATTEMPTS - attempt;
   const tries = `${left} ${left === 1 ? 'try' : 'tries'} left`;
   const message =
     reason === 'INVALID_CODE'
       ? `That code is not correct. ${tries}.`
-      : `That code was already used. Wait for the next code in your app. ${tries}.`;
+      : reason === 'INVALID_RECOVERY_CODE'
+        ? `That recovery code is not correct, or it was already used. ${tries}.`
+        : `That code was already used. Wait for the next code in your app. ${tries}.`;
   return new CodeRefusedError(400, message, reason, attempt);
 }
 
@@ -157,8 +160,8 @@ export async function generateMFASecret(userId: string, email: string): Promise<
   return { secret, otpauthUrl: url, qrCode: await toDataURL(url, { errorCorrectionLevel: 'M', margin: 2, width: 240 }) };
 }
 
-// Verify TOTP code and enable MFA
-export async function verifyAndEnableMFA(userId: string, totpCode: string, budget: string): Promise<void> {
+// Verify TOTP code and enable MFA. STORY-041: returns the person's recovery codes, made in the same transaction; they are shown once.
+export async function verifyAndEnableMFA(userId: string, totpCode: string, budget: string): Promise<string[]> {
   if (await isMFAEnabled(userId)) {
     throw new ConflictError('Two-step verification is already on.');
   }
@@ -184,7 +187,9 @@ export async function verifyAndEnableMFA(userId: string, totpCode: string, budge
     // The code that confirms the device is spent too, so it cannot be used again at the next sign-in
     await client.query(`UPDATE mfa_devices SET verified = TRUE, last_used_step = $2, updated_at = NOW() WHERE id = $1`, [waiting.id, step]);
     await client.query(`UPDATE users SET mfa_enabled = TRUE, updated_at = NOW() WHERE id = $1`, [userId]);
+    const codes = await storeRecoveryCodes(client, userId);
     await client.query('COMMIT');
+    return codes;
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -260,8 +265,9 @@ export async function disableMFA(userId: string): Promise<void> {
   try {
     await client.query('BEGIN');
 
-    // Delete MFA devices
+    // Delete MFA devices, and the recovery codes that went with them
     await client.query(`DELETE FROM mfa_devices WHERE user_id = $1`, [userId]);
+    await client.query(`DELETE FROM mfa_recovery_codes WHERE user_id = $1`, [userId]);
 
     // Disable MFA on user
     await client.query(
@@ -276,4 +282,85 @@ export async function disableMFA(userId: string): Promise<void> {
   } finally {
     client.release();
   }
+}
+
+/**
+ * STORY-041: recovery codes, for a person who has lost their authenticator. Ten codes of 16 base32 characters (80 random bits each),
+ * shown once when two-step verification is turned on or when new ones are made; only a SHA-256 hash of each is kept, and each works
+ * once, in place of the 6-digit code at sign-in. A recovery code try counts against the same five tries as a 6-digit code.
+ */
+export const RECOVERY_CODE_COUNT = 10;
+const RECOVERY_CODE_BYTES = 10;
+
+const newRecoveryCode = (): string => toBase32(randomBytes(RECOVERY_CODE_BYTES)).match(/.{4}/g)!.join('-');
+
+/** The code as typed (any case, spaces or dashes) in its stored form, or null when it cannot be a recovery code. */
+export function normalizeRecoveryCode(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+  const plain = input.toUpperCase().replace(/[\s-]/g, '');
+  return /^[A-Z2-7]{16}$/.test(plain) ? plain : null;
+}
+
+export const hashRecoveryCode = (normalized: string): string => createHash('sha256').update(normalized).digest('hex');
+
+/** Replaces the person's recovery codes with new ones, inside the caller's transaction, and returns them (the only time they exist). */
+async function storeRecoveryCodes(client: PoolClient, userId: string): Promise<string[]> {
+  const codes = Array.from({ length: RECOVERY_CODE_COUNT }, newRecoveryCode);
+  await client.query(`DELETE FROM mfa_recovery_codes WHERE user_id = $1`, [userId]);
+  await client.query(
+    `INSERT INTO mfa_recovery_codes (user_id, code_hash) SELECT $1, unnest($2::text[])`,
+    [userId, codes.map((code) => hashRecoveryCode(normalizeRecoveryCode(code)!))]
+  );
+  return codes;
+}
+
+/** New recovery codes for someone signed in, after a current 6-digit code; the old ones stop working. */
+export async function regenerateRecoveryCodes(userId: string, totpCode: string, budget: string): Promise<string[]> {
+  if (!(await isMFAEnabled(userId))) throw new ConflictError('Two-step verification is not on.');
+  await checkCode(userId, totpCode, budget);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const codes = await storeRecoveryCodes(client, userId);
+    await client.query('COMMIT');
+    return codes;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function recoveryCodesLeft(userId: string): Promise<number> {
+  const result = await pool.query(`SELECT COUNT(*)::int AS left FROM mfa_recovery_codes WHERE user_id = $1 AND used_at IS NULL`, [userId]);
+  return result.rows[0].left;
+}
+
+/** The second step of sign-in with a recovery code instead of the 6-digit code. Spends the code; returns the person and the codes left. */
+export async function verifySignInRecoveryCode(pending: PendingClaims, recoveryCode: unknown): Promise<{ user: SignInUser; left: number }> {
+  const row = (await pool.query(`SELECT id, email, full_name, role, created_at FROM users WHERE id = $1`, [pending.sub])).rows[0];
+  if (!row) throw new UnauthorizedError('Please sign in again.');
+
+  const budget = `sign-in:${pending.jti}`;
+  const attempt = await reserveAttempt(budget, row.id);
+  const normalized = normalizeRecoveryCode(recoveryCode);
+  // One statement spends the code, so the same code sent twice at once works only once
+  const spent = normalized
+    ? await pool.query(
+        `UPDATE mfa_recovery_codes SET used_at = NOW() WHERE user_id = $1 AND code_hash = $2 AND used_at IS NULL RETURNING id`,
+        [row.id, hashRecoveryCode(normalized)]
+      )
+    : { rows: [] };
+  if (spent.rows.length === 0) throw refusal(attempt, 'INVALID_RECOVERY_CODE');
+
+  const finished = await pool.query(
+    `UPDATE mfa_code_attempts SET completed_at = NOW() WHERE budget = $1 AND completed_at IS NULL RETURNING budget`,
+    [budget]
+  );
+  if (finished.rows.length === 0) throw new UnauthorizedError(SIGN_IN_FINISHED);
+  return {
+    user: { id: row.id, email: row.email, fullName: row.full_name, createdAt: row.created_at, role: row.role },
+    left: await recoveryCodesLeft(row.id),
+  };
 }

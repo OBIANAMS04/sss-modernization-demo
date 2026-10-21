@@ -19,6 +19,8 @@ const LABELS = {
   MFA_ENABLE: 'MFA enabled',
   MFA_CHALLENGE: 'MFA code requested',
   MFA_VERIFIED: 'MFA code accepted',
+  MFA_RECOVERY_CODES_CREATED: 'MFA recovery codes made',
+  MFA_RECOVERY_CODE_USED: 'MFA recovery code used',
   MFA_VERIFY_FAILED: 'MFA code refused',
   MFA_DISABLE: 'MFA turned off',
   ACCESS_DENIED: 'Access denied',

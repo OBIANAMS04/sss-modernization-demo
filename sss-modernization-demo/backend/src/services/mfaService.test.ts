@@ -15,12 +15,18 @@ import {
   matchTotp,
   MAX_CODE_ATTEMPTS,
   newSecret,
+  normalizeRecoveryCode,
   otpauthUrl,
+  RECOVERY_CODE_COUNT,
+  recoveryCodesLeft,
+  regenerateRecoveryCodes,
   toBase32,
   verifyAndEnableMFA,
   verifyMFACode,
   verifySignInCode,
+  verifySignInRecoveryCode,
 } from './mfaService';
+import { createHash } from 'node:crypto';
 
 const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
@@ -85,6 +91,7 @@ let devices: Device[] = [];
 let attempts: Record<string, number> = {};
 let finished: Set<string> = new Set();
 let statements: string[] = [];
+let recovery: { user_id: string; code_hash: string; used: boolean }[] = [];
 
 const rows = (...r: unknown[]) => ({ rows: r });
 
@@ -153,6 +160,25 @@ async function run(sql: string, params: any[] = []) {
     users.find((u) => u.id === params[0])!.mfa_enabled = false;
     return rows();
   }
+  // STORY-041: recovery codes
+  if (text === 'DELETE FROM mfa_recovery_codes WHERE user_id = $1') {
+    recovery = recovery.filter((c) => c.user_id !== params[0]);
+    return rows();
+  }
+  if (text === 'INSERT INTO mfa_recovery_codes (user_id, code_hash) SELECT $1, unnest($2::text[])') {
+    for (const hash of params[1]) recovery.push({ user_id: params[0], code_hash: hash, used: false });
+    return rows();
+  }
+  if (text === 'SELECT COUNT(*)::int AS left FROM mfa_recovery_codes WHERE user_id = $1 AND used_at IS NULL') {
+    return rows({ left: recovery.filter((c) => c.user_id === params[0] && !c.used).length });
+  }
+  // The guard makes a recovery code usable once, so the statement is not recognised without it
+  if (text.startsWith('UPDATE mfa_recovery_codes SET used_at = NOW() WHERE user_id = $1 AND code_hash = $2') && text.includes('AND used_at IS NULL')) {
+    const found = recovery.find((c) => c.user_id === params[0] && c.code_hash === params[1] && !c.used);
+    if (!found) return rows();
+    found.used = true;
+    return rows({ id: 'rc' });
+  }
   throw new Error(`Unexpected statement: ${text}`);
 }
 
@@ -165,6 +191,7 @@ beforeEach(() => {
   attempts = {};
   finished = new Set();
   statements = [];
+  recovery = [];
   query.mockReset().mockImplementation(run);
   connect.mockReset().mockImplementation(async () => ({ query: jest.fn(run), release: jest.fn() }));
   at(NOW);
@@ -521,5 +548,67 @@ describe('what is kept and what is said', () => {
     await verifyAndEnableMFA(USER.id, code(secret), 'session:a');
 
     expect(statements.some((s) => s.includes(secret) || s.includes(code(secret)))).toBe(false);
+  });
+});
+
+describe('recovery codes (STORY-041)', () => {
+  const pending = (jti: string) => ({ sub: USER.id, email: USER.email, jti });
+  async function enrolledWithCodes(): Promise<{ secret: string; codes: string[] }> {
+    const { secret } = await generateMFASecret(USER.id, USER.email);
+    const codes = await verifyAndEnableMFA(USER.id, code(secret, -1), 'session:setup');
+    return { secret, codes };
+  }
+
+  it('makes ten codes of 80 random bits when two-step verification is turned on, and keeps only their hashes', async () => {
+    const { codes } = await enrolledWithCodes();
+    expect(codes).toHaveLength(RECOVERY_CODE_COUNT);
+    expect(new Set(codes).size).toBe(RECOVERY_CODE_COUNT);
+    for (const c of codes) expect(c).toMatch(/^[A-Z2-7]{4}-[A-Z2-7]{4}-[A-Z2-7]{4}-[A-Z2-7]{4}$/);
+    expect(recovery.map((r) => r.code_hash)).toEqual(codes.map((c) => createHash('sha256').update(c.replace(/-/g, '')).digest('hex')));
+    // No statement carries a code in its text, and no parameter carries a code in the clear
+    const sent = query.mock.calls.concat(...connect.mock.results.map((r: any) => [])).flat(2).map(String).join(' ');
+    for (const c of codes) expect(statements.join(' ') + sent).not.toContain(c.replace(/-/g, ''));
+    expect(await recoveryCodesLeft(USER.id)).toBe(10);
+  });
+
+  it('signs in with a recovery code once; the same code is refused after, and counts as a try', async () => {
+    const { codes } = await enrolledWithCodes();
+    const result = await verifySignInRecoveryCode(pending('p1'), codes[3].toLowerCase().replace(/-/g, ' '));
+    expect(result.user.id).toBe(USER.id);
+    expect(result.left).toBe(9);
+    const again = await refusedWith(verifySignInRecoveryCode(pending('p2'), codes[3]));
+    expect([again.statusCode, again.code, again.attempt]).toEqual([400, 'INVALID_RECOVERY_CODE', 1]);
+  });
+
+  it('shares the five tries with the 6-digit code, and a finished sign-in cannot be reused with a recovery code', async () => {
+    const { secret, codes } = await enrolledWithCodes();
+    for (let i = 1; i <= 4; i++) await refusedWith(verifySignInRecoveryCode(pending('p3'), 'AAAA-AAAA-AAAA-AAAA'));
+    const fifth = await refusedWith(verifySignInCode(pending('p3'), wrong(secret)));
+    expect([fifth.statusCode, fifth.code]).toEqual([429, 'TOO_MANY_ATTEMPTS']);
+    await refusedWith(verifySignInRecoveryCode(pending('p3'), codes[0]));
+    await verifySignInRecoveryCode(pending('p4'), codes[0]);
+    await expect(verifySignInRecoveryCode(pending('p4'), codes[1])).rejects.toBeInstanceOf(UnauthorizedError);
+  });
+
+  it('refuses something that cannot be a recovery code without looking it up', async () => {
+    await enrolledWithCodes();
+    for (const bad of ['', '123456', 'AAAA-AAAA-AAAA', 'AAAA-AAAA-AAAA-AAA1', 42, null]) expect(normalizeRecoveryCode(bad)).toBeNull();
+    await refusedWith(verifySignInRecoveryCode(pending('p5'), '123456'));
+    expect(statements.some((s) => s.startsWith('UPDATE mfa_recovery_codes'))).toBe(false);
+  });
+
+  it('makes new codes only after a current 6-digit code; the old ones stop working', async () => {
+    const { secret, codes } = await enrolledWithCodes();
+    await refusedWith(regenerateRecoveryCodes(USER.id, wrong(secret), 'session:x'));
+    const fresh = await regenerateRecoveryCodes(USER.id, code(secret, 0), 'session:x');
+    expect(fresh).toHaveLength(10);
+    await refusedWith(verifySignInRecoveryCode(pending('p6'), codes[0]));
+    expect((await verifySignInRecoveryCode(pending('p7'), fresh[0])).left).toBe(9);
+  });
+
+  it('removes the codes when two-step verification is turned off', async () => {
+    await enrolledWithCodes();
+    await disableMFA(USER.id);
+    expect(recovery).toHaveLength(0);
   });
 });

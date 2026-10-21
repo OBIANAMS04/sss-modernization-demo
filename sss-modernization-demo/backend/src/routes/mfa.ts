@@ -6,6 +6,8 @@ import {
   verifyAndEnableMFA,
   verifyMFACode,
   isMFAEnabled,
+  recoveryCodesLeft,
+  regenerateRecoveryCodes,
 } from '../services/mfaService';
 import { verifyToken } from '../utils/jwt';
 import { AppError, ConflictError, ValidationError } from '../utils/errors';
@@ -99,12 +101,16 @@ router.post('/verify', async (req: AuthRequest, res: Response, next: NextFunctio
     }
 
     // STORY-003: the key is the one stored at setup; a key sent with the request is not used
-    await verifyAndEnableMFA(req.user.sub, codeFrom(req.body), attemptsOf(req));
+    const recoveryCodes = await verifyAndEnableMFA(req.user.sub, codeFrom(req.body), attemptsOf(req));
     audit(req, AuditAction.MFA_ENABLE, 'success');
+    audit(req, AuditAction.MFA_RECOVERY_CODES_CREATED, 'success', { count: recoveryCodes.length, via: 'setup' });
 
+    // STORY-041: the recovery codes are in this response only; keep it out of every cache
+    res.set('Cache-Control', 'no-store');
     res.json({
       success: true,
       message: 'MFA has been enabled on your account',
+      recoveryCodes,
     });
   } catch (error) {
     failedCode(req, error, 'setup');
@@ -138,6 +144,22 @@ router.post('/disable', async (req: AuthRequest, res: Response, next: NextFuncti
   }
 });
 
+// POST /mfa/recovery-codes - STORY-041: new recovery codes after a current 6-digit code; the old ones stop working. Shown once.
+router.post('/recovery-codes', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user?.sub) {
+      throw new AppError(401, 'User not authenticated', 'UNAUTHORIZED');
+    }
+    const recoveryCodes = await regenerateRecoveryCodes(req.user.sub, codeFrom(req.body), attemptsOf(req));
+    audit(req, AuditAction.MFA_RECOVERY_CODES_CREATED, 'success', { count: recoveryCodes.length, via: 'request' });
+    res.set('Cache-Control', 'no-store');
+    res.json({ recoveryCodes });
+  } catch (error) {
+    failedCode(req, error, 'recovery-codes');
+    next(error);
+  }
+});
+
 // GET /mfa/status - Get MFA status
 router.get('/status', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -149,6 +171,7 @@ router.get('/status', async (req: AuthRequest, res: Response, next: NextFunction
 
     res.json({
       mfaEnabled: enabled,
+      recoveryCodesLeft: enabled ? await recoveryCodesLeft(req.user.sub) : 0,
     });
   } catch (error) {
     next(error);

@@ -62,7 +62,7 @@ async function checks(db) {
 
   // 1-4. Setup: a QR code and the key as text, confirmed with the 6-digit code from the app
   const a = await account(`mfa-user-${stamp}@example.com`, 'MFA User');
-  expect('two-step verification starts off', (await call('GET', '/mfa/status', a.token)).data, { mfaEnabled: false });
+  expect('two-step verification starts off', (await call('GET', '/mfa/status', a.token)).data, { mfaEnabled: false, recoveryCodesLeft: 0 });
 
   const setup = await call('POST', '/mfa/setup', a.token);
   const secret = setup.data.secret;
@@ -78,7 +78,7 @@ async function checks(db) {
   const second = await call('POST', '/mfa/setup', a.token);
   expect('setting up again replaces the first key', [second.status, second.data.secret !== secret], [200, true]);
   const key = second.data.secret;
-  expect('a setup that is not confirmed does not turn it on', (await call('GET', '/mfa/status', a.token)).data, { mfaEnabled: false });
+  expect('a setup that is not confirmed does not turn it on', (await call('GET', '/mfa/status', a.token)).data, { mfaEnabled: false, recoveryCodesLeft: 0 });
   const waiting = await stored(a.user.id);
   expect('it is held as one unverified device, the latest key, and the account is not flagged', [waiting.devices.map((d) => [d.verified, d.secret_key === key, d.last_used_step]), waiting.enabled], [[[false, true, null]], false]);
   expect('so sign-in is still password only', (await password(a.user.email)).data.token !== undefined, true);
@@ -91,7 +91,7 @@ async function checks(db) {
 
   const enable = await call('POST', '/mfa/verify', a.token, { totpCode: totpSteps(key, 0) });
   expect('the right code turns it on', [enable.status, enable.data.success], [200, true]);
-  expect('status shows it on', (await call('GET', '/mfa/status', a.token)).data, { mfaEnabled: true });
+  expect('status shows it on', (await call('GET', '/mfa/status', a.token)).data, { mfaEnabled: true, recoveryCodesLeft: 10 }); // STORY-041: ten recovery codes
   const held = await stored(a.user.id);
   expect(
     'mfa_devices holds the device as verified, with the step of the code that confirmed it, and users.mfa_enabled is true',

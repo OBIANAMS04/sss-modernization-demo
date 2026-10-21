@@ -48,6 +48,7 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'POST /api/mfa/setup': 'signed-in',
   'POST /api/mfa/verify': 'signed-in',
   'POST /api/mfa/disable': 'signed-in',
+  'POST /api/mfa/recovery-codes': 'signed-in',
   'GET /api/mfa/status': 'signed-in',
 
   'GET /api/exemptions': 'signed-in',

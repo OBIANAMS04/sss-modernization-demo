@@ -1,6 +1,7 @@
-// STORY-003: the field for a 6-digit authentication code, shared by the sign-in step and the setup page.
+// STORY-003: the field for a 6-digit authentication code, shared by the sign-in step and the setup page. STORY-041: also the
+// field for a recovery code (letters and digits), with recovery set.
 // `error` is announced (role="alert") and marks the field invalid; the caller moves focus to it after a failed submit.
-export default function CodeField({ id, label = 'Authentication code', hint, value, onChange, error, inputRef }) {
+export default function CodeField({ id, label = 'Authentication code', hint, value, onChange, error, inputRef, recovery = false }) {
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
 
@@ -11,12 +12,13 @@ export default function CodeField({ id, label = 'Authentication code', hint, val
         id={id}
         ref={inputRef}
         type="text"
-        name="code"
+        name={recovery ? 'recovery-code' : 'code'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        inputMode="numeric"
-        autoComplete="one-time-code"
-        pattern="[0-9]{6}"
+        inputMode={recovery ? 'text' : 'numeric'}
+        autoComplete={recovery ? 'off' : 'one-time-code'}
+        autoCapitalize={recovery ? 'characters' : undefined}
+        pattern={recovery ? undefined : '[0-9]{6}'}
         spellCheck={false}
         aria-required="true"
         aria-invalid={error ? 'true' : undefined}

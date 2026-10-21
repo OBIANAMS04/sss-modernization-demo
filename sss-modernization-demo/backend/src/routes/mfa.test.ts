@@ -350,13 +350,16 @@ describe('setting up and turning two-step verification on and off (signed in)', 
   });
 
   it('confirming checks the code against the stored key, not a key from the request, and records it as enabling', async () => {
-    asMock(verifyAndEnableMFA).mockResolvedValue(undefined);
+    asMock(verifyAndEnableMFA).mockResolvedValue(['AAAA-BBBB-CCCC-DDDD']);
 
     const res = await request(app).post('/api/mfa/verify').set(bearer(token())).send({ secret: 'A-KEY-THE-CLIENT-MADE-UP', totpCode: RIGHT });
 
     expect([res.status, res.body.success]).toEqual([200, true]);
     expect(asMock(verifyAndEnableMFA).mock.calls).toEqual([[USER.id, RIGHT, budget]]);
-    expect(await actions()).toEqual(['MFA_ENABLE:success']);
+    expect(await actions()).toEqual(['MFA_ENABLE:success', 'MFA_RECOVERY_CODES_CREATED:success']);
+    // STORY-041: the recovery codes come back once, in a response nothing may cache
+    expect(res.body.recoveryCodes).toEqual(['AAAA-BBBB-CCCC-DDDD']);
+    expect(res.headers['cache-control']).toBe('no-store');
   });
 
   it('confirming with a wrong code is refused, and recorded as a failed verification with its reason', async () => {
@@ -417,7 +420,7 @@ describe('setting up and turning two-step verification on and off (signed in)', 
   });
 
   it('counts a session extended with /auth/refresh as the same session, and a new sign-in as a new one', async () => {
-    asMock(verifyAndEnableMFA).mockResolvedValue(undefined);
+    asMock(verifyAndEnableMFA).mockResolvedValue(['AAAA-BBBB-CCCC-DDDD']);
     const extended = (await request(app).post('/api/auth/refresh').set(bearer(token()))).body.token;
     const signedInAgain = session(now());
 
