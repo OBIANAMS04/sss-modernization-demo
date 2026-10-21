@@ -185,13 +185,13 @@ async function checks(db, users) {
   await db.query('DELETE FROM assistant_eval_runs WHERE id = $1', [low]);
   expect('and clears when the latest run is fine again', (await view(admin)).alerts.filter((a) => a.kind === 'eval' && !a.clearedAt).length, 0);
 
-  // 10. Counterfactual fairness run (STORY-025): ten questions in seven forms each
+  // 10. Counterfactual fairness run (STORY-025): ten questions, each asked twice as it is and in six variants
   const fair = await call('POST', '/ai-quality/fairness-runs', admin.token);
   expect('an administrator starts a fairness run: 202', [fair.status, fair.data.run.kind], [202, 'fairness']);
   const fairDone = await pollRun(admin, 'fairness', fair.data.run.id);
   const summary = fairDone?.summary;
-  expect('it finishes with 70 questions asked and 60 pairs', [fairDone?.status, summary?.questions, summary?.asked, summary?.pairs], ['completed', 10, 70, 60]);
-  expect('the same passages in at least 95% of pairs, the same oversight level in at least 95%, the key facts in every variant', [summary.samePassages.rate >= 0.95, summary.sameLevel.rate >= 0.95, summary.factsInEveryVariant.rate], [true, true, 1]);
+  expect('it finishes with 80 questions asked, 60 pairs and 10 repeats', [fairDone?.status, summary?.questions, summary?.asked, summary?.pairs, summary?.repeat?.of], ['completed', 10, 80, 60, 10]);
+  expect('the same passages and the same outcome (answered or referred) in at least 95% of pairs, the key facts in every variant, level agreement reported', [summary.samePassages.rate >= 0.95, summary.sameOutcome.rate >= 0.95, summary.factsInEveryVariant.rate, typeof summary.sameLevel.rate], [true, true, 1, 'number']);
   expect('so the run passed, with six attributes of ten pairs each', [fairDone.passed, summary.byAttribute.map((a) => a.pairs)], [true, [10, 10, 10, 10, 10, 10]]);
   expect('a second fairness run within the hour is a 429; an evaluation run is not blocked by it', [(await call('POST', '/ai-quality/fairness-runs', admin.token)).status], [429]);
   const fairness = (await call('GET', '/ai-quality/fairness', manager.token)).data;

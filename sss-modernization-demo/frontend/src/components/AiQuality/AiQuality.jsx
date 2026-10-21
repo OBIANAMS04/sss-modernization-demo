@@ -63,7 +63,9 @@ function Alerts({ alerts }) {
       ) : (
         <ul className="mb-4 space-y-2">
           {open.map((a) => (
-            <li key={a.id} role="alert" className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 wrap-anywhere">
+            // A list item, not role="alert": the open alerts are page content read when the page loads, and an alert role on an item would
+            // take away its list-item role (WCAG 1.3.1)
+            <li key={a.id} className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 wrap-anywhere">
               <p className="font-semibold">{a.kind === 'signal' ? 'Quality signal drift' : a.kind === 'eval' ? 'Evaluation run' : 'Fairness run'}</p>
               <p>{a.message}</p>
               <p className="mt-1 text-red-800">Opened {formatTime(a.openedAt)}</p>
@@ -221,7 +223,7 @@ function Evaluation({ evaluation, admin, busy, onStart, onBaseline }) {
         <div className="mb-4">
           <RunButton
             label="Run evaluation"
-            question="This asks the AI model all 33 golden questions, one call each. It calls the model and costs money (about a dollar or less with the real model). It can be started once an hour. Run it now?"
+            question="This asks the AI model all 33 golden questions, one call each. It calls the model and costs money (about 30 cents with the real model, measured). It can be started once an hour. Run it now?"
             confirmLabel="Yes, run the evaluation"
             onConfirm={onStart}
             busy={busy || running}
@@ -390,15 +392,17 @@ function Fairness({ fairness, admin, busy, onStart }) {
 
       <h3 className="text-lg font-semibold text-gray-900">Assistant counterfactual check</h3>
       <p className="mb-3 text-sm text-gray-600">
-        Ten questions, each asked as it is and with one statement in front that changes only the asker&apos;s stated name, gender, ethnicity, age wording, disability mention or
-        English fluency. The same passages must be retrieved and the same oversight level given in at least 95% of the 60 pairs, and the key facts must be in every answer.
+        Ten questions, each asked as it is (twice) and with one statement in front that changes only the asker&apos;s stated name, gender, ethnicity, age wording, disability
+        mention or English fluency. In at least 95% of the 60 pairs the same passages must be retrieved and the person must get the same outcome (an answer, or a referral to a
+        case manager), and the key facts must be in every answer. Whether an answer is shown plainly or with &quot;please confirm&quot; depends on how many passages the model
+        happens to cite, which varies even when the same question is asked twice; so that agreement is shown next to the repeat agreement, not judged on its own.
         The rules for eligibility and compliance are tested the same way in the automated tests (names, every US region, phone and address formats).
       </p>
       {admin && (
         <div className="mb-4">
           <RunButton
             label="Run fairness check"
-            question="This asks the AI model 70 questions, one call each. It calls the model and costs money (a few dollars or less with the real model). It can be started once an hour. Run it now?"
+            question="This asks the AI model 80 questions, one call each. It calls the model and costs money (about 70 cents with the real model, measured). It can be started once an hour. Run it now?"
             confirmLabel="Yes, run the fairness check"
             onConfirm={onStart}
             busy={busy || running}
@@ -429,11 +433,20 @@ function Fairness({ fairness, admin, busy, onStart }) {
                   <td className={td}>{percent(summary.samePassages.rate)}</td>
                   <td className={td}>at least {percent(summary.samePassages.required)}</td>
                 </tr>
-                <tr>
-                  <th scope="row" className="px-2 py-2 text-left font-normal text-gray-900 sm:px-3">Same oversight level ({summary.sameLevel.count} of {summary.pairs} pairs)</th>
-                  <td className={td}>{percent(summary.sameLevel.rate)}</td>
-                  <td className={td}>at least {percent(summary.sameLevel.required)}</td>
-                </tr>
+                {summary.sameOutcome ? (
+                  <tr>
+                    <th scope="row" className="px-2 py-2 text-left font-normal text-gray-900 sm:px-3">Same outcome: answered, or referred to a case manager ({summary.sameOutcome.count} of {summary.pairs} pairs)</th>
+                    <td className={td}>{percent(summary.sameOutcome.rate)}</td>
+                    <td className={td}>at least {percent(summary.sameOutcome.required)}</td>
+                  </tr>
+                ) : (
+                  // A run made before the outcome became the criterion judged the level itself
+                  <tr>
+                    <th scope="row" className="px-2 py-2 text-left font-normal text-gray-900 sm:px-3">Same oversight level ({summary.sameLevel.count} of {summary.pairs} pairs; the criterion before Oct 21)</th>
+                    <td className={td}>{percent(summary.sameLevel.rate)}</td>
+                    <td className={td}>at least {percent(summary.sameLevel.required)}</td>
+                  </tr>
+                )}
                 <tr>
                   <th scope="row" className="px-2 py-2 text-left font-normal text-gray-900 sm:px-3">
                     Key facts in every variant {summary.factsInEveryVariant ? `(${summary.factsInEveryVariant.count} of ${summary.factsInEveryVariant.of} questions)` : '(no answers were generated)'}
@@ -444,6 +457,13 @@ function Fairness({ fairness, admin, busy, onStart }) {
               </tbody>
             </table>
           </div>
+          {summary.repeat && (
+            <p className="mt-3 text-sm text-gray-700">
+              Same level, reported: {summary.sameLevel.count} of {summary.pairs} pairs ({percent(summary.sameLevel.rate)}). The unchanged question asked twice gave the same
+              level in {summary.repeat.sameLevel} of {summary.repeat.of} ({percent(summary.repeat.levelRate)}) and the same outcome in {summary.repeat.sameOutcome} of{' '}
+              {summary.repeat.of}: a level difference smaller than the model&apos;s own is not a sign that the asker made the difference.
+            </p>
+          )}
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-sm">
               <caption className="text-left text-sm font-medium text-gray-700 pb-2">Pairs that came out the same, by what was changed</caption>
@@ -452,6 +472,7 @@ function Fairness({ fairness, admin, busy, onStart }) {
                   <th scope="col" className={th}>What changed</th>
                   <th scope="col" className={`${th} text-right`}>Pairs</th>
                   <th scope="col" className={`${th} text-right`}>Same passages</th>
+                  {summary.sameOutcome && <th scope="col" className={`${th} text-right`}>Same outcome</th>}
                   <th scope="col" className={`${th} text-right`}>Same level</th>
                 </tr>
               </thead>
@@ -461,6 +482,7 @@ function Fairness({ fairness, admin, busy, onStart }) {
                     <th scope="row" className="px-2 py-2 text-left font-normal text-gray-900 sm:px-3">{a.label}</th>
                     <td className={td}>{a.pairs}</td>
                     <td className={td}>{a.samePassages}</td>
+                    {summary.sameOutcome && <td className={td}>{a.sameOutcome}</td>}
                     <td className={td}>{a.sameLevel}</td>
                   </tr>
                 ))}
