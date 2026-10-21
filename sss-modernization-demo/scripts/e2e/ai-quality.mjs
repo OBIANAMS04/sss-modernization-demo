@@ -130,7 +130,9 @@ async function checks(db, users) {
   // 6. Change markers: a model that is not the one before, and a new version of the documents (STORY-021)
   const first = await view(admin);
   const lastModelBefore = first.markers.filter((m) => m.kind === 'model').at(-1);
-  expect('the model the answers report is a marker, and so is the version of the documents', [first.markers.some((m) => m.kind === 'model' && m.to === 'claude-opus-5-5'), first.markers.some((m) => m.kind === 'corpus')], [true, true]);
+  // The marker follows the newest answer; after the assistant suites have run on the same database that is not one of this suite's back-dated fixtures
+  const newestModel = (await db.query(`SELECT model FROM assistant_interactions WHERE model IS NOT NULL ORDER BY created_at DESC LIMIT 1`)).rows[0].model;
+  expect('the model the answers report is a marker, and so is the version of the documents', [lastModelBefore?.to, first.markers.some((m) => m.kind === 'corpus')], [newestModel, true]);
   await insertAnswer(db, citizen.user.id, 0, { model: 'claude-sonnet-5-5', hours: 0 });
   const switched = (await view(admin)).markers.filter((m) => m.kind === 'model').at(-1);
   expect('a different model, as the answer reports it, is a new marker with what it changed from', [switched.from, switched.to], [lastModelBefore.to, 'claude-sonnet-5-5']);

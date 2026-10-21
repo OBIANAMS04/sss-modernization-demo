@@ -174,6 +174,7 @@ export async function recordServerStart(commit: string, migrationsApplied: strin
  * STORY-033: the entries are collected until the event loop has finished the work it has in hand (setImmediate) and written with one INSERT. Every read of the API is audited (STORY-010),
  * so one statement and one pooled connection per read was the largest single user of the connection pool under load. Each entry keeps
  * the time, the caller's address, the browser and the trace id of the moment it was recorded, and nothing about it is dropped or changed.
+ * The time comes from the API's clock, not the database's (one INSERT carries entries recorded at different moments).
  * The cost: an entry is in the database one turn of the event loop after the action (a few milliseconds when the server is busy), and a process
  * that is killed outright (not stopped with SIGTERM, which writes the pending entries first) can lose the entries of that last turn.
  */

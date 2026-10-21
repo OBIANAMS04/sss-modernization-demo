@@ -36,7 +36,9 @@ run(async () => {
   expect('citizen: GET /freshness/dashboard', (await call('GET', '/freshness/dashboard', b.token)).status, 403);
   expect('citizen: POST /freshness/probe', (await call('POST', '/freshness/probe', b.token)).status, 403);
   expect('citizen: GET /exemptions/stats', (await call('GET', '/exemptions/stats', b.token)).status, 403);
-  expect('removed placeholder: GET /data/pipeline-status', (await call('GET', '/data/pipeline-status', null)).status, 404);
+  // STORY-005 replaced the R0 placeholder with a real route: signed-in only
+  expect('anonymous: GET /data/pipeline-status', (await call('GET', '/data/pipeline-status', null)).status, 401);
+  expect('citizen: GET /data/pipeline-status', (await call('GET', '/data/pipeline-status', b.token)).status, 200);
   expect('removed placeholder: POST /latency/cleanup', (await call('POST', '/latency/cleanup', m.token, {})).status, 404);
   expect('anonymous: GET /cases', (await call('GET', '/cases', null)).status, 401);
   expect('invalid token: GET /cases (401, not 500)', (await call('GET', '/cases', 'not-a-token')).status, 401);
