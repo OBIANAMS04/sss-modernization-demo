@@ -487,6 +487,55 @@ calls) for a fairness run. **Response (202):** `{ "run": { "id", "kind", "status
 Admin only. Marks a completed evaluation run as the baseline of its mode (the earlier one of that mode is released). **Response (200):** `{ "run": { ... } }`.
 400 for an id that is not a run, a run that is not completed or a fairness run; 404 for no such run. Audited as `AI_EVAL_BASELINE`.
 
+## Observability: traces, metrics, objectives and alerts (STORY-026 to 029)
+
+### Trace ids on every response
+Every response (any status, any route) carries `traceparent` (W3C Trace Context) and `X-Request-Id` (the 32-hex trace id, the same value); both are
+exposed to browsers (`Access-Control-Expose-Headers`). A `traceparent` that arrives with the request is continued, so the response has the caller's
+trace id. Every server log line is one JSON object (`time`, `level`, `msg`, `service`, `trace_id`, `span_id`, `data`); the request line is
+`{"msg":"Request","data":{"route":"GET /api/cases/:id","status":200,"ms":12}}`: routes are templates, never raw paths or query strings. Audit entries
+made by a request record its `traceId` (a field on each entry of `GET /api/audit`; migration 023). Nothing leaves the server unless
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set (see `docs/OBSERVABILITY.md`).
+
+### GET /api/observability
+Admin only (403 for anyone else, 401 when not signed in). Reading is an audited `DATA_READ`.
+
+```json
+{
+  "generatedAt": "...",
+  "health": { "status": "ok", "database": { "ok": true, "latencyMs": 5 }, "migrations": { "applied": 25, "latest": "025_slo_alerts.sql" }, "commit": "a66f559",
+              "startedAt": "...", "uptimeSeconds": 4210, "memoryRssMb": 96, "pool": { "size": 3, "idle": 3, "waiting": 0 }, "tracing": { "exportsTo": "nowhere" } },
+  "objectives": { "definitions": [ { "id": "availability", "title": "Availability", "objective": "...", "source": "traffic" } ],
+                  "traffic": [ { "id": "availability", "window": "1h", "status": "ok", "value": "100%", "target": "at least 99.5%", "message": "" } ],
+                  "aiQuality": [ { "id": "ai-drift", "open": 0 }, { "id": "ai-fairness", "open": 0 } ] },
+  "traffic": { "last24h": { "requests": 812, "errors4xx": 31, "errors5xx": 0, "errorRate": 0, "availability": 1, "p50Ms": 4.2, "p95Ms": 61, "p99Ms": 410 },
+               "last7d": { "...": "..." }, "hourly": [ { "at": "...", "requests": 40, "errors4xx": 1, "errors5xx": 0, "p95Ms": 55 } ], "daily": [ "..." ] },
+  "latency": { "targetMs": 2000, "routes": [ { "route": "GET /api/cases/:id", "requests": 12, "errors4xx": 0, "errors5xx": 0, "avgMs": 9, "p50Ms": 7, "p95Ms": 31, "p99Ms": 40, "maxMs": 44 } ], "slowest": [ "..." ] },
+  "database": { "last24h": { "queries": 3120, "failed": 0, "avgMs": 1.4, "p95Ms": 7, "maxMs": 90, "poolSize": 10, "poolInUseMax": 4, "poolWaitingMax": 0 } },
+  "recentErrors": [ { "at": "...", "route": "GET /api/audit", "status": 500, "traceId": "94248ee9...", "durationMs": 5.4, "errorName": "error", "errorCode": "22P02" } ],
+  "ai": { "budgetUsd": 2, "days": [ { "day": "2026-10-20", "calls": 36, "inputTokens": 12472, "outputTokens": 1290, "cacheReadTokens": 0, "cacheCreationTokens": 0, "costUsd": 0.0757 } ], "today": { "...": "..." } },
+  "alerts": { "open": [ { "id": "...", "kind": "slo", "key": "availability:1h", "message": "...", "openedAt": "...", "clearedAt": null, "runbook": "availability" } ], "history": [ "..." ] },
+  "runbook": [ { "id": "availability", "title": "...", "meaning": "...", "firstChecks": [ "..." ], "close": "..." } ],
+  "retentionDays": 30
+}
+```
+Metrics are rollups per route template per minute in PostgreSQL (`route_metrics_minute`: requests, 4xx and 5xx apart, p50/p95/p99, and a histogram so a window's percentile is
+computed from added-up counts), `db_metrics_minute` (query time, pool use) and `server_errors` (status 500 or more with the trace id, the error class and its
+database code, never its message), kept 30 days. The minute in progress is written before the response is built. Percentiles of windows are interpolated inside the histogram bucket
+(bounds 5 ms to 10 s, with 2000 ms among them). AI tokens and estimated cost are columns on `assistant_interactions` and `assistant_eval_runs`; prices are in one table
+(`services/aiPricing.ts`; `claude-opus-5-5`: $4 per million input tokens, $20 output, $0.20 cache read) and the daily budget is `AI_DAILY_BUDGET_USD` (default 2).
+
+### POST /api/observability/evaluate
+Admin only. Writes the minute in progress, evaluates every objective now, opens alerts for new breaches and closes recovered ones. **Response (200):**
+`{ "results": [ { "id": "latency", "window": "1h", "status": "ok|breach|no-data", "value": "...", "target": "...", "message": "..." } ], "opened": ["availability:1h"], "cleared": [] }`.
+Audited as `ADMIN_ACTION` (`evaluate-objectives`). The same check runs every minute on a timer in the server.
+
+**Objectives** (`backend/src/observability/slo.ts`, the only definition): availability (share of requests that are not 5xx) at least 99.5%; p95 duration under 2 s;
+error rate under 1% on every route with at least 20 requests; AI spend at most the daily budget over 24 hours and at most a quarter of it in any hour; and the drift (STORY-021)
+and fairness (STORY-025) checks. Each traffic objective is evaluated over 1 hour and 24 hours; fewer than 20 requests is `no-data`, never a breach. A breach opens **one** alert
+(`kind` `slo`, key `<objective>:<window>`, in the alert table of STORY-021) with an audit event (`SLO_ALERT`, phase `opened`) and a notification to every administrator;
+it closes (phase `cleared`) when the objective recovers. Each alert has a runbook entry: `docs/RUNBOOK-ALERTS.md`.
+
 ## Health Check
 
 ### GET /health

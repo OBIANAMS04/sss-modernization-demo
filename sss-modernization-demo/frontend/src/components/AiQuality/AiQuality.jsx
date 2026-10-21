@@ -287,7 +287,7 @@ function Evaluation({ evaluation, admin, busy, onStart, onBaseline }) {
       )}
 
       {runs.length > 0 && (
-        <div className="mt-6 overflow-x-auto">
+        <div className="mt-6 relative overflow-x-auto">
           <table className="min-w-full text-sm">
             <caption className="text-left text-sm font-medium text-gray-700 pb-2">Evaluation runs, newest first</caption>
             <thead className="bg-gray-50 text-left text-gray-600">

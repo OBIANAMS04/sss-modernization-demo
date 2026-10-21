@@ -230,6 +230,18 @@ themselves. Demonstrated on a synthetic demo deployment; the documents are illus
   defined in the comment at the top of the service and in `API-SPECIFICATION.md`; each case decision keeps the eligibility result it was
   made against (`case_events.eligibility_status`, migration 021), since exemption rows are updated in place.
 - **Drift and fairness (STORY-021, 025; `/ai-quality`).** `services/driftSignals.ts` (pure) defines the nine daily signals of real AI answers and drift (last 7 days against the 28 before, a tolerance per signal, 20-answer minimum); `aiQualityService.ts` reads them, keeps alerts (audit event plus a notification to administrators, once until cleared) and change markers (`changeMarkers.ts`: model and corpus version). `evalRunService.ts` and `counterfactualService.ts` run the golden set and the counterfactual set on the server through `answerFor()` (the path a real question takes), stored in `assistant_eval_runs` (migration 022), once an hour per kind, admin only. `outcomeMonitoring.ts` watches approval rate, days to decide and override rate by age band and region with the four-fifths rule. Retrieval searches only from the question onward (`retrievalText`), because what people say about themselves must not change which passages are found.
+- **Observability (STORY-026 to 029; `/observability`).** `backend/src/observability/`. `tracing.ts` is the first import of `index.ts`: OpenTelemetry
+  (`@opentelemetry/sdk-trace-node`, HTTP, Express and pg instrumentation, exact pinned versions) wraps those modules as they load. Spans are always
+  made, so every response has a trace id (`traceContext.ts`: `traceparent` and `X-Request-Id`), but they are exported over OTLP only when
+  `OTEL_EXPORTER_OTLP_ENDPOINT` is set, through an exporter that first removes raw paths, query strings, addresses and SQL text (`scrub.ts`). `logger.ts`
+  turns every `console` call into one JSON line with the trace id. `requestMetrics.ts` times each request and counts it under its route template
+  (the one the access policy matched); `metricsRecorder.ts` holds the minute in progress in bounded memory (at most 500 sampled durations and one histogram per route,
+  at most 200 route labels) and `metricsStore.ts` writes closed minutes to PostgreSQL (migration 024) and removes rows older than 30 days. Each model call runs in an
+  `assistant.model_call` span (model, tokens, latency, outcome; never the question, passages or answer) and its tokens and estimated cost (`aiPricing.ts`)
+  are stored on the interaction or run. `slo.ts` defines the objectives; `scheduler.ts` runs, every minute, the metrics flush and the objective check
+  (`sloService.ts`: alerts reuse the STORY-021 alert table, migration 025) and, every five minutes, the AI-quality drift check that used to run only when
+  a page was opened. The page (`/observability`, administrators only) reads `GET /api/observability`; the on-call steps are in `docs/RUNBOOK-ALERTS.md` and the
+  Datadog setting is in `docs/OBSERVABILITY.md`.
 - **Limits and privacy (`services/assistantService.ts`).** SSN-shaped text is removed from the question before it is searched,
   stored, sent or audited. Each person may ask 20 questions per hour (429 with `Retry-After`) and `AI_DAILY_LIMIT` (300) answers
   may be generated per UTC day; both are counted under one advisory lock when the question is accepted, so parallel requests cannot

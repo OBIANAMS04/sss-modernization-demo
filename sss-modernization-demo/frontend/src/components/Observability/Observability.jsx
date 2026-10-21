@@ -72,15 +72,15 @@ function Alerts({ alerts, runbook }) {
       {alerts.open.length === 0 ? (
         <Notice tone="good">No alert is open: every objective is within its target.</Notice>
       ) : (
-        <ul className="mb-4 space-y-2">
+        <div className="mb-4 space-y-2">
           {alerts.open.map((a) => (
-            <li key={a.id} role="alert" className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 wrap-anywhere">
+            <div key={a.id} role="alert" className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 wrap-anywhere">
               <p className="font-semibold">{title(a.runbook)}{a.kind === 'slo' ? ` (${a.key.split(':')[1] === '1h' ? 'last hour' : 'last 24 hours'})` : ''}</p>
               <p>{a.message}</p>
               <p className="mt-1">Opened {formatTime(a.openedAt)}. <a className="underline font-medium" href={`#runbook-${a.runbook}`}>Runbook: what to check first</a></p>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
       {alerts.history.length > 0 && (
         <Table caption="Alert history: alerts that have closed in the last 30 days" head={[['What'], ['Opened'], ['Closed'], ['Runbook']]}>
