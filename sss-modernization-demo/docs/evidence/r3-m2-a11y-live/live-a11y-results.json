@@ -1,0 +1,240 @@
+{
+  "summary": {
+    "site": "https://sss-demo-frontend.onrender.com",
+    "at": "2026-10-21T20:57:31.672Z",
+    "axe": "4.10.2",
+    "rules": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa"
+    ],
+    "pages": 5,
+    "passed": 5,
+    "forms": [
+      {
+        "form": "Sign in, empty",
+        "invalid": 2,
+        "described": 2,
+        "alerts": [],
+        "focusOnInvalid": true,
+        "axe": 0,
+        "pass": true
+      },
+      {
+        "form": "Registration, empty",
+        "invalid": 5,
+        "described": 5,
+        "alerts": [],
+        "focusOnInvalid": true,
+        "axe": 0,
+        "pass": true
+      }
+    ],
+    "session": null,
+    "signOut": null
+  },
+  "results": [
+    {
+      "role": "Signed out",
+      "page": "/login",
+      "title": "Sign in · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 4,
+        "reached": 4,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "email",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Signed out",
+      "page": "/register",
+      "title": "Create account · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 8,
+        "reached": 8,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "email",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Applicant",
+      "page": "/dashboard",
+      "title": "Dashboard · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 8,
+        "reached": 8,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Applicant",
+      "page": "/profile",
+      "title": "My Profile · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 13,
+        "reached": 13,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    },
+    {
+      "role": "Applicant",
+      "page": "/mfa",
+      "title": "Two-step verification · SSS Modernization Demo",
+      "wcag": [],
+      "advisory": [],
+      "keyboard": {
+        "controls": 7,
+        "reached": 7,
+        "missed": [],
+        "noIndicator": [],
+        "firstStop": "Skip to main content",
+        "trapped": false
+      },
+      "reflow": {
+        "ok": true,
+        "scrollWidth": 320,
+        "overflowing": []
+      },
+      "checks": {
+        "WCAG A/AA rules": true,
+        "Every control reached by Tab": true,
+        "Focus always visible": true,
+        "Descriptive title": true,
+        "One h1 and one main": true,
+        "Skip link first": true,
+        "Reflow at 320 px": true
+      },
+      "pass": true
+    }
+  ],
+  "accessibilityTree": [
+    {
+      "role": "textbox",
+      "name": "Email Address",
+      "description": "Email is required",
+      "required": true,
+      "invalid": true
+    },
+    {
+      "role": "textbox",
+      "name": "Full Name",
+      "description": "Full name is required",
+      "required": true,
+      "invalid": true
+    },
+    {
+      "role": "textbox",
+      "name": "Password",
+      "description": "Password is required",
+      "required": true,
+      "invalid": true
+    },
+    {
+      "role": "button",
+      "name": "Create Account",
+      "description": "",
+      "required": false,
+      "invalid": false
+    },
+    {
+      "role": "textbox",
+      "name": "Social Security Number",
+      "description": "SSN is required",
+      "required": true,
+      "invalid": true
+    },
+    {
+      "role": "button",
+      "name": "Show",
+      "description": "",
+      "required": false,
+      "invalid": false
+    },
+    {
+      "role": "button",
+      "name": "Show date picker Show date picker",
+      "description": "Date of birth is required",
+      "required": false,
+      "invalid": false
+    }
+  ]
+}

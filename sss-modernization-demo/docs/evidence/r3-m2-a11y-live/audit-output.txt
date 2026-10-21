@@ -1,0 +1,10 @@
+PASS  Signed out   /login             axe 0 (+0 advisory), Tab 4/4, all checks
+PASS  Signed out   /register          axe 0 (+0 advisory), Tab 8/8, all checks
+PASS  Applicant    /dashboard         axe 0 (+0 advisory), Tab 8/8, all checks
+PASS  Applicant    /profile           axe 0 (+0 advisory), Tab 13/13, all checks
+PASS  Applicant    /mfa               axe 0 (+0 advisory), Tab 7/7, all checks
+PASS  Sign in, empty                  alert: no, invalid fields 2, described 2, focus on first: true, axe 0
+PASS  Registration, empty             alert: no, invalid fields 5, described 5, focus on first: true, axe 0
+PASS  content security policy: 0 violation(s) across every page and role
+
+ALL PASSED
