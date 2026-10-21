@@ -199,8 +199,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       </div>
       <div class="cell">
         <span class="label">BUILD · R0</span>
-        <span class="value">3 of 5 in the demo</span>
-        <span class="note">Two-step sign-in shipped Oct 14; the data pipeline is backend only; AWS waits on Ram</span>
+        <span class="value">4 of 5 in the demo</span>
+        <span class="note">Two-step sign-in shipped Oct 14; data status on the citizen dashboard Oct 21; AWS infrastructure waits on Ram</span>
       </div>
       <div class="cell">
         <span class="label">BUILD · R1</span>
@@ -211,6 +211,11 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
         <span class="label">BUILD · R2</span>
         <span class="value">11 of 11 in the demo</span>
         <span class="note">R2 complete Oct 21: policy assistant with human oversight, then drift detection, fairness testing and observability. Real-model evaluation 100% and fairness 60 of 60 pairs</span>
+      </div>
+      <div class="cell">
+        <span class="label">BUILD · R3</span>
+        <span class="value">6 of 17 in the demo</span>
+        <span class="note">Milestone 1 Oct 21: load testing, performance fixes, production sizing, database-outage survival, an uptime check outside Render. Next: security, accessibility and operations</span>
       </div>
     </div>
     <p class="sub">"In the demo" means working on the synthetic demo deployment. Nothing here is operating in production (Ali, Oct 7).</p>
@@ -249,13 +254,13 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <div class="releases">
       <article class="release">
         <div class="release-head"><h3>R0 · Walking Skeleton</h3><span class="range">STORY-001 – 005</span></div>
-        <div class="bar" role="img" aria-label="3 of 5 in the demo, 1 partial"><span class="done" style="width:60%"></span><span class="partial" style="width:20%"></span></div>
+        <div class="bar" role="img" aria-label="4 of 5 in the demo"><span class="done" style="width:80%"></span></div>
         <ul class="stories">
           <li><span class="id">STORY-001</span><span class="name">Registration and login<small>Plus Ali's guards: SSN hashed and never logged, demo-data banner, masked SSN entry</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-002</span><span class="name">Profile update and compliance check<small>Shipped with STORY-006</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-003</span><span class="name">Two-step verification at sign-in (MFA)<small>Authenticator app (QR code and key), 6-digit code after the password, 5-minute pending token, one use per code, 5 tries; every step audited. Posted Oct 14</small></span><span class="pill ok">In demo</span></li>
           <li><span class="id">STORY-004</span><span class="name">Cloud infrastructure and security controls (L5)<small>Waits on Ram's AWS approval; the demo runs on Render</small></span><span class="pill bad">Blocked</span></li>
-          <li><span class="id">STORY-005</span><span class="name">Real-time data pipeline (L2)<small>Backend code exists; not yet verified</small></span><span class="pill warn">Partial</span></li>
+          <li><span class="id">STORY-005</span><span class="name">Real-time data status (L2)<small>The citizen dashboard says how current it is: pages read the database directly (no cache), freshness measured on every write. Posted Oct 21</small></span><span class="pill ok">In demo</span></li>
         </ul>
       </article>
 
@@ -296,10 +301,13 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
 
       <article class="release">
         <div class="release-head"><h3>R3 · Scale and Launch</h3><span class="range">STORY-030 – 046 · in progress</span></div>
-        <div class="bar" role="img" aria-label="Not started"></div>
+        <div class="bar" role="img" aria-label="6 of 17 in the demo"><span class="done" style="width:35%"></span></div>
         <ul class="stories">
-          <li><span class="id">STORY-030–034</span><span class="name">Load testing, p95 under 2 s, failover<small>Milestone 1, with 036 and R0 005: being built since Oct 21 (docs/R3-PLAN.md)</small></span><span class="pill warn">In progress</span></li>
-          <li><span class="id">STORY-035–040</span><span class="name">Training portal, monitoring, incident playbook, runbooks</span><span class="pill idle">Not started</span></li>
+          <li><span class="id">STORY-030–032</span><span class="name">Load testing<small>Pinned harness, ramp to 128 connections before and after the fixes, one light live run (25 connections, 60 s, p95 1.24 s, 0 errors). Posted Oct 21</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-033</span><span class="name">Performance and production sizing<small>Throughput about doubled, no failures to 128 connections, three indexes; sizing for 10,000 users with every number labelled</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-034</span><span class="name">Failover<small>The API survives its database going away and recovers by itself; multi-region design written, not deployed</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-036</span><span class="name">Monitoring outside the platform<small>Uptime check every 30 minutes from GitHub Actions, issue on failure</small></span><span class="pill ok">In demo</span></li>
+          <li><span class="id">STORY-035, 037–040</span><span class="name">Training portal, incident playbook, runbooks and documentation<small>Milestones 2 and 3</small></span><span class="pill idle">Not started</span></li>
           <li><span class="id">STORY-041–046</span><span class="name">Penetration test, accessibility audit, go-live review</span><span class="pill idle">Not started</span></li>
         </ul>
       </article>
@@ -332,6 +340,10 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><strong>Drift detection</strong>Nine quality signals from real AI answers compared week on week, evaluation runs against a baseline, change markers, and alerts to administrators</li>
       <li><strong>Fairness</strong>Names, places, phrasing and stated identity must not change outcomes or answers; outcomes compared by age band and region with the four-fifths rule; no race, sex or similar data collected</li>
       <li><strong>Observability</strong>Trace ids on every response and log line, per-route latency and errors, AI tokens and cost, objectives checked every minute with alerts and a runbook; export to Datadog or any OpenTelemetry backend is one setting</li>
+      <li><strong>Load and performance</strong>Load tested to 128 connections locally and 25 live; throughput about doubled and no request fails after the fixes (before, a full connection pool closed every route). Production sizing for 10,000 users, every number labelled measured, derived or assumed</li>
+      <li><strong>Database outage</strong>The API keeps running without its database, answers "try again" with Retry-After, and recovers by itself without a restart; the multi-region production design is written (not deployed)</li>
+      <li><strong>Uptime check</strong>Every 30 minutes from outside Render; a failure opens a GitHub issue and recovery closes it</li>
+      <li><strong>Data status</strong>The citizen dashboard says how current the page is: when your records last changed and how quickly changes become visible (green, yellow or red, in words too)</li>
       <li><strong>Access policies</strong>Open Policy Agent decides every API request before any route: role, resource type, action and owner or assignee. Administrators change rules without a deploy (reason required, write-once versions, audited, applies at once). The policy can refuse what the code allows, never allow what it refuses; sign-in, health and the policy pages are locked so administrators cannot be locked out. The earlier "API governance" service never called OPA and was removed</li>
     </ul>
   </section>
@@ -339,7 +351,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
   <section id="screens" aria-labelledby="screens-h">
     <header>
       <h2 id="screens-h">Screens</h2>
-      <p class="sub">The latest screen for each shipped story, captured from the demo application running the deployed code with synthetic data (October 19, 2026). Full sets with captions are in each story's evidence pack on GitHub.</p>
+      <p class="sub">The latest screen for each shipped story, captured from the demo application running the deployed code with synthetic data (October 21, 2026). Full sets with captions are in each story's evidence pack on GitHub.</p>
     </header>
     <div class="shots">
       <figure><img src="demo/screens/tour-01-register.png" width="1280" height="900" alt="Registration form with the demo-data banner and a masked SSN field" loading="lazy"><figcaption><strong>STORY-001 · Registration</strong>Masked SSN entry and a synthetic-data banner; SSNs are stored as one-way hashes.</figcaption></figure>
@@ -371,13 +383,16 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <figure><img src="demo/screens/tour-29-drift-signals.png" width="1216" height="2702" alt="Quality signals, the last 7 days against the 28 before, with drift flagged" loading="lazy"><figcaption><strong>STORY-021 · Drift signals</strong>Nine signals week on week, each with its tolerance (fixture data in the evidence run).</figcaption></figure>
       <figure><img src="demo/screens/tour-30-fairness.png" width="1216" height="1890" alt="Counterfactual check passed and outcomes by age band and region with the four-fifths rule" loading="lazy"><figcaption><strong>STORY-025 · Fairness</strong>What the demo does not collect and why, the counterfactual check, and outcomes by group (fixture data).</figcaption></figure>
       <figure><img src="demo/screens/tour-31-observability.png" width="1280" height="900" alt="Observability page with open alerts linked to the runbook" loading="lazy"><figcaption><strong>STORY-028 and 029 · Observability</strong>Objectives checked every minute; a breach opens an alert with its runbook entry.</figcaption></figure>
+      <figure><img src="demo/screens/tour-40-load-before-after.png" width="1240" height="610" alt="p95 response time and failed requests from 4 to 128 connections, before and after the performance fixes" loading="lazy"><figcaption><strong>STORY-031 and 033 · Load, before and after</strong>Same harness and machine: no failures at any step after the fixes (before, 96 to 98% failed at 64 and 128).</figcaption></figure>
+      <figure><img src="demo/screens/tour-41-database-outage.png" width="1240" height="472" alt="22 of 22 checks: the API starts without its database, answers 503 with Retry-After and recovers by itself" loading="lazy"><figcaption><strong>STORY-034 · Database outage</strong>The API stays up and recovers by itself, without a restart.</figcaption></figure>
+      <figure><img src="demo/screens/tour-42-data-status-card.png" width="1280" height="1457" alt="Live citizen dashboard with the How current this page is card and the release progress list" loading="lazy"><figcaption><strong>STORY-005 · Data status</strong>On the live demo: when the records last changed and the measured freshness level.</figcaption></figure>
     </div>
   </section>
 
   <section id="platform" aria-labelledby="platform-h">
     <header>
       <h2 id="platform-h">Platform</h2>
-      <p class="sub">Claude commits and pushes each change, and Render deploys automatically. Claude then verifies the demo deployment itself: the commits served on every page path, the database and migrations, every protected route refusing requests without a token or from a citizen, and screenshots. Database changes apply on startup through tracked migrations (001–025). Open Policy Agent decides every API request before any route runs; the access table lists 66 routes. Every request is traced with OpenTelemetry and measured per route. The policy assistant uses Claude when <span class="mono">ANTHROPIC_API_KEY</span> is set, and is scored by <span class="mono">scripts/ai/eval.mjs</span>. The policy is checked end to end by <span class="mono">scripts/e2e/policy.mjs</span> and built by <span class="mono">scripts/opa/build.mjs</span>.</p>
+      <p class="sub">Claude commits and pushes each change, and Render deploys automatically. Claude then verifies the demo deployment itself: the commits served on every page path, the database and migrations, every protected route refusing requests without a token or from a citizen, and screenshots. Database changes apply on startup through tracked migrations (001–026). Open Policy Agent decides every API request before any route runs; the access table lists 67 routes. Every request is traced with OpenTelemetry and measured per route. The policy assistant uses Claude when <span class="mono">ANTHROPIC_API_KEY</span> is set, and is scored by <span class="mono">scripts/ai/eval.mjs</span>. The policy is checked end to end by <span class="mono">scripts/e2e/policy.mjs</span> and built by <span class="mono">scripts/opa/build.mjs</span>. Load is measured by the harness in <span class="mono">scripts/load/</span>, a database outage by <span class="mono">scripts/e2e/failover.mjs</span>, and an uptime check outside Render runs every 30 minutes.</p>
     </header>
     <div class="flow">
       <div class="node"><span class="k">Source</span><span class="v">GitHub</span><span class="m">OBIANAMS04/sss-modernization-demo</span></div>
@@ -418,6 +433,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td class="num">2026-10-14</td><td>The owner made his own case-manager account the demo's administrator through ADMIN_EMAILS</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-15</td><td>R2 milestone 1 = STORY-017 to 020 and 022 to 024, with our own acceptance criteria. Claude through the official SDK with native citations; PostgreSQL full-text retrieval; no LangChain or LangSmith; synthetic policy documents; without a key the assistant shows passages; the assistant never decides eligibility</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-21</td><td>R3 in three milestones with our own acceptance criteria; what the demo cannot have (GovCloud, a second region, 10,000 real users, a third-party pen test, a screen-reader user) is built up to and stated plainly</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-21</td><td>STORY-005 without a cache: pages read the database directly, so data is never older than the read; freshness stays measured on every write. The old route test suites that built their own outdated tables were retired; the end-to-end suites cover their routes</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-21</td><td>STORY-033 limits: the caller's role is never cached between requests (a Staff Access change applies on the next request); bcrypt cost and compression unchanged</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-21</td><td>The claude.ai Project reads this framework straight from the GitHub repo, current after every push</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-20</td><td>R2 milestone 2: drift from the demo's own records (no LangSmith); fairness tested counterfactually without collecting protected data; OpenTelemetry built in and Datadog-ready over OTLP. The demo slide deck and briefing are updated at the end of R2</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-20</td><td>The API key lives only in Render's environment and an Anthropic workspace; a key that was shown in a screenshot was revoked and replaced the same day</td><td>Obi</td></tr>
@@ -451,6 +468,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><time datetime="2026-10-16">Oct 16, 2026</time><span>The free Render database expired; from Oct 17 the API could not start (the site stayed up)</span></li>
       <li><time datetime="2026-10-19">Oct 19, 2026</time><span class="big">Database upgraded with all data kept. R2 milestone 1 in the demo: STORY-017, 018, 019, 020, 022, 023 and 024, the policy assistant with human oversight. Verified on the demo deployment (API 0ad66ad, site 82d3984): 59 routes in the access table, 21 migrations, all 32 protected GET routes refuse requests without a token, all 17 staff routes refuse a signed-in citizen, 26 of 26 page and role combinations pass WCAG 2.1 AA, 1,063 unit tests, 485 end-to-end API checks in 11 suites, evaluation 33 of 33</span></li>
       <li><time datetime="2026-10-21">Oct 21, 2026</time><span class="big">R2 milestone 2 in the demo: STORY-021, 025, 026–029; R2 complete (11 of 11). Verified on the demo deployment (commit 34b2393): 66 routes, 25 migrations, all 35 protected GET routes refuse requests without a token, trace ids on every response, memory about 110 MB of 512 MB; locally 1,645 unit tests, 592 end-to-end checks in 13 suites, 38 accessibility checks. Our review fixed the fairness search, malformed audit ids (500 to 400) and refusals logged as errors. The first real-model runs failed on uncited opening sentences; after a prompt fix and an outcome-based fairness criterion, the re-run passed: evaluation 100% (baseline), fairness 60 of 60 pairs; posted with screenshots</span></li>
+      <li><time datetime="2026-10-21">Oct 21, 2026</time><span class="big">R3 milestone 1 in the demo: STORY-030, 031, 032, 033, 034, 036 and R0 STORY-005. Verified on the demo deployment (commit f23de97): 67 routes, 26 migrations, all 36 protected GET routes refuse requests without a token, every staff route refuses a signed-in citizen, live accessibility audit passes; locally 1,697 unit tests, 14 end-to-end suites, the outage check 22 of 22. Our review found that a full connection pool closed every route as if the database were down (now a "very busy" 503 for that request only); posted with screenshots</span></li>
       <li><time datetime="2026-10-20">Oct 20, 2026</time><span class="big">Claude answers live. The first key was not scoped to a workspace (a 400; the logs now say why a request is refused); a workspace key fixed it. Evaluation against the real model: 33 of 33, all four thresholds met. The history now says why passages were shown. Verified on the demo deployment (commit 1f71923); posted with screenshots</span></li>
     </ol>
   </section>
@@ -471,10 +489,13 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td><span class="pill idle">Low</span></td><td>The Anthropic workspace has $5 of credit with auto-reload off; AI answers stop when it runs out (the assistant then shows passages and says so)</td><td>Watch the balance; the demo caps AI answers at 300 a day</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>OTLP export was tested against a local collector, not a real Datadog Agent</td><td>Exercise it when a Datadog account is available</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>Free hosting sleeps when idle, and free services can lapse: the free database expired after 30 days and took the API down Oct 17–19</td><td>Database now on a paid plan; open the site a minute before a demo; watch Render emails</td><td>Obi</td></tr>
-          <tr><td><span class="pill idle">Low</span></td><td>No frontend unit tests (the UI is now checked end to end by the evidence scripts); older backend route tests are stale</td><td>Repair or retire the stale suites</td><td>Obi</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>No frontend unit tests (the UI is checked end to end by the evidence and accessibility scripts)</td><td>The stale backend route suites were retired on Oct 21</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>Colaberry's upload endpoint refuses files over about 1 MB, although its tools allow 10 MB</td><td>Raised with Ali in the STORY-009 post and with Ali and Ram in the STORY-011 and STORY-012 posts, and repeated in the STORY-003 to 016 milestone post; not yet answered, so every post repeats it; meanwhile each post attaches one composite image and links the full evidence pack</td><td>Ali, Ram (Colaberry)</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>No one has used the app with JAWS, NVDA or VoiceOver yet; automated checks cover only part of WCAG</td><td>Hands-on screen-reader audit and a VPAT/ACR with STORY-042 (R3)</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page</td><td>verify-deploy waits until every page path serves the current build; a Render header rule could shorten it</td><td>Obi</td></tr>
+          <tr><td><span class="pill warn">Medium</span></td><td>No load test beyond 128 connections on one laptop and 25 on the live demo, and no soak test; the 10,000-user sizing is derived, not measured</td><td>Run the harness from several machines against a production-like stack</td><td>Obi</td></tr>
+          <tr><td><span class="pill warn">Medium</span></td><td>The uptime check's first scheduled run had not started 2 hours after it was pushed (GitHub can delay new schedules)</td><td>Start it once by hand (Actions, Uptime check, Run workflow) and confirm it runs every 30 minutes</td><td>Obi</td></tr>
+          <tr><td><span class="pill idle">Low</span></td><td>A url.parse() deprecation warning is logged at error level on every API start</td><td>Find the dependency in R3 milestone 2 (hardening)</td><td>Obi</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>No MFA recovery codes yet</td><td>Production needs recovery codes or a verified reset</td><td>Obi</td></tr>
         </tbody>
       </table>
@@ -486,7 +507,11 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <ul class="links">
       <li><span class="k">Demo site</span><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></li>
       <li><span class="k">Basecamp BUILD ticket</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172">Selective Service Modernization – BUILD</a></li>
-      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10426289975">R2 milestone 2: drift, fairness and observability; R2 complete</a></li>
+      <li><span class="k">Latest milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10429322876">R3 milestone 1: load, performance, outage survival, uptime, data status</a></li>
+      <li><span class="k">R3 milestone 1 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/r3-m1">Load, sizing, outage and uptime screens</a></li>
+      <li><span class="k">Load results and sizing</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/blob/master/sss-modernization-demo/docs/PRODUCTION-SIZING.md">Production sizing</a> · <a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/r3-load">raw load results</a> · <a href="https://github.com/OBIANAMS04/sss-modernization-demo/blob/master/sss-modernization-demo/docs/FAILOVER.md">failover design</a></li>
+      <li><span class="k">Uptime check runs</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/actions/workflows/uptime.yml">GitHub Actions</a></li>
+      <li><span class="k">R2 milestone 2 post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10426289975">R2 milestone 2: drift, fairness and observability; R2 complete</a></li>
       <li><span class="k">R2 milestone 1 post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10425206951">Policy assistant with human oversight</a></li>
       <li><span class="k">R1 milestone post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10404013551">STORY-003, 013, 014, 015 and 016: R1 complete</a></li>
       <li><span class="k">STORY-021 and 025 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-021-025">Drift and fairness screenshots and checks</a></li>
