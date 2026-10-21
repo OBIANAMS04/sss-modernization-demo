@@ -20,7 +20,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { auditDataAccess } from './middleware/auditAccess';
 import { clientAddress, requestContextMiddleware } from './utils/requestContext';
 import { traceContextMiddleware } from './observability/traceContext';
-import { routeTemplate } from './observability/scrub';
+import { requestMetrics } from './observability/requestMetrics';
 import pool from './database/connection';
 
 dotenv.config();
@@ -44,16 +44,9 @@ app.use(cors({
   exposedHeaders: ['X-Request-Id', 'traceparent'],
 }));
 
-// Request logging. STORY-026: one JSON line per finished request, named by the route template (never the raw path or query, which hold
-// record ids and anything a person typed) with the status and duration; the trace id is added to every line by the logger.
-app.use((req, res, next) => {
-  const started = process.hrtime.bigint();
-  res.on('finish', () => {
-    const ms = Number(process.hrtime.bigint() - started) / 1e6;
-    console.log('Request', { route: routeTemplate(req.method, req.baseUrl, req.route?.path), status: res.statusCode, ms: Math.round(ms * 10) / 10 });
-  });
-  next();
-});
+// STORY-026 and 027: times every request; writes its JSON log line (route template, status, duration), counts it for the route's
+// per-minute rollup, and keeps a server error with its trace id
+app.use(requestMetrics);
 
 // STORY-016: the access policy decides every request before any router sees it. The guards on the routes stay as a second layer.
 app.use(enforcePolicy);

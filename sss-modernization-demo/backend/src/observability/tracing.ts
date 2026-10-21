@@ -6,7 +6,9 @@
 // same rule (see metricsExport.ts). With the Datadog Agent: enable its OTLP receiver (DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_HTTP_ENDPOINT=
 // 0.0.0.0:4318) and set OTEL_EXPORTER_OTLP_ENDPOINT=http://<agent host>:4318. See docs/OBSERVABILITY.md.
 import dotenv from 'dotenv';
-import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+import { diag, DiagConsoleLogger, DiagLogLevel, metrics } from '@opentelemetry/api';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { ExportResultCode } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
@@ -44,18 +46,27 @@ const endpoint = exportEndpoint();
 // Only errors from the SDK itself are shown; without this a failed export is silent
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
 
-const provider = new NodeTracerProvider({
-  resource: resourceFromAttributes({
+const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || 'sss-demo-api',
     [ATTR_SERVICE_VERSION]: (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7),
     'deployment.environment.name': process.env.RENDER ? 'render' : 'local',
-  }),
+  });
+
+const provider = new NodeTracerProvider({
+  resource,
   // A small queue keeps the memory bounded on the 512 MB instance; spans over the limit are dropped, never held
   spanProcessors: endpoint
     ? [new BatchSpanProcessor(new ScrubbingExporter(new OTLPTraceExporter()), { maxQueueSize: 512, maxExportBatchSize: 128, scheduledDelayMillis: 5000 })]
     : [],
 });
 provider.register();
+
+// STORY-027: the same metrics the service keeps in PostgreSQL (request duration by route template, query duration, AI calls, tokens and cost)
+// are exported as OpenTelemetry metrics, once a minute, and only when an endpoint is set. With none, the instruments are no-ops.
+const meterProvider = endpoint
+  ? new MeterProvider({ resource, readers: [new PeriodicExportingMetricReader({ exporter: new OTLPMetricExporter(), exportIntervalMillis: 60_000 })] })
+  : undefined;
+if (meterProvider) metrics.setGlobalMeterProvider(meterProvider);
 
 registerInstrumentations({
   instrumentations: [
@@ -76,4 +87,5 @@ export const tracingExports = endpoint !== undefined;
 
 process.on('SIGTERM', () => {
   provider.shutdown().catch(() => {});
+  meterProvider?.shutdown().catch(() => {});
 });
