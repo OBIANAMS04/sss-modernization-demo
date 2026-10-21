@@ -80,6 +80,8 @@ function LineGraph({ ariaLabel, categories, series, categoryTitle, format, refer
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
   const { top, ticks } = axisFor(Math.max(0, referenceLine?.value ?? 0, ...series.flatMap((s) => s.values.map((v) => v ?? 0))));
+  // Every second label for a short axis; a long one (35 days) is labelled once a week so the labels do not run together
+  const labelEvery = categories.length > 14 ? 7 : 2;
   const x = (i) => margin.left + (categories.length > 1 ? (i / (categories.length - 1)) * plotWidth : plotWidth / 2);
   const y = (value) => margin.top + plotHeight - (value / top) * plotHeight;
   return (
@@ -111,7 +113,7 @@ function LineGraph({ ariaLabel, categories, series, categoryTitle, format, refer
           </g>
         ))}
         {categories.map((category, i) =>
-          (categories.length - 1 - i) % 2 === 0 ? (
+          (categories.length - 1 - i) % labelEvery === 0 ? (
             <text key={category} x={x(i)} y={height - margin.bottom + 18} textAnchor="middle" fontSize="12" fill={TEXT}>{category}</text>
           ) : null
         )}

@@ -423,6 +423,70 @@ in which nothing was reviewed.
 
 ---
 
+## AI Quality: drift and fairness (STORY-021, 025)
+
+All under `/api/ai-quality`. Reading is for staff (case managers and admins; 403 for anyone else, 401 when not signed in). Starting a run and marking a
+baseline are **admin only** (403 for a case manager): a run calls the model once per question, so it costs money.
+
+### GET /api/ai-quality
+
+Quality signals of the real AI answers (`mode` `ai`; the stand-in and passages-only answers are not counted), with drift, change markers, alerts and the
+evaluation runs. Reading it also records any new change marker and opens or clears the alerts, so the alerts are current whenever anyone looks.
+
+```json
+{
+  "windows": { "recentDays": 7, "baselineDays": 28, "minAnswers": 20 },
+  "signals": [ { "key": "groundedRate", "label": "Grounded rate", "unit": "percent", "tolerance": "down more than 2 points", "state": "drift",
+                 "recent": 72, "baseline": 100, "change": -28, "message": "Grounded rate moved from 100% to 72% (down more than 2 points is drift)." } ],
+  "trend": { "days": ["2026-09-17", "..."], "answers": [0, 3], "series": [ { "key": "groundedRate", "label": "Grounded rate", "unit": "percent", "values": [null, 75] } ] },
+  "markers": [ { "id": "...", "kind": "model", "from": "claude-opus-5-5", "to": "claude-sonnet-5-5", "at": "2026-10-20T10:00:00.000Z" } ],
+  "alerts": [ { "id": "...", "kind": "signal", "key": "groundedRate", "message": "...", "openedAt": "...", "clearedAt": null } ],
+  "evaluation": { "runs": [ "..." ], "latest": { "id": "...", "status": "completed", "mode": "ai", "model": "claude-opus-5-5", "corpusVersion": "5b92e5985e22",
+                  "scores": { "retrievalHitRate": 1, "factAccuracy": 0.91, "citationValidity": 1, "groundedRate": 1 }, "passed": true, "isBaseline": false },
+                  "baseline": { "...": "..." }, "thresholds": [ "..." ], "belowBaseline": [], "failures": [] }
+}
+```
+Nine signals, each over the completed answers of a day or a window: `groundedRate`, `withheldRate`, `level1Share`, `noAnswerRate`, `citationsPerAnswer`,
+`answerLength`, `p95LatencyMs`, `negativeFeedbackRate` and `reportRate`. Drift compares the last 7 days with the 28 days before, each with its own tolerance
+(grounded rate down more than 2 points, p95 latency up more than 50%, ...); a window with fewer than 20 answers gives `state` `not-enough-data`.
+`trend` has 35 days (UTC), the empty ones with `null` values. A marker is a change of model (as the API reports it) or of the policy documents' version
+(`kind` `corpus`); `from` is null for the first one seen. An **alert** (`kind` `signal`, `eval` or `fairness`) opens once: it is audited
+(`AI_DRIFT_ALERT`, phase `opened`) and a notification goes to every administrator; it stays open, without repeating, until its cause clears (phase `cleared`).
+An evaluation run is drift when it misses a threshold (retrieval 0.90; for the real model also facts 0.85, citations 1 and grounded 0.98) or any score is
+more than 5 points under the baseline of the same mode.
+
+### GET /api/ai-quality/fairness
+
+```json
+{
+  "latest": { "id": "...", "kind": "fairness", "status": "completed", "passed": true, "summary": { "pairs": 60, "samePassages": { "count": 60, "rate": 1, "required": 0.95 },
+              "sameLevel": { "count": 60, "rate": 1, "required": 0.95 }, "factsInEveryVariant": { "count": 10, "of": 10, "rate": 1, "required": 1 }, "byAttribute": [ "..." ] } },
+  "runs": [ "..." ],
+  "outcomes": { "windowDays": 365, "minDecisions": 10, "fourFifths": 0.8, "decisions": 45, "flagged": ["Region West"],
+                "byAgeBand": [ { "group": "18 to 24", "decisions": 45, "approvalRate": 80, "avgDaysToDecide": 2.6, "overrideRate": 20, "enough": true, "flagged": false, "ratioToHighest": null } ],
+                "byRegion": [ "..." ] },
+  "statement": { "heading": "What this demo does not collect, and why", "notCollected": ["Race", "..."], "paragraphs": [ "..." ] }
+}
+```
+`outcomes` groups the approvals and denials of the last year by age band (from the date of birth) and region (from the state in the address; Census regions, or
+`Unknown`); no address or date of birth is returned. A group with fewer than 10 decisions has its counts and no rates. The four-fifths rule flags a group whose
+approval rate is under 80% of the highest group's (never `Unknown`, never a group under the minimum). The demo holds no race, sex, ethnicity, religion,
+disability or national origin, and none was added.
+
+### POST /api/ai-quality/evaluations and POST /api/ai-quality/fairness-runs
+
+Admin only. Each starts a server-side run through the same retrieval and answer path as a real question (`answerFor`), nothing stored in the assistant's history and
+nothing counted against the hourly limit or daily cap: the golden set (33 questions) for an evaluation, the counterfactual set (10 questions in 7 forms each, 70
+calls) for a fairness run. **Response (202):** `{ "run": { "id", "kind", "status": "running", ... } }`; the run finishes in the background and is read from the
+`runs` of the two GET routes (`status` `completed` or `failed`). Each kind can be started **once an hour**: a second start is a `429` `RATE_LIMITED` with
+`Retry-After`. Stored in `assistant_eval_runs` (model, corpus version, mode, the four scores, per-question results, who started it). Audited as `AI_EVAL_RUN`
+(phases `started`, `finished`, `failed`), never with a question or an answer.
+
+### POST /api/ai-quality/runs/:id/baseline
+
+Admin only. Marks a completed evaluation run as the baseline of its mode (the earlier one of that mode is released). **Response (200):** `{ "run": { ... } }`.
+400 for an id that is not a run, a run that is not completed or a fairness run; 404 for no such run. Audited as `AI_EVAL_BASELINE`.
+
 ## Health Check
 
 ### GET /health

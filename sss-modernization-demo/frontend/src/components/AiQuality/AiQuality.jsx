@@ -164,7 +164,7 @@ function Signals({ data }) {
           categoryTitle="Day (UTC)"
           categories={trend.days.map(shortDay)}
           series={[{ name: series.label, values: series.values, format }]}
-          extraColumns={[{ name: 'Answers', values: trend.answers }]}
+          extraColumns={[{ name: 'Answers', values: trend.answers, format: String }]}
           format={format}
         />
       </div>

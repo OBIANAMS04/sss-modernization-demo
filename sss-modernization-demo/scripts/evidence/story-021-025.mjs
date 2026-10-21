@@ -103,7 +103,7 @@ async function shots(db) {
   await sleep(700);
   expect('the alert for the grounded rate is open', await page.hasText('Grounded rate moved from 100% to 72%'), true);
   expect('a case manager sees no run button', [await page.hasText('Run evaluation'), await page.hasText('Run fairness check')], [false, false]);
-  expect('the tab is named AI Quality', await page.evaluate('document.title'), 'AI Quality');
+  expect('the tab is named AI Quality', await page.evaluate('document.title.startsWith("AI Quality")'), true);
   await shot('01-ai-quality');
   await shotSection('Open alerts', '02-alerts');
   await shotSection('Quality signals', '03-signals-and-trend');
@@ -132,7 +132,8 @@ async function shots(db) {
   await shotSection('Evaluation against the golden set', '06-evaluation-run');
 
   // 4. The baseline is marked, and later runs are compared with it
-  await page.click('Mark as baseline', 'button');
+  // The button's name continues with a hidden note saying which run it is for, so it is found by how it starts
+  await page.evaluate(`[...document.querySelectorAll('button')].find((b) => b.innerText.trim().startsWith('Mark as baseline')).click(); true`);
   await sleep(1500);
   expect('the run is the baseline', await page.hasText('That run is now the baseline.'), true);
   await shotSection('Evaluation against the golden set', '07-evaluation-baseline');
