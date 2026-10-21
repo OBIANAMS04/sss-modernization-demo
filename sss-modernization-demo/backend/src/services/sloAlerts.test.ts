@@ -6,7 +6,10 @@ const query = jest.fn();
 const audit = jest.fn();
 jest.mock('../database/connection', () => ({ __esModule: true, default: { query: (...a: unknown[]) => query(...a), connect: jest.fn() } }));
 jest.mock('./auditService', () => ({ AuditAction: { SLO_ALERT: 'SLO_ALERT' }, logAuditEvent: (...a: unknown[]) => audit(...a) }));
-jest.mock('../observability/metricsStore', () => ({ flushMetrics: jest.fn(), RETENTION_DAYS: 30 }));
+const qualityCheck = jest.fn();
+const cleanup = jest.fn();
+jest.mock('../observability/metricsStore', () => ({ flushMetrics: jest.fn(), cleanupMetrics: (...a: unknown[]) => cleanup(...a), RETENTION_DAYS: 30 }));
+jest.mock('./aiQualityService', () => ({ getQualityView: (...a: unknown[]) => qualityCheck(...a) }));
 
 import { MIN_REQUESTS, Measures, RUNBOOK, SLOS, TARGETS, evaluateWindow, runbookIdOf, wantedAlerts } from '../observability/slo';
 import { syncSloAlerts } from '../observability/sloService';
@@ -125,13 +128,29 @@ describe('syncSloAlerts: once until it recovers', () => {
 });
 
 describe('the timer tick', () => {
-  it('runs the AI-quality check only every few ticks, and a failure of one check does not stop the next', async () => {
-    jest.resetModules();
-    expect(QUALITY_EVERY_TICKS).toBeGreaterThan(1);
-    query.mockReset().mockRejectedValue(new Error('db down'));
+  beforeEach(() => {
+    qualityCheck.mockReset().mockResolvedValue({});
+    cleanup.mockReset().mockResolvedValue(0);
+    query.mockReset().mockResolvedValue({ rows: [{ requests: 0, errors_4xx: 0, errors_5xx: 0, total_ms: 0, max_ms: 0, spend: 0 }] });
+  });
+  it('runs the AI-quality drift check on every 5th tick, not on the others', async () => {
+    for (let tick = 1; tick <= 10; tick++) await runTick(tick);
+    expect(QUALITY_EVERY_TICKS).toBe(5);
+    expect(qualityCheck).toHaveBeenCalledTimes(2);
+  });
+  it('cleans up old metrics once an hour of ticks', async () => {
+    await runTick(1);
+    expect(cleanup).not.toHaveBeenCalled();
+    await runTick(60);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+  });
+  it('survives a failing check: the log says so, the next check still runs', async () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    await expect(runTick(1)).resolves.toBeUndefined();
+    query.mockReset().mockRejectedValue(new Error('db down'));
+    qualityCheck.mockRejectedValue(new Error('quality down'));
+    await expect(runTick(5)).resolves.toBeUndefined();
     expect(spy).toHaveBeenCalledWith('Objective check failed', expect.anything());
+    expect(spy).toHaveBeenCalledWith('AI quality alert check failed', expect.anything());
     spy.mockRestore();
   });
 });

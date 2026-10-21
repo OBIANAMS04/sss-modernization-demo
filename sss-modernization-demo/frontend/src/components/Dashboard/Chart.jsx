@@ -10,13 +10,13 @@ const TEXT = '#374151'; // gray-700
 const AXIS = '#6b7280'; // gray-500
 const GRID = '#e5e7eb'; // gray-200: decoration only
 
-/** A round step (1, 2, 5, 10, 20, 50...) that gives about four gridlines up to `max`, never finer than 1 since these count cases. */
-function axisFor(max) {
-  const rough = Math.max(max / 4, 1);
+/** A round step (1, 2, 5, 10, 20, 50...) that gives about four gridlines up to `max`, never finer than `minStep` (1 for counts of cases; less for money and rates). */
+function axisFor(max, minStep = 1) {
+  const rough = Math.max(max / 4, minStep);
   const magnitude = 10 ** Math.floor(Math.log10(rough));
-  const step = [1, 2, 5, 10].map((m) => m * magnitude).find((s) => s >= rough);
-  const top = step * Math.max(1, Math.ceil(max / step));
-  return { top, ticks: Array.from({ length: top / step + 1 }, (_, i) => i * step) };
+  const step = [1, 2, 5, 10].map((m) => m * magnitude).find((s) => s >= rough * 0.999999);
+  const top = step * Math.max(1, Math.ceil(max / step - 1e-9));
+  return { top, ticks: Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step) };
 }
 
 const shown = (value, format) => (value === null || value === undefined ? '—' : format(value));
@@ -43,11 +43,11 @@ function runsOf(values) {
  * (and capped in width) so its text stays about as large as the page's on a phone and on a desktop. Bars are scaled to the
  * longest value, or to `maxValue` when the values are shares of a whole (100 for percentages).
  */
-function BarGraph({ ariaLabel, categories, values, format, color, maxValue }) {
+function BarGraph({ ariaLabel, categories, values, format, color, maxValue, referenceLine }) {
   const width = 280;
   const rowHeight = 46;
   const height = categories.length * rowHeight + 8;
-  const longest = maxValue ?? Math.max(0, ...values.map((v) => v ?? 0));
+  const longest = Math.max(maxValue ?? 0, referenceLine?.value ?? 0, ...values.map((v) => v ?? 0));
   const room = width - 56; // keeps the number at the end of the longest bar inside the picture
   return (
     <svg role="img" aria-label={ariaLabel} viewBox={`0 0 ${width} ${height}`} className="w-full max-w-xs h-auto">
@@ -64,6 +64,9 @@ function BarGraph({ ariaLabel, categories, values, format, color, maxValue }) {
         );
       })}
       <line x1="0.5" x2="0.5" y1="4" y2={height - 4} stroke={AXIS} />
+      {referenceLine && longest > 0 && (
+        <line x1={1 + (referenceLine.value / longest) * room} x2={1 + (referenceLine.value / longest) * room} y1="4" y2={height - 4} stroke={TARGET_COLOR} strokeWidth="2" strokeDasharray="2 4" />
+      )}
     </svg>
   );
 }
@@ -73,13 +76,13 @@ function BarGraph({ ariaLabel, categories, values, format, color, maxValue }) {
  * (null) leaves a gap, not a zero. `referenceLine` ({ value, label }) draws a target as a dotted line with its words, and the
  * axis is made tall enough to show it.
  */
-function LineGraph({ ariaLabel, categories, series, categoryTitle, format, referenceLine }) {
+function LineGraph({ ariaLabel, categories, series, categoryTitle, format, referenceLine, axisMinStep }) {
   const width = 480;
   const height = 250;
   const margin = { top: 14, right: 16, bottom: 50, left: 42 };
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const { top, ticks } = axisFor(Math.max(0, referenceLine?.value ?? 0, ...series.flatMap((s) => s.values.map((v) => v ?? 0))));
+  const { top, ticks } = axisFor(Math.max(0, referenceLine?.value ?? 0, ...series.flatMap((s) => s.values.map((v) => v ?? 0))), axisMinStep);
   // Every second label for a short axis; a long one (35 days) is labelled once a week so the labels do not run together
   const labelEvery = categories.length > 14 ? 7 : 2;
   const x = (i) => margin.left + (categories.length > 1 ? (i / (categories.length - 1)) * plotWidth : plotWidth / 2);
@@ -185,17 +188,20 @@ function ChartTable({ caption, categoryHeader, categories, columns, format }) {
  * A chart with its data table. `series` is what the picture draws ({ name, values, format? } each; a bar chart draws the first);
  * `extraColumns` are numbers that only the table shows. `label` says what the chart is of, and names the table too. A value of
  * null is shown as a dash in the table and as a gap in a line. `referenceLine` ({ value, label }) marks a target on a line chart;
- * `maxValue` scales a bar chart to a whole (100 for percentages).
+ * `maxValue` scales a bar chart to a whole (100 for percentages). A bar chart can also have a `referenceLine`, drawn upright and explained under the picture. `axisMinStep` lets a line chart's axis be finer than whole numbers (money, rates).
  */
-export default function Chart({ type = 'bar', label, categoryHeader, categoryTitle, categories, series, extraColumns = [], format = String, referenceLine, maxValue }) {
+export default function Chart({ type = 'bar', label, categoryHeader, categoryTitle, categories, series, extraColumns = [], format = String, referenceLine, maxValue, axisMinStep }) {
   const ariaLabel = `${label}. The table below has the same numbers.`;
   const drawnFormat = series[0].format ?? format;
   return (
     <div>
       {type === 'line' ? (
-        <LineGraph ariaLabel={ariaLabel} categories={categories} series={series} categoryTitle={categoryTitle} format={drawnFormat} referenceLine={referenceLine} />
+        <LineGraph ariaLabel={ariaLabel} categories={categories} series={series} categoryTitle={categoryTitle} format={drawnFormat} referenceLine={referenceLine} axisMinStep={axisMinStep} />
       ) : (
-        <BarGraph ariaLabel={ariaLabel} categories={categories} values={series[0].values} format={drawnFormat} color={SERIES_COLORS[0]} maxValue={maxValue} />
+        <>
+          <BarGraph ariaLabel={ariaLabel} categories={categories} values={series[0].values} format={drawnFormat} color={SERIES_COLORS[0]} maxValue={maxValue} referenceLine={referenceLine} />
+          {referenceLine && <p className="mt-1 text-sm text-gray-700">Dotted line: {referenceLine.label}</p>}
+        </>
       )}
       <ChartTable caption={label} categoryHeader={categoryHeader} categories={categories} columns={[...series, ...extraColumns]} format={format} />
     </div>

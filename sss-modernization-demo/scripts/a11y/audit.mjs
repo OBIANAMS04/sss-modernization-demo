@@ -8,6 +8,7 @@
 // STORY-019 and 023: the policy assistant page (an applicant and a case manager, with an answer shown, a cited passage open and the
 // report form open) and the review queue; the override rate sits on the admin and leadership dashboards already listed.
 // STORY-021 and 025: the AI Quality page (case manager and administrator, and the administrator with the run confirmation open).
+// STORY-028: the Observability page (administrator, with an alert open and server errors listed; a case manager sees the refusal).
 // and for the forms, after a failed submit: the message is announced (role="alert") or each invalid field
 // is marked aria-invalid and described by its message, with focus on the first one. Locally it also checks the
 // warning before a session ends (WCAG 2.2.1): shown in time, accessible, extendable, and a clear sign-out if ignored.
@@ -75,6 +76,10 @@ async function setup() {
   // STORY-021 and 025: a run of the golden set and of the counterfactual set (through the stand-in), so /ai-quality has figures to check; a second pass within the hour is refused and keeps the first
   await call('POST', '/ai-quality/evaluations', morgan.token);
   await call('POST', '/ai-quality/fairness-runs', morgan.token);
+  // STORY-026 to 029: server errors (a malformed id reaches PostgreSQL as a uuid and is refused with a 500 today) and the objectives check, so
+  // /observability has errors with trace ids and an open alert to check
+  for (let i = 0; i < 25; i++) await call('GET', '/audit?actor=not-a-uuid', morgan.token);
+  await call('POST', '/observability/evaluate', morgan.token);
   await call('PUT', `/cases/${caseId}/assignment`, dana.token, { assignedTo: dana.user.email });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'In Review' });
   await call('POST', `/cases/${caseId}/status`, dana.token, { status: 'Approved' }); // no proof of age on file: a review opens for Sam
@@ -95,13 +100,13 @@ async function setup() {
     { role: 'Applicant', path: `/cases/${caseId}`, label: '/cases/:id', session: applicant, reflowShot: true },
     { role: 'Applicant', path: '/assistant', session: applicant },
     { role: 'Applicant', path: '/assistant', label: '/assistant (answered)', session: applicant, after: askQuestion, reflowShot: '04-reflow-320-assistant.png' },
-    ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit', '/assistant', '/assistant/reviews', '/ai-quality', '/staff'].map((path) => ({
+    ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit', '/assistant', '/assistant/reviews', '/ai-quality', '/observability', '/staff'].map((path) => ({
       role: 'Case manager',
       path,
       label: path.startsWith('/cases/') ? '/cases/:id' : path,
       session: sam,
     })),
-    ...['/dashboard', '/my-work', '/leadership', '/admin', '/admin/policies', '/ai-quality'].map((path) => ({ role: 'Admin', path, session: morgan })),
+    ...['/dashboard', '/my-work', '/leadership', '/admin', '/admin/policies', '/ai-quality', '/observability'].map((path) => ({ role: 'Admin', path, session: morgan })),
     // STORY-021: the confirmation that a run calls the model and costs money, open (it is read, not confirmed)
     { role: 'Admin', path: '/ai-quality', label: '/ai-quality (run confirmation)', session: morgan, after: confirmRun },
     { role: 'Leadership', path: '/dashboard', session: riley },
