@@ -1,0 +1,9 @@
+{
+  "name": "sss-load-harness",
+  "private": true,
+  "description": "STORY-030 load harness. Run: npm ci && node run.mjs --help",
+  "type": "module",
+  "devDependencies": {
+    "autocannon": "8.0.0"
+  }
+}
