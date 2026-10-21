@@ -4,13 +4,15 @@ import { AuditAction, recordAudit } from '../services/auditService';
 import { requestRoute } from '../observability/requestMetrics';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
-  // STORY-026: the route template, not the raw URL (record ids, query strings); the trace id is added to the line by the logger
-  console.error('Error:', {
-    message: err.message,
-    stack: err.stack,
-    route: requestRoute(req, res),
-    method: req.method,
-  });
+  // STORY-026: the route template, not the raw URL (record ids, query strings); the trace id is added to the line by the logger. A refusal
+  // or a bad request (an AppError under 500) is expected traffic: one warning line, no stack, so a log search or a Datadog monitor on
+  // level "error" finds only real faults
+  const route = requestRoute(req, res);
+  if (err instanceof AppError && err.statusCode < 500) {
+    console.warn('Request refused:', { status: err.statusCode, code: err.code, message: err.message, route, method: req.method });
+  } else {
+    console.error('Error:', { message: err.message, stack: err.stack, route, method: req.method });
+  }
 
   // STORY-026: what the request metrics keep about a server error: the class of the error and its code, never its message
   if (res.locals) res.locals.errorInfo = { name: err.name, code: typeof (err as any).code === 'string' ? (err as any).code : undefined };
