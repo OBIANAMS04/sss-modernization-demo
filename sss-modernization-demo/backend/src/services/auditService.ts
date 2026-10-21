@@ -1,5 +1,6 @@
 import pool from '../database/connection';
 import { getRequestContext } from '../utils/requestContext';
+import { currentTraceId } from '../observability/traceContext';
 
 export interface AuditLog {
   id: number;
@@ -12,6 +13,8 @@ export interface AuditLog {
   details?: Record<string, any>;
   ipAddress?: string;
   userAgent?: string;
+  /** STORY-026: the trace id of the request that caused the entry (absent for entries written before it, or not caused by a request). */
+  traceId?: string;
   timestamp: string;
 }
 
@@ -126,9 +129,9 @@ export async function logAuditEvent(
   const context = getRequestContext();
 
   const result = await pool.query(
-    `INSERT INTO audit_logs (action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-     RETURNING id, action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, timestamp`,
+    `INSERT INTO audit_logs (action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, trace_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+     RETURNING id, action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, trace_id, timestamp`,
     [
       action,
       options?.actor || null,
@@ -139,6 +142,7 @@ export async function logAuditEvent(
       sanitizedDetails ? JSON.stringify(sanitizedDetails) : null,
       options?.ipAddress || context?.ip || null,
       options?.userAgent || context?.userAgent || null,
+      currentTraceId() || null,
     ]
   );
 
@@ -262,7 +266,7 @@ export async function getAuditLogs(query: AuditLogQuery): Promise<{ logs: AuditL
   // Get paginated logs
   params.push(limit, offset);
   const result = await pool.query(
-    `SELECT id, action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, timestamp
+    `SELECT id, action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, trace_id, timestamp
      FROM audit_logs ${whereClause}
      ORDER BY timestamp DESC
      LIMIT $${paramCount} OFFSET $${paramCount + 1}`,
@@ -277,7 +281,7 @@ export async function getAuditLogs(query: AuditLogQuery): Promise<{ logs: AuditL
 
 export async function getAuditLogsByUser(userId: string, limit: number = 50): Promise<AuditLog[]> {
   const result = await pool.query(
-    `SELECT id, action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, timestamp
+    `SELECT id, action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, trace_id, timestamp
      FROM audit_logs WHERE actor = $1 ORDER BY timestamp DESC LIMIT $2`,
     [userId, limit]
   );
@@ -291,7 +295,7 @@ export async function getAuditLogsByResource(
   limit: number = 100
 ): Promise<AuditLog[]> {
   const result = await pool.query(
-    `SELECT id, action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, timestamp
+    `SELECT id, action, actor, actor_email, resource, resource_id, status, details, ip_address, user_agent, trace_id, timestamp
      FROM audit_logs WHERE resource = $1 AND resource_id = $2 ORDER BY timestamp DESC LIMIT $3`,
     [resource, resourceId, limit]
   );
@@ -343,6 +347,7 @@ function mapRowToAuditLog(row: any): AuditLog {
     details: row.details ?? undefined,
     ipAddress: row.ip_address,
     userAgent: row.user_agent,
+    traceId: row.trace_id ?? undefined,
     timestamp: row.timestamp,
   };
 }

@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
 import { AuditAction, recordAudit } from '../services/auditService';
+import { routeTemplate } from '../observability/scrub';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+  // STORY-026: the route template, not the raw URL (record ids, query strings); the trace id is added to the line by the logger
   console.error('Error:', {
     message: err.message,
     stack: err.stack,
-    url: req.url,
+    route: routeTemplate(req.method, req.baseUrl, req.route?.path),
     method: req.method,
   });
 

@@ -1,3 +1,7 @@
+// STORY-026: tracing is loaded before anything that loads express or pg, so those are instrumented. Keep these two lines first.
+import './observability/tracing';
+import { installJsonLogging } from './observability/logger';
+installJsonLogging();
 import dotenv from 'dotenv';
 import app from './app';
 import { runMigrations } from './database/migrate';

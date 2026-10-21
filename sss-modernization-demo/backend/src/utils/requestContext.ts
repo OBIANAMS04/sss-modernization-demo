@@ -4,6 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 
 /** Who is calling, kept for the life of a request so every audit entry can record it. */
 export interface RequestContext {
+  /** STORY-026: the trace id of this request (also on the response), recorded on audit entries and log lines. */
+  traceId?: string;
   ip?: string;
   userAgent?: string;
 }

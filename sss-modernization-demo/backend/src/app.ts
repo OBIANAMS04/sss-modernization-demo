@@ -19,6 +19,8 @@ import { enforcePolicy } from './middleware/enforcePolicy';
 import { errorHandler } from './middleware/errorHandler';
 import { auditDataAccess } from './middleware/auditAccess';
 import { clientAddress, requestContextMiddleware } from './utils/requestContext';
+import { traceContextMiddleware } from './observability/traceContext';
+import { routeTemplate } from './observability/scrub';
 import pool from './database/connection';
 
 dotenv.config();
@@ -32,15 +34,24 @@ app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 // Middleware
 app.use(express.json());
 app.use(requestContextMiddleware);
+// STORY-026: the trace id goes on the response (traceparent, X-Request-Id) before anything can answer
+app.use(traceContextMiddleware);
 app.use(auditDataAccess);
 app.use(cors({
   origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
+  // So the page can show the trace id of a failed request to the person reporting it
+  exposedHeaders: ['X-Request-Id', 'traceparent'],
 }));
 
-// Request logging
+// Request logging. STORY-026: one JSON line per finished request, named by the route template (never the raw path or query, which hold
+// record ids and anything a person typed) with the status and duration; the trace id is added to every line by the logger.
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+  const started = process.hrtime.bigint();
+  res.on('finish', () => {
+    const ms = Number(process.hrtime.bigint() - started) / 1e6;
+    console.log('Request', { route: routeTemplate(req.method, req.baseUrl, req.route?.path), status: res.statusCode, ms: Math.round(ms * 10) / 10 });
+  });
   next();
 });
 
