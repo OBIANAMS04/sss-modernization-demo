@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>STORY-033: database statements per request</title><style>
+  body { margin: 0; padding: 24px 28px; width: 1180px; background: #fcfcfb; color: #0b0b0b; font: 15px/1.45 "Segoe UI", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 4px; } .sub { color: #52514e; margin: 0 0 16px; }
+  h2 { font-size: 16px; margin: 18px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { border-bottom: 1px solid #e4e3df; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { color: #52514e; font-weight: 600; background: #f3f2ef; }
+  td strong { font-weight: 700; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .legend { display: flex; gap: 18px; color: #52514e; font-size: 14px; margin: 4px 0 8px; }
+  .key { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+  .note { color: #52514e; font-size: 13px; margin-top: 10px; }
+  .pass { color: #0a7a0a; font-weight: 700; } ul.checks { columns: 2; padding-left: 18px; margin: 0; font-size: 14px; } ul.checks li { margin: 2px 0; }
+  .banner { background: #fff7d6; border: 1px solid #eda100; padding: 6px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+</style></head><body><div class="banner">Synthetic demo deployment. Not operating in production.</div><h1>STORY-033: fewer database statements per request</h1><p class="sub">Counted by the load sampler, 40 sequential requests per route on a fresh database. This does not depend on the machine.</p><table><tr><th>Route</th><th>Statements before</th><th>after</th></tr><tr><td>GET /cases/stats (staff)</td><td>5.95</td><td>4.05</td></tr><tr><td>GET /dashboards/case-manager</td><td>8.07</td><td>7.05</td></tr><tr><td>GET /dashboards/admin</td><td>17.05</td><td>16.05</td></tr><tr><td>GET /dashboards/leadership</td><td>14.05</td><td>13.05</td></tr><tr><td>GET /dashboards/admin, 20 at the same moment</td><td>17.10 each</td><td>2.55 each</td></tr><tr><td>GET /exemptions, /notifications, /assistant/history, /cases</td><td>3.05 to 4.03</td><td>3.02 to 4.05 (unchanged: role, the query, the audit entry)</td></tr></table>
+  <h2>Indexes (migration 026), 100,000 cases and 100,000 applicants, EXPLAIN ANALYZE</h2><table><tr><th>Query</th><th>Before</th><th>After</th></tr><tr><td>Admin dashboard team table (lower(assigned_to) = lower(email) for each of 42 staff)</td><td>633 ms</td><td>23 ms (idx_cases_assigned_lower_status)</td></tr><tr><td>Staff case list, newest first, 25 rows</td><td>115 ms</td><td>0.4 ms (idx_cases_updated_at)</td></tr><tr><td>Staff lookup lower(email) = lower($1)</td><td>22 ms</td><td>0.2 ms (idx_users_email_lower)</td></tr><tr><td>Case list total count (two joins it did not need)</td><td>234 ms</td><td>5 ms (joins only when a filter names the table)</td></tr></table></body></html>

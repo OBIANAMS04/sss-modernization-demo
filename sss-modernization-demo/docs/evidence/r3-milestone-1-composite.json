@@ -1,0 +1,20 @@
+{
+  "out": "r3-m1/r3-milestone-1-screens.jpg",
+  "maxKb": 650,
+  "title": "R3 milestone 1 (STORY-005, 030-034, 036): synthetic demo deployment",
+  "columns": 2,
+  "tileWidth": 900,
+  "packs": ["r3-m1"],
+  "tiles": [
+    { "file": "r3-m1/01-ramp-latency.png", "label": "031/033 p95 and failures, before vs after", "top": 0, "height": 610 },
+    { "file": "r3-m1/02-ramp-throughput.png", "label": "031 Throughput and what saturates", "top": 0, "height": 573 },
+    { "file": "r3-m1/03-hold-and-spike.png", "label": "033 Pool 10 vs 25, spike and recovery", "top": 0, "height": 415 },
+    { "file": "r3-m1/04-fewer-statements.png", "label": "033 Statements per request, indexes", "top": 0, "height": 591 },
+    { "file": "r3-m1/05-live-run.png", "label": "032 Live demo: 25 connections, 60 s, 0 errors", "top": 0, "height": 449 },
+    { "file": "r3-m1/07-database-outage.png", "label": "034 Database outage: API stays up, recovers", "top": 0, "height": 472 },
+    { "file": "r3-m1/06-production-sizing.png", "label": "033 Production sizing (labelled)", "top": 0, "height": 1302 },
+    { "file": "r3-m1/08-uptime-check-workflow.png", "label": "036 Uptime check outside Render", "top": 160, "height": 1300 },
+    { "file": "story-005/screens/live-01-citizen-dashboard.png", "label": "005 Live: How current this page is", "top": 80, "height": 1300 },
+    { "file": "story-005/a11y-live/live-a11y-report.png", "label": "005 Live accessibility audit: all pass", "top": 0, "height": 910 }
+  ]
+}

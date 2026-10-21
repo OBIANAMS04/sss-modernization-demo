@@ -1,0 +1,24 @@
+PASS  starts and listens with the database away: /health database: got "down"
+PASS  /health status is degraded: got "degraded"
+PASS  /health still reports the commit: got true
+PASS  data route answers 503: got 503
+PASS  503 has a clear error code: got "SERVICE_UNAVAILABLE"
+PASS  503 message says the database cannot be reached and nothing was saved: got true
+PASS  503 carries Retry-After: got "5"
+PASS  sign-in is also 503, not a crash: got 503
+PASS  still running after 3 s without a database: got null
+PASS  recovered by itself: database ok: got "ok"
+PASS  recovered by itself: migrations applied: got true
+PASS  no restart: process still running: got null
+PASS  data route answers again (401 without a token, not 503): got 401
+PASS  registers an account after recovery: got 201
+PASS  signed-in read works: got 200
+PASS  outage: /health database: got "down"
+PASS  outage: /health still reports the commit: got true
+PASS  outage: data route answers 503 with a signed-in token: got [503,"SERVICE_UNAVAILABLE"]
+PASS  outage: no crash: got null
+PASS  after the outage: database ok again: got true
+PASS  after the outage: the earlier sign-in still works: got 200
+PASS  after the outage: never restarted: got null
+
+ALL PASSED

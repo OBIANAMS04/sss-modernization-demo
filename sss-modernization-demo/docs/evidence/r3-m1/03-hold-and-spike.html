@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>STORY-031 and 033: hold, pool size and spike</title><style>
+  body { margin: 0; padding: 24px 28px; width: 1180px; background: #fcfcfb; color: #0b0b0b; font: 15px/1.45 "Segoe UI", system-ui, sans-serif; }
+  h1 { font-size: 22px; margin: 0 0 4px; } .sub { color: #52514e; margin: 0 0 16px; }
+  h2 { font-size: 16px; margin: 18px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { border-bottom: 1px solid #e4e3df; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { color: #52514e; font-weight: 600; background: #f3f2ef; }
+  td strong { font-weight: 700; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .legend { display: flex; gap: 18px; color: #52514e; font-size: 14px; margin: 4px 0 8px; }
+  .key { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+  .note { color: #52514e; font-size: 13px; margin-top: 10px; }
+  .pass { color: #0a7a0a; font-weight: 700; } ul.checks { columns: 2; padding-left: 18px; margin: 0; font-size: 14px; } ul.checks li { margin: 2px 0; }
+  .banner { background: #fff7d6; border: 1px solid #eda100; padding: 6px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+</style></head><body><div class="banner">Synthetic demo deployment. Not operating in production.</div><h1>Hold, pool size and spike (final build)</h1><p class="sub">The 16-connection hold with the pool at 10 and at 25, and a spike from 4 to 64 connections and back.</p><table><tr><th>Run</th><th>Connections</th><th>req/s</th><th>p50 ms</th><th>p95 ms</th><th>p99 ms</th><th>Errors</th></tr><tr><td>hold 60 s, pool 10 (hold-c16-pool10)</td><td>16</td><td>26.6</td><td>369</td><td>1,928</td><td>3,219</td><td>0%</td></tr><tr><td>hold 60 s, pool 25 (hold-c16-pool25)</td><td>16</td><td>43.3</td><td>202</td><td>1,266</td><td>2,071</td><td>0%</td></tr><tr><td>spike, baseline (spike-4-64)</td><td>4</td><td>59.0</td><td>40</td><td>172</td><td>618</td><td>0%</td></tr><tr><td>spike, 64 connections for 20 s</td><td>64</td><td>39.3</td><td>569</td><td>5,794</td><td>9,812</td><td>13.2% (104 x 503)</td></tr><tr><td>spike, recovery</td><td>4</td><td>46.8</td><td>41</td><td>236</td><td>779</td><td>0%</td></tr></table>
+  <p class="note">In the spike the failed requests are 503 "very busy, try again" answers with Retry-After after a 10 s wait for a connection; the next phase is back to full speed with no errors. Before the fix the same burst closed the whole API for everyone.</p></body></html>

@@ -1,0 +1,26 @@
+{
+  "id": "r3-m1",
+  "title": "R3 milestone 1 (STORY-005, 030 to 034, 036): load, performance, resilience and data status: evidence",
+  "capturedBy": "scripts/evidence/r3-milestone-1.mjs (screens 01 to 07, drawn from docs/evidence/r3-load and scripts/e2e/failover.mjs output); screen 08 from the public GitHub page; the STORY-005 screens by scripts/verify-live-citizen.mjs and scripts/a11y/audit.mjs --live",
+  "summary": [
+    "Synthetic demo deployment; not operating in production. Measured on one laptop and on the 0.1 CPU live demo; nothing here was run at 10,000 users.",
+    "STORY-030 to 033: a pinned load harness, a ramp to 128 connections before and after the fixes, one light live run (25 connections, 60 s, 0 errors), five fixes and three indexes, and a production sizing with every number labelled measured, derived or assumed.",
+    "STORY-034: the API keeps running and answers 503 with Retry-After while its database is away, recovers by itself, and a full connection pool is no longer mistaken for an outage. The multi-region design is docs/FAILOVER.md (not deployed).",
+    "STORY-036: an uptime check outside Render (GitHub Actions every 30 minutes) opens an issue on failure and closes it on recovery.",
+    "STORY-005 (R0): the citizen dashboard says how current its data is, read straight from the database, with the measured freshness level."
+  ],
+  "shots": [
+    { "file": "01-ramp-latency.png", "title": "p95 and failed requests, before and after", "caption": "Ramp 4 to 128 connections on the local stack. Breaking point 32 connections both times, p95 5.3 s before and 2.5 s after; before, 96 to 98% failed at 64 and 128, after none." },
+    { "file": "02-ramp-throughput.png", "title": "Throughput and what saturates", "caption": "About 25 requests/s before and about 50 after; the limit moved from the connection pool to the single JavaScript thread." },
+    { "file": "03-hold-and-spike.png", "title": "Pool size, hold and spike", "caption": "Pool 25 against 10 at 16 connections: 43.3 against 26.6 requests/s. A spike to 64 gives 13% 'very busy' 503s and recovers at once." },
+    { "file": "04-fewer-statements.png", "title": "Statements per request and indexes", "caption": "20 administrators at once: 17.1 to 2.55 statements each. Migration 026 at 100,000 cases: 633 ms to 23 ms, 115 ms to 0.4 ms." },
+    { "file": "05-live-run.png", "title": "Live demo run", "caption": "25 connections for 60 s against the live demo: 1,920 requests, p95 1,244 ms, 0 errors." },
+    { "file": "06-production-sizing.png", "title": "Production sizing", "caption": "8 to 10 one-vCPU processes, a pooler and a read replica, about 37 GB a day of audit log; derived, to be checked by a real load test." },
+    { "file": "07-database-outage.png", "title": "Database outage", "caption": "22 of 22 checks: starts without its database, answers 503 with Retry-After, recovers by itself, no restart." },
+    { "file": "08-uptime-check-workflow.png", "title": "Uptime check", "caption": "The GitHub Actions workflow that checks the API and the site every 30 minutes from outside Render." }
+  ],
+  "notes": [
+    "The live demo now runs the STORY-033 changes (f23de97, migration 026 applied); the live load run was taken before them and was not repeated.",
+    "Absolute local rates are low because security software slows this laptop's loopback; the before and after comparisons were run back to back and the statement counts do not depend on the machine."
+  ]
+}
