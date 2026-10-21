@@ -262,6 +262,7 @@ npm start        # Start on port 3000
 See detailed READMEs:
 - [Backend README](./backend/README.md) - API setup, testing, troubleshooting
 - [Frontend README](./frontend/README.md) - UI setup, features, accessibility
+- Operations: [Incident playbook](./docs/INCIDENT-PLAYBOOK.md), [Operator runbook](./docs/OPERATOR-RUNBOOK.md), [Administrator guide](./docs/ADMIN-GUIDE.md), [User guide](./docs/USER-GUIDE.md)
 
 ---
 
