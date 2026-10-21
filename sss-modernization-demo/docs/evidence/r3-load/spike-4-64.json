@@ -1,0 +1,1009 @@
+{
+  "meta": {
+    "label": "spike-4-64",
+    "profile": "spike",
+    "scenario": "mixed",
+    "target": "local",
+    "startedAt": "2026-10-21T18:46:41.592Z",
+    "commit": "local",
+    "autocannon": "8.0.0",
+    "node": "v26.12.0",
+    "machine": {
+      "cpus": 8,
+      "model": "Intel(R) Core(TM) Ultra 7 258V",
+      "totalMemGb": 32
+    },
+    "note": "final build, default pool 25",
+    "poolMax": null
+  },
+  "liveLogins": null,
+  "phases": [
+    {
+      "tag": "baseline",
+      "connections": 4,
+      "split": {
+        "registrant": 1,
+        "case-manager": 1,
+        "assistant": 1,
+        "dashboards": 1
+      },
+      "seconds": 15,
+      "requests": 885,
+      "rps": 59,
+      "errors": 0,
+      "connectionErrors": 0,
+      "rateLimited": 0,
+      "errorRate": 0,
+      "p50": 39.9,
+      "p95": 172.1,
+      "p99": 618.1,
+      "routes": {
+        "GET /cases (staff list)": {
+          "count": 27,
+          "rps": 1.8,
+          "p50": 38.4,
+          "p95": 65.3,
+          "p99": 194.3,
+          "max": 194.2734,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 27
+          }
+        },
+        "GET /dashboards/citizen": {
+          "count": 68,
+          "rps": 4.5,
+          "p50": 29.9,
+          "p95": 86.6,
+          "p99": 138.5,
+          "max": 138.4857,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 68
+          }
+        },
+        "GET /notifications": {
+          "count": 60,
+          "rps": 4,
+          "p50": 25.4,
+          "p95": 68.9,
+          "p99": 104.9,
+          "max": 104.932,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 60
+          }
+        },
+        "GET /dashboards/case-manager": {
+          "count": 60,
+          "rps": 4,
+          "p50": 28.4,
+          "p95": 92.6,
+          "p99": 202.5,
+          "max": 202.5446,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 60
+          }
+        },
+        "GET /cases/stats": {
+          "count": 60,
+          "rps": 4,
+          "p50": 26.4,
+          "p95": 64.5,
+          "p99": 94.4,
+          "max": 94.4281,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 60
+          }
+        },
+        "GET /cases/:id": {
+          "count": 27,
+          "rps": 1.8,
+          "p50": 48.9,
+          "p95": 132.8,
+          "p99": 153.3,
+          "max": 153.2545,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 27
+          }
+        },
+        "POST /assistant/ask (stub)": {
+          "count": 122,
+          "rps": 8.1,
+          "p50": 72.5,
+          "p95": 186.2,
+          "p99": 255,
+          "max": 302.6423,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 122
+          }
+        },
+        "GET /assistant/history": {
+          "count": 121,
+          "rps": 8.1,
+          "p50": 27.8,
+          "p95": 77.1,
+          "p99": 134.2,
+          "max": 140.1147,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 121
+          }
+        },
+        "POST /cases/:id/notes": {
+          "count": 27,
+          "rps": 1.8,
+          "p50": 77.9,
+          "p95": 243.4,
+          "p99": 308.7,
+          "max": 308.6586,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 27
+          }
+        },
+        "GET /dashboards/admin": {
+          "count": 59,
+          "rps": 3.9,
+          "p50": 40.1,
+          "p95": 116.6,
+          "p99": 144.2,
+          "max": 144.205,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 59
+          }
+        },
+        "GET /dashboards/leadership": {
+          "count": 59,
+          "rps": 3.9,
+          "p50": 35.8,
+          "p95": 107.4,
+          "p99": 136.4,
+          "max": 136.4008,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 59
+          }
+        },
+        "PUT /cases/:id/assignment": {
+          "count": 27,
+          "rps": 1.8,
+          "p50": 94.4,
+          "p95": 233.9,
+          "p99": 324,
+          "max": 324.0341,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 27
+          }
+        },
+        "GET /freshness/dashboard": {
+          "count": 59,
+          "rps": 3.9,
+          "p50": 23.2,
+          "p95": 59.9,
+          "p99": 113.4,
+          "max": 113.3751,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 59
+          }
+        },
+        "POST /cases/:id/status (review)": {
+          "count": 26,
+          "rps": 1.7,
+          "p50": 92.1,
+          "p95": 197.9,
+          "p99": 249.1,
+          "max": 249.0516,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 19,
+            "400": 7
+          }
+        },
+        "POST /cases/:id/status (decide)": {
+          "count": 26,
+          "rps": 1.7,
+          "p50": 147,
+          "p95": 362.5,
+          "p99": 399.5,
+          "max": 399.4907,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 19,
+            "400": 7
+          }
+        },
+        "POST /auth/register": {
+          "count": 9,
+          "rps": 0.6,
+          "p50": 661.6,
+          "p95": 1034.8,
+          "p99": 1034.8,
+          "max": 1034.8373,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 9
+          }
+        },
+        "POST /auth/login": {
+          "count": 8,
+          "rps": 0.5,
+          "p50": 568.5,
+          "p95": 1161.2,
+          "p99": 1161.2,
+          "max": 1161.2077,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 8
+          }
+        },
+        "GET /users/:id": {
+          "count": 8,
+          "rps": 0.5,
+          "p50": 29.6,
+          "p95": 52.3,
+          "p99": 52.3,
+          "max": 52.3271,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 8
+          }
+        },
+        "POST /exemptions/check": {
+          "count": 8,
+          "rps": 0.5,
+          "p50": 73.4,
+          "p95": 96.8,
+          "p99": 96.8,
+          "max": 96.8182,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 8
+          }
+        },
+        "GET /exemptions": {
+          "count": 8,
+          "rps": 0.5,
+          "p50": 35.4,
+          "p95": 86.1,
+          "p99": 86.1,
+          "max": 86.132,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 8
+          }
+        },
+        "POST /cases": {
+          "count": 8,
+          "rps": 0.5,
+          "p50": 76.9,
+          "p95": 135.2,
+          "p99": 135.2,
+          "max": 135.2378,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 8
+          }
+        },
+        "GET /cases (own)": {
+          "count": 8,
+          "rps": 0.5,
+          "p50": 47.5,
+          "p95": 81.2,
+          "p99": 81.2,
+          "max": 81.1508,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 8
+          }
+        }
+      },
+      "server": {
+        "samples": 15,
+        "cpuAvgPct": 83.2,
+        "cpuMaxPct": 135.4,
+        "loopMeanMsAvg": 15.9,
+        "loopP99MsMax": 49.05,
+        "loopMaxMs": 120.19,
+        "rssMaxMb": 122,
+        "poolMax": 25,
+        "poolTotalMax": 20,
+        "poolWaitingMax": 0
+      }
+    },
+    {
+      "tag": "spike",
+      "connections": 64,
+      "split": {
+        "registrant": 19,
+        "case-manager": 13,
+        "assistant": 13,
+        "dashboards": 19
+      },
+      "seconds": 20,
+      "requests": 786,
+      "rps": 39.3,
+      "errors": 104,
+      "connectionErrors": 0,
+      "rateLimited": 0,
+      "errorRate": 13.23,
+      "p50": 569.1,
+      "p95": 5794.4,
+      "p99": 9812.3,
+      "routes": {
+        "GET /dashboards/citizen": {
+          "count": 74,
+          "rps": 3.7,
+          "p50": 587,
+          "p95": 1562,
+          "p99": 1669.1,
+          "max": 1669.1131,
+          "errors": 3,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 71,
+            "503": 3
+          }
+        },
+        "GET /cases (staff list)": {
+          "count": 32,
+          "rps": 1.6,
+          "p50": 780.4,
+          "p95": 10757.9,
+          "p99": 10777.4,
+          "max": 10777.4105,
+          "errors": 12,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 20,
+            "503": 12
+          }
+        },
+        "GET /notifications": {
+          "count": 60,
+          "rps": 3,
+          "p50": 471.2,
+          "p95": 867.8,
+          "p99": 951.2,
+          "max": 951.2172,
+          "errors": 3,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 57,
+            "503": 3
+          }
+        },
+        "POST /assistant/ask (stub)": {
+          "count": 52,
+          "rps": 2.6,
+          "p50": 3733.6,
+          "p95": 5871.3,
+          "p99": 6890.4,
+          "max": 6890.3547,
+          "errors": 3,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 49,
+            "503": 3
+          }
+        },
+        "POST /auth/register": {
+          "count": 24,
+          "rps": 1.2,
+          "p50": 6702.1,
+          "p95": 10003.1,
+          "p99": 10013.1,
+          "max": 10013.128,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 24
+          }
+        },
+        "GET /dashboards/case-manager": {
+          "count": 60,
+          "rps": 3,
+          "p50": 569,
+          "p95": 706.8,
+          "p99": 785.7,
+          "max": 785.6793,
+          "errors": 3,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 57,
+            "503": 3
+          }
+        },
+        "GET /cases/:id": {
+          "count": 31,
+          "rps": 1.6,
+          "p50": 646.2,
+          "p95": 1355.9,
+          "p99": 1516.7,
+          "max": 1516.7444,
+          "errors": 9,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 22,
+            "503": 9
+          }
+        },
+        "GET /assistant/history": {
+          "count": 51,
+          "rps": 2.6,
+          "p50": 450.9,
+          "p95": 819.3,
+          "p99": 1317.5,
+          "max": 1317.5072,
+          "errors": 4,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 47,
+            "503": 4
+          }
+        },
+        "GET /cases/stats": {
+          "count": 60,
+          "rps": 3,
+          "p50": 521.6,
+          "p95": 697.8,
+          "p99": 746.9,
+          "max": 746.8732,
+          "errors": 3,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 57,
+            "503": 3
+          }
+        },
+        "GET /dashboards/admin": {
+          "count": 41,
+          "rps": 2.1,
+          "p50": 358,
+          "p95": 515.7,
+          "p99": 547.2,
+          "max": 547.1859,
+          "errors": 3,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 38,
+            "503": 3
+          }
+        },
+        "POST /cases/:id/notes": {
+          "count": 29,
+          "rps": 1.5,
+          "p50": 1465.8,
+          "p95": 2311.6,
+          "p99": 2713.5,
+          "max": 2713.5059,
+          "errors": 9,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 20,
+            "503": 9
+          }
+        },
+        "POST /auth/login": {
+          "count": 19,
+          "rps": 1,
+          "p50": 6662.5,
+          "p95": 8144,
+          "p99": 8144,
+          "max": 8143.9747,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 19
+          }
+        },
+        "GET /dashboards/leadership": {
+          "count": 41,
+          "rps": 2.1,
+          "p50": 467.8,
+          "p95": 562.8,
+          "p99": 581.7,
+          "max": 581.6864,
+          "errors": 3,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 38,
+            "503": 3
+          }
+        },
+        "GET /freshness/dashboard": {
+          "count": 41,
+          "rps": 2.1,
+          "p50": 466,
+          "p95": 619.2,
+          "p99": 635.4,
+          "max": 635.3826,
+          "errors": 3,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 38,
+            "503": 3
+          }
+        },
+        "GET /users/:id": {
+          "count": 19,
+          "rps": 1,
+          "p50": 492.6,
+          "p95": 1050.7,
+          "p99": 1050.7,
+          "max": 1050.6776,
+          "errors": 4,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 15,
+            "503": 4
+          }
+        },
+        "PUT /cases/:id/assignment": {
+          "count": 29,
+          "rps": 1.5,
+          "p50": 2213.3,
+          "p95": 2775.3,
+          "p99": 2864.2,
+          "max": 2864.2136,
+          "errors": 9,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 20,
+            "503": 9
+          }
+        },
+        "POST /exemptions/check": {
+          "count": 19,
+          "rps": 1,
+          "p50": 1464.7,
+          "p95": 1947.1,
+          "p99": 1947.1,
+          "max": 1947.0857999999998,
+          "errors": 4,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 15,
+            "503": 4
+          }
+        },
+        "GET /exemptions": {
+          "count": 19,
+          "rps": 1,
+          "p50": 407.1,
+          "p95": 1065.3,
+          "p99": 1065.3,
+          "max": 1065.3496,
+          "errors": 4,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 15,
+            "503": 4
+          }
+        },
+        "POST /cases/:id/status (review)": {
+          "count": 27,
+          "rps": 1.4,
+          "p50": 1197.7,
+          "p95": 2273.1,
+          "p99": 2721.4,
+          "max": 2721.4403,
+          "errors": 9,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 5,
+            "400": 13,
+            "503": 9
+          }
+        },
+        "POST /cases": {
+          "count": 18,
+          "rps": 0.9,
+          "p50": 1442.8,
+          "p95": 2192,
+          "p99": 2192,
+          "max": 2192.0373,
+          "errors": 4,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 14,
+            "503": 4
+          }
+        },
+        "GET /cases (own)": {
+          "count": 17,
+          "rps": 0.9,
+          "p50": 358.5,
+          "p95": 897.2,
+          "p99": 897.2,
+          "max": 897.1794,
+          "errors": 4,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 13,
+            "503": 4
+          }
+        },
+        "POST /cases/:id/status (decide)": {
+          "count": 23,
+          "rps": 1.2,
+          "p50": 1005.9,
+          "p95": 4382.8,
+          "p99": 5804,
+          "max": 5803.9889,
+          "errors": 8,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 2,
+            "400": 13,
+            "503": 8
+          }
+        }
+      },
+      "server": {
+        "samples": 18,
+        "cpuAvgPct": 102.4,
+        "cpuMaxPct": 170.9,
+        "loopMeanMsAvg": 121.3,
+        "loopP99MsMax": 1085.28,
+        "loopMaxMs": 1085.28,
+        "rssMaxMb": 156,
+        "poolMax": 25,
+        "poolTotalMax": 25,
+        "poolWaitingMax": 118
+      }
+    },
+    {
+      "tag": "recovery",
+      "connections": 4,
+      "split": {
+        "registrant": 1,
+        "case-manager": 1,
+        "assistant": 1,
+        "dashboards": 1
+      },
+      "seconds": 15,
+      "requests": 702,
+      "rps": 46.8,
+      "errors": 0,
+      "connectionErrors": 0,
+      "rateLimited": 0,
+      "errorRate": 0,
+      "p50": 41.2,
+      "p95": 235.5,
+      "p99": 779.7,
+      "routes": {
+        "GET /cases (staff list)": {
+          "count": 22,
+          "rps": 1.5,
+          "p50": 34.3,
+          "p95": 63.4,
+          "p99": 918.6,
+          "max": 918.5846,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 22
+          }
+        },
+        "GET /dashboards/citizen": {
+          "count": 55,
+          "rps": 3.7,
+          "p50": 31.1,
+          "p95": 543.8,
+          "p99": 986.1,
+          "max": 986.0654,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 55
+          }
+        },
+        "GET /notifications": {
+          "count": 50,
+          "rps": 3.3,
+          "p50": 21.6,
+          "p95": 74.8,
+          "p99": 147.6,
+          "max": 147.5971,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 50
+          }
+        },
+        "GET /cases/:id": {
+          "count": 22,
+          "rps": 1.5,
+          "p50": 48.7,
+          "p95": 156.8,
+          "p99": 276.8,
+          "max": 276.8123,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 22
+          }
+        },
+        "GET /dashboards/case-manager": {
+          "count": 50,
+          "rps": 3.3,
+          "p50": 27.7,
+          "p95": 76.5,
+          "p99": 335.1,
+          "max": 335.0761,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 50
+          }
+        },
+        "GET /cases/stats": {
+          "count": 50,
+          "rps": 3.3,
+          "p50": 24.9,
+          "p95": 90,
+          "p99": 115,
+          "max": 114.9794,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 50
+          }
+        },
+        "GET /dashboards/admin": {
+          "count": 50,
+          "rps": 3.3,
+          "p50": 40.8,
+          "p95": 99.2,
+          "p99": 124.6,
+          "max": 124.5878,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 50
+          }
+        },
+        "POST /cases/:id/notes": {
+          "count": 22,
+          "rps": 1.5,
+          "p50": 85.1,
+          "p95": 300.1,
+          "p99": 306.5,
+          "max": 306.4841,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 22
+          }
+        },
+        "GET /dashboards/leadership": {
+          "count": 49,
+          "rps": 3.3,
+          "p50": 36.3,
+          "p95": 117.2,
+          "p99": 137.8,
+          "max": 137.7762,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 49
+          }
+        },
+        "GET /freshness/dashboard": {
+          "count": 49,
+          "rps": 3.3,
+          "p50": 26.3,
+          "p95": 97,
+          "p99": 129.3,
+          "max": 129.2947,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 49
+          }
+        },
+        "POST /assistant/ask (stub)": {
+          "count": 93,
+          "rps": 6.2,
+          "p50": 83.7,
+          "p95": 290.9,
+          "p99": 1778.8,
+          "max": 1778.7756,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 93
+          }
+        },
+        "PUT /cases/:id/assignment": {
+          "count": 21,
+          "rps": 1.4,
+          "p50": 98.8,
+          "p95": 363.6,
+          "p99": 1142.3,
+          "max": 1142.2514,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 21
+          }
+        },
+        "GET /assistant/history": {
+          "count": 92,
+          "rps": 6.1,
+          "p50": 30.5,
+          "p95": 69.9,
+          "p99": 113.3,
+          "max": 113.2891,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 92
+          }
+        },
+        "POST /cases/:id/status (review)": {
+          "count": 21,
+          "rps": 1.4,
+          "p50": 97.1,
+          "p95": 239.3,
+          "p99": 354.7,
+          "max": 354.6514,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 16,
+            "400": 5
+          }
+        },
+        "POST /cases/:id/status (decide)": {
+          "count": 21,
+          "rps": 1.4,
+          "p50": 138.3,
+          "p95": 291.8,
+          "p99": 338.3,
+          "max": 338.2864,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 16,
+            "400": 5
+          }
+        },
+        "POST /auth/register": {
+          "count": 5,
+          "rps": 0.3,
+          "p50": 779.7,
+          "p95": 5888.2,
+          "p99": 5888.2,
+          "max": 5888.1865,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 5
+          }
+        },
+        "POST /auth/login": {
+          "count": 5,
+          "rps": 0.3,
+          "p50": 638.6,
+          "p95": 719,
+          "p99": 719,
+          "max": 718.9824,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 5
+          }
+        },
+        "GET /users/:id": {
+          "count": 5,
+          "rps": 0.3,
+          "p50": 40.1,
+          "p95": 61.5,
+          "p99": 61.5,
+          "max": 61.5312,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 5
+          }
+        },
+        "POST /exemptions/check": {
+          "count": 5,
+          "rps": 0.3,
+          "p50": 71.2,
+          "p95": 104.6,
+          "p99": 104.6,
+          "max": 104.6255,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 5
+          }
+        },
+        "GET /exemptions": {
+          "count": 5,
+          "rps": 0.3,
+          "p50": 36.2,
+          "p95": 40.9,
+          "p99": 40.9,
+          "max": 40.9199,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 5
+          }
+        },
+        "POST /cases": {
+          "count": 5,
+          "rps": 0.3,
+          "p50": 64.6,
+          "p95": 70.9,
+          "p99": 70.9,
+          "max": 70.896,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 5
+          }
+        },
+        "GET /cases (own)": {
+          "count": 5,
+          "rps": 0.3,
+          "p50": 39.7,
+          "p95": 77.1,
+          "p99": 77.1,
+          "max": 77.0909,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 5
+          }
+        }
+      },
+      "server": {
+        "samples": 15,
+        "cpuAvgPct": 80.2,
+        "cpuMaxPct": 130.3,
+        "loopMeanMsAvg": 34.8,
+        "loopP99MsMax": 452.2,
+        "loopMaxMs": 452.2,
+        "rssMaxMb": 157,
+        "poolMax": 25,
+        "poolTotalMax": 25,
+        "poolWaitingMax": 30
+      }
+    }
+  ],
+  "breaking": null
+}

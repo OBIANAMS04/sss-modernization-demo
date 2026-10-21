@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "label": "live",
+    "profile": "hold",
+    "scenario": "live",
+    "target": "https://sss-demo-backend.onrender.com",
+    "startedAt": "2026-10-21T18:35:17.926Z",
+    "commit": "bf512ef",
+    "autocannon": "8.0.0",
+    "node": "v26.12.0",
+    "machine": {
+      "cpus": 8,
+      "model": "Intel(R) Core(TM) Ultra 7 258V",
+      "totalMemGb": 32
+    },
+    "note": "STORY-032 light live check, announced, one synthetic account, no AI routes",
+    "poolMax": null
+  },
+  "liveLogins": [
+    {
+      "status": 200,
+      "ms": 1592
+    },
+    {
+      "status": 200,
+      "ms": 1602
+    },
+    {
+      "status": 200,
+      "ms": 1698
+    },
+    {
+      "status": 200,
+      "ms": 1666
+    },
+    {
+      "status": 200,
+      "ms": 1666
+    }
+  ],
+  "phases": [
+    {
+      "tag": "live",
+      "connections": 25,
+      "split": {
+        "live": 25
+      },
+      "seconds": 60,
+      "requests": 1920,
+      "rps": 32,
+      "errors": 0,
+      "connectionErrors": 0,
+      "rateLimited": 0,
+      "errorRate": 0,
+      "p50": 753.2,
+      "p95": 1244,
+      "p99": 1470,
+      "routes": {
+        "GET /exemptions": {
+          "count": 398,
+          "rps": 6.6,
+          "p50": 549.5,
+          "p95": 1417.7,
+          "p99": 2216.1,
+          "max": 2274.4782999999998,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 398
+          }
+        },
+        "GET /cases (own)": {
+          "count": 391,
+          "rps": 6.5,
+          "p50": 658,
+          "p95": 1070.4,
+          "p99": 1294.4,
+          "max": 1385.9203,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 391
+          }
+        },
+        "GET /dashboards/citizen": {
+          "count": 381,
+          "rps": 6.4,
+          "p50": 867.6,
+          "p95": 1306.4,
+          "p99": 1407.1,
+          "max": 1451.037,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 381
+          }
+        },
+        "GET /notifications": {
+          "count": 375,
+          "rps": 6.3,
+          "p50": 806.7,
+          "p95": 1222.8,
+          "p99": 1302.3,
+          "max": 1524.7173,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 375
+          }
+        },
+        "GET /users/:id": {
+          "count": 375,
+          "rps": 6.3,
+          "p50": 818.1,
+          "p95": 1227.2,
+          "p99": 1453,
+          "max": 1684.3324,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 375
+          }
+        }
+      },
+      "server": null
+    }
+  ],
+  "breaking": null
+}

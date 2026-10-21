@@ -1,0 +1,848 @@
+[
+ {
+  "q": "SELECT role FROM users WHERE id = $1",
+  "n": 3382,
+  "totalMs": 141530,
+  "avgMs": 41.8
+ },
+ {
+  "q": "INSERT INTO audit_logs (action, actor, actor_email, resource, resource_id, status, details",
+  "n": 2408,
+  "totalMs": 112529,
+  "avgMs": 46.7
+ },
+ {
+  "q": "SELECT pg_advisory_xact_lock($1)",
+  "n": 387,
+  "totalMs": 89240,
+  "avgMs": 230.6
+ },
+ {
+  "q": "SELECT c.id, c.user_id, u.full_name AS applicant_name, u.email AS applicant_email, c.exemp",
+  "n": 1416,
+  "totalMs": 59467,
+  "avgMs": 42
+ },
+ {
+  "q": "SELECT c.id, u.full_name AS applicant_name, x.exemption_type, c.status, c.assigned_to, c.s",
+  "n": 759,
+  "totalMs": 44405,
+  "avgMs": 58.5
+ },
+ {
+  "q": "COMMIT",
+  "n": 863,
+  "totalMs": 40971,
+  "avgMs": 47.5
+ },
+ {
+  "q": "SELECT COUNT(*) AS n FROM notifications WHERE user_id = $1 AND read_at IS NULL",
+  "n": 651,
+  "totalMs": 24204,
+  "avgMs": 37.2
+ },
+ {
+  "q": "SELECT id, case_id, message, read_at, created_at FROM notifications WHERE user_id = $1 ORD",
+  "n": 651,
+  "totalMs": 23862,
+  "avgMs": 36.7
+ },
+ {
+  "q": "BEGIN",
+  "n": 872,
+  "totalMs": 21908,
+  "avgMs": 25.1
+ },
+ {
+  "q": "SELECT c.user_id AS owner_id, COALESCE((SELECT u.id::text FROM users u WHERE u.email = c.a",
+  "n": 402,
+  "totalMs": 21547,
+  "avgMs": 53.6
+ },
+ {
+  "q": "UPDATE assistant_interactions SET passage_ids = $2, answer = $3, citations = $4::jsonb, mo",
+  "n": 376,
+  "totalMs": 20161,
+  "avgMs": 53.6
+ },
+ {
+  "q": "SELECT trace_id, question_redacted, mode, status, level, answer, citations, passage_ids, f",
+  "n": 333,
+  "totalMs": 16678,
+  "avgMs": 50.1
+ },
+ {
+  "q": "SELECT exemption_type, status, reason FROM exemptions WHERE id = $1",
+  "n": 402,
+  "totalMs": 16577,
+  "avgMs": 41.2
+ },
+ {
+  "q": "INSERT INTO latency_metrics (entity_type, operation, latency_ms, write_ms, visible_ms, vis",
+  "n": 297,
+  "totalMs": 16558,
+  "avgMs": 55.8
+ },
+ {
+  "q": "SELECT id, case_id, note_by, content, created_at FROM case_notes WHERE case_id = $1 ORDER ",
+  "n": 402,
+  "totalMs": 16517,
+  "avgMs": 41.1
+ },
+ {
+  "q": "SELECT id, case_id, document_type, document_url, uploaded_by, created_at FROM case_documen",
+  "n": 402,
+  "totalMs": 16424,
+  "avgMs": 40.9
+ },
+ {
+  "q": "SELECT id, user_id, exemption_type, status, reason, determined_at, determined_by FROM exem",
+  "n": 418,
+  "totalMs": 16297,
+  "avgMs": 39
+ },
+ {
+  "q": "SELECT id, email, full_name, dob, phone, address, annual_income, has_documented_hardship, ",
+  "n": 458,
+  "totalMs": 16079,
+  "avgMs": 35.1
+ },
+ {
+  "q": "SELECT COUNT(*)::int AS answers FROM assistant_interactions WHERE mode IN ('ai', 'stub') A",
+  "n": 378,
+  "totalMs": 15907,
+  "avgMs": 42.1
+ },
+ {
+  "q": "SELECT id FROM users WHERE email = $1",
+  "n": 251,
+  "totalMs": 15721,
+  "avgMs": 62.6
+ },
+ {
+  "q": "SELECT ev.id, ev.case_id, ev.event_type, ev.from_status, ev.to_status, ev.detail, ev.creat",
+  "n": 350,
+  "totalMs": 15696,
+  "avgMs": 44.8
+ },
+ {
+  "q": "SELECT id, event_type, from_status, to_status, actor_email, detail, created_at FROM case_e",
+  "n": 402,
+  "totalMs": 15584,
+  "avgMs": 38.8
+ },
+ {
+  "q": "SELECT DISTINCT ON (ev.case_id) ev.case_id, ev.detail FROM case_events ev JOIN cases c ON ",
+  "n": 350,
+  "totalMs": 15471,
+  "avgMs": 44.2
+ },
+ {
+  "q": "SELECT ev.case_id, ev.to_status, ev.created_at, u.full_name AS applicant_name, x.exemption",
+  "n": 253,
+  "totalMs": 15422,
+  "avgMs": 61
+ },
+ {
+  "q": "SELECT r.id, r.case_id, r.decision, r.decided_by_email, r.failed_controls, r.opened_at, u.",
+  "n": 253,
+  "totalMs": 15370,
+  "avgMs": 60.7
+ },
+ {
+  "q": "SELECT COUNT(*)::int AS asks, GREATEST(CEIL(EXTRACT(EPOCH FROM (MIN(created_at) + INTERVAL",
+  "n": 378,
+  "totalMs": 15305,
+  "avgMs": 40.5
+ },
+ {
+  "q": "SELECT p.id, p.doc_slug, p.doc_title, p.heading, p.position, p.body, p.version, ts_rank(p.",
+  "n": 377,
+  "totalMs": 14703,
+  "avgMs": 39
+ },
+ {
+  "q": "SELECT xmin::text AS v FROM cases WHERE id = $1",
+  "n": 436,
+  "totalMs": 14392,
+  "avgMs": 33
+ },
+ {
+  "q": "INSERT INTO assistant_interactions (user_id, trace_id, question_redacted, mode, status) VA",
+  "n": 378,
+  "totalMs": 14160,
+  "avgMs": 37.5
+ },
+ {
+  "q": "INSERT INTO case_events (case_id, event_type, from_status, to_status, actor_id, actor_emai",
+  "n": 327,
+  "totalMs": 11858,
+  "avgMs": 36.3
+ },
+ {
+  "q": "INSERT INTO compliance_checks (requirement_id, control_id, control_name, passed, evidence,",
+  "n": 336,
+  "totalMs": 9370,
+  "avgMs": 27.9
+ },
+ {
+  "q": "WITH decisions AS ( SELECT decision_event_id, MIN(checked_at) AS decided_at, BOOL_AND(pass",
+  "n": 210,
+  "totalMs": 8354,
+  "avgMs": 39.8
+ },
+ {
+  "q": "SELECT to_char(date_trunc('week', NOW()), 'YYYY-MM-DD') AS week",
+  "n": 309,
+  "totalMs": 7425,
+  "avgMs": 24
+ },
+ {
+  "q": "SELECT entity_type, operation, latency_ms, write_ms, visible_ms, visible, timestamp AT TIM",
+  "n": 204,
+  "totalMs": 7066,
+  "avgMs": 34.6
+ },
+ {
+  "q": "SELECT source, outcome, to_char(date_trunc('week', at), 'YYYY-MM-DD') AS week, (at >= NOW(",
+  "n": 207,
+  "totalMs": 6557,
+  "avgMs": 31.7
+ },
+ {
+  "q": "INSERT INTO users (email, password_hash, full_name, ssn_hash, dob, role, created_at, updat",
+  "n": 227,
+  "totalMs": 6220,
+  "avgMs": 27.4
+ },
+ {
+  "q": "INSERT INTO route_metrics_minute (minute, route, requests, errors_4xx, errors_5xx, total_m",
+  "n": 111,
+  "totalMs": 6110,
+  "avgMs": 55
+ },
+ {
+  "q": "INSERT INTO notifications (user_id, case_id, message) VALUES ($1, $2, $3)",
+  "n": 174,
+  "totalMs": 5854,
+  "avgMs": 33.6
+ },
+ {
+  "q": "INSERT INTO exemptions (user_id, exemption_type, status, reason, determined_at, determined",
+  "n": 207,
+  "totalMs": 5722,
+  "avgMs": 27.6
+ },
+ {
+  "q": "SELECT u.full_name, u.email, u.role, (SELECT COUNT(*)::int FROM cases c WHERE lower(c.assi",
+  "n": 105,
+  "totalMs": 5547,
+  "avgMs": 52.8
+ },
+ {
+  "q": "SELECT COUNT(*) AS total FROM cases c JOIN users u ON u.id = c.user_id LEFT JOIN exemption",
+  "n": 96,
+  "totalMs": 5532,
+  "avgMs": 57.6
+ },
+ {
+  "q": "SELECT COUNT(*)::int AS decided FROM case_events WHERE event_type = 'status_change' AND to",
+  "n": 105,
+  "totalMs": 4365,
+  "avgMs": 41.6
+ },
+ {
+  "q": "SELECT x.exemption_type, COUNT(*)::int AS count FROM cases c LEFT JOIN exemptions x ON x.i",
+  "n": 105,
+  "totalMs": 4213,
+  "avgMs": 40.1
+ },
+ {
+  "q": "INSERT INTO case_notes (case_id, note_by, content) VALUES ($1, $2, $3) RETURNING id, case_",
+  "n": 94,
+  "totalMs": 4070,
+  "avgMs": 43.3
+ },
+ {
+  "q": "SELECT AVG(EXTRACT(EPOCH FROM (d.decided_at - c.submitted_at)) / 86400)::float8 AS average",
+  "n": 102,
+  "totalMs": 4030,
+  "avgMs": 39.5
+ },
+ {
+  "q": "SELECT COUNT(*)::int AS n FROM audit_logs WHERE action = 'ACCESS_DENIED' AND timestamp >= ",
+  "n": 105,
+  "totalMs": 3787,
+  "avgMs": 36.1
+ },
+ {
+  "q": "SELECT status, COUNT(*) AS count FROM cases GROUP BY status",
+  "n": 109,
+  "totalMs": 3716,
+  "avgMs": 34.1
+ },
+ {
+  "q": "SELECT control_id, COUNT(*)::int AS checks, COUNT(*) FILTER (WHERE NOT passed)::int AS fai",
+  "n": 105,
+  "totalMs": 3709,
+  "avgMs": 35.3
+ },
+ {
+  "q": "SELECT COUNT(*)::int AS applied, MAX(filename) AS latest FROM schema_migrations",
+  "n": 107,
+  "totalMs": 3642,
+  "avgMs": 34
+ },
+ {
+  "q": "SELECT role, COUNT(*)::int AS n FROM users WHERE role IN ('case_manager', 'leadership', 'a",
+  "n": 105,
+  "totalMs": 3569,
+  "avgMs": 34
+ },
+ {
+  "q": "SELECT COUNT(DISTINCT case_id) FILTER (WHERE to_status = 'Appealed')::int AS appealed, COU",
+  "n": 102,
+  "totalMs": 3564,
+  "avgMs": 34.9
+ },
+ {
+  "q": "SELECT string_agg(xmin::text, ',' ORDER BY exemption_type) AS v FROM exemptions WHERE user",
+  "n": 138,
+  "totalMs": 3560,
+  "avgMs": 25.8
+ },
+ {
+  "q": "SELECT to_char(date_trunc('week', COALESCE(submitted_at, created_at)), 'YYYY-MM-DD') AS we",
+  "n": 102,
+  "totalMs": 3549,
+  "avgMs": 34.8
+ },
+ {
+  "q": "SELECT id, email, password_hash, full_name, role, mfa_enabled, created_at FROM users WHERE",
+  "n": 213,
+  "totalMs": 3539,
+  "avgMs": 16.6
+ },
+ {
+  "q": "SELECT to_char(date_trunc('week', created_at), 'YYYY-MM-DD') AS week, COUNT(*)::int AS n F",
+  "n": 102,
+  "totalMs": 3459,
+  "avgMs": 33.9
+ },
+ {
+  "q": "SELECT AVG(EXTRACT(EPOCH FROM (approved_at - submitted_at))) AS avg_seconds FROM cases WHE",
+  "n": 109,
+  "totalMs": 3248,
+  "avgMs": 29.8
+ },
+ {
+  "q": "WITH moves AS ( SELECT case_id, to_status, created_at FROM case_events WHERE event_type IN",
+  "n": 102,
+  "totalMs": 3243,
+  "avgMs": 31.8
+ },
+ {
+  "q": "SELECT COUNT(*)::int AS open FROM compliance_reviews WHERE status = 'Open'",
+  "n": 105,
+  "totalMs": 3239,
+  "avgMs": 30.9
+ },
+ {
+  "q": "SELECT status, COUNT(*)::int AS count FROM cases GROUP BY status",
+  "n": 105,
+  "totalMs": 3223,
+  "avgMs": 30.7
+ },
+ {
+  "q": "SELECT u.full_name, COUNT(*)::int AS decisions, AVG(EXTRACT(EPOCH FROM (ev.created_at - c.",
+  "n": 102,
+  "totalMs": 3134,
+  "avgMs": 30.7
+ },
+ {
+  "q": "UPDATE cases SET status = $1::varchar, updated_at = NOW(), approved_at = CASE WHEN $1::var",
+  "n": 98,
+  "totalMs": 3132,
+  "avgMs": 32
+ },
+ {
+  "q": "SELECT c.status, COUNT(*)::int AS stuck FROM cases c LEFT JOIN LATERAL ( SELECT MAX(ev.cre",
+  "n": 102,
+  "totalMs": 3005,
+  "avgMs": 29.5
+ },
+ {
+  "q": "SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status = ANY($1))::int AS open, COUN",
+  "n": 102,
+  "totalMs": 2960,
+  "avgMs": 29
+ },
+ {
+  "q": "UPDATE cases SET assigned_to = $1, updated_at = NOW() WHERE id = $2",
+  "n": 72,
+  "totalMs": 2941,
+  "avgMs": 40.9
+ },
+ {
+  "q": "SELECT email FROM users WHERE lower(email) = lower($1) AND role IN ('case_manager', 'admin",
+  "n": 88,
+  "totalMs": 2755,
+  "avgMs": 31.3
+ },
+ {
+  "q": "INSERT INTO cases (user_id, exemption_id, status, submitted_at) VALUES ($1, $2, 'Submitted",
+  "n": 68,
+  "totalMs": 2127,
+  "avgMs": 31.3
+ },
+ {
+  "q": "SELECT status FROM cases WHERE exemption_id = $1",
+  "n": 68,
+  "totalMs": 1906,
+  "avgMs": 28
+ },
+ {
+  "q": "SELECT e.from_status, e.to_status, e.actor_id, e.actor_email, e.detail, c.user_id AS appli",
+  "n": 48,
+  "totalMs": 1616,
+  "avgMs": 33.7
+ },
+ {
+  "q": "SELECT id, exemption_type, status FROM exemptions WHERE id = $1 AND user_id = $2",
+  "n": 68,
+  "totalMs": 1606,
+  "avgMs": 23.6
+ },
+ {
+  "q": "INSERT INTO compliance_reviews (case_id, decision_event_id, decision, decided_by_email, fa",
+  "n": 48,
+  "totalMs": 1343,
+  "avgMs": 28
+ },
+ {
+  "q": "SELECT 1 FROM users WHERE id = $1",
+  "n": 39,
+  "totalMs": 1342,
+  "avgMs": 34.4
+ },
+ {
+  "q": "SELECT COALESCE(MAX(version), 0)::int AS version FROM access_policy_versions",
+  "n": 47,
+  "totalMs": 1269,
+  "avgMs": 27
+ },
+ {
+  "q": "SELECT status FROM exemptions WHERE id = $1",
+  "n": 48,
+  "totalMs": 1174,
+  "avgMs": 24.5
+ },
+ {
+  "q": "SELECT 1",
+  "n": 50,
+  "totalMs": 1109,
+  "avgMs": 22.2
+ },
+ {
+  "q": "SELECT COALESCE(SUM(requests), 0) AS requests, COALESCE(SUM(errors_4xx), 0) AS errors_4xx,",
+  "n": 10,
+  "totalMs": 569,
+  "avgMs": 56.9
+ },
+ {
+  "q": "SELECT r.route AS g, u.ord::int AS ord, SUM(u.v)::int AS c FROM route_metrics_minute r CRO",
+  "n": 10,
+  "totalMs": 535,
+  "avgMs": 53.5
+ },
+ {
+  "q": "SELECT 'all' AS g, u.ord::int AS ord, SUM(u.v)::int AS c FROM route_metrics_minute r CROSS",
+  "n": 10,
+  "totalMs": 525,
+  "avgMs": 52.5
+ },
+ {
+  "q": "SELECT (COALESCE((SELECT SUM(cost_usd) FROM assistant_interactions WHERE created_at >= $1)",
+  "n": 10,
+  "totalMs": 447,
+  "avgMs": 44.7
+ },
+ {
+  "q": "SELECT route, SUM(requests) AS requests, SUM(errors_4xx) AS errors_4xx, SUM(errors_5xx) AS",
+  "n": 10,
+  "totalMs": 431,
+  "avgMs": 43.1
+ },
+ {
+  "q": "INSERT INTO db_metrics_minute (minute, queries, failed, total_ms, p50_ms, p95_ms, max_ms, ",
+  "n": 9,
+  "totalMs": 318,
+  "avgMs": 35.4
+ },
+ {
+  "q": "INSERT INTO config_state (name, value) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING",
+  "n": 1,
+  "totalMs": 77,
+  "avgMs": 76.7
+ },
+ {
+  "q": "SELECT id, kind, status, model, corpus_version, mode, retrieval_hit_rate, fact_accuracy, c",
+  "n": 4,
+  "totalMs": 77,
+  "avgMs": 19.2
+ },
+ {
+  "q": "SELECT id, key FROM assistant_quality_alerts WHERE kind = 'slo' AND cleared_at IS NULL",
+  "n": 5,
+  "totalMs": 75,
+  "avgMs": 15
+ },
+ {
+  "q": "-- 012_case_workflow.sql -- STORY-007: case timeline, in-app notifications, and one case p",
+  "n": 1,
+  "totalMs": 74,
+  "avgMs": 74
+ },
+ {
+  "q": "DELETE FROM server_errors WHERE at < NOW() - make_interval(days => $1::int)",
+  "n": 2,
+  "totalMs": 56,
+  "avgMs": 27.8
+ },
+ {
+  "q": "SELECT window_name, COUNT(*)::int AS answers, COUNT(*) FILTER (WHERE grounding->>'grounded",
+  "n": 2,
+  "totalMs": 42,
+  "avgMs": 20.9
+ },
+ {
+  "q": "SELECT to_char(date_trunc('day', created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day, COU",
+  "n": 2,
+  "totalMs": 30,
+  "avgMs": 15.1
+ },
+ {
+  "q": "INSERT INTO assistant_quality_alerts (kind, key, message) VALUES ('slo', $1, $2) ON CONFLI",
+  "n": 2,
+  "totalMs": 29,
+  "avgMs": 14.6
+ },
+ {
+  "q": "SELECT model, created_at FROM assistant_interactions WHERE mode IN ('ai', 'stub') AND mode",
+  "n": 2,
+  "totalMs": 28,
+  "avgMs": 13.9
+ },
+ {
+  "q": "SELECT doc_slug, MAX(version) AS version, COUNT(*)::int AS passages, MAX(ingested_at) AS i",
+  "n": 3,
+  "totalMs": 26,
+  "avgMs": 8.7
+ },
+ {
+  "q": "SELECT * FROM assistant_quality_alerts WHERE cleared_at IS NULL",
+  "n": 2,
+  "totalMs": 21,
+  "avgMs": 10.7
+ },
+ {
+  "q": "-- 005_init_cases.sql CREATE TABLE IF NOT EXISTS cases ( id UUID PRIMARY KEY DEFAULT gen_r",
+  "n": 1,
+  "totalMs": 20,
+  "avgMs": 19.9
+ },
+ {
+  "q": "INSERT INTO policy_passages (id, doc_slug, doc_title, heading, position, body, version) VA",
+  "n": 43,
+  "totalMs": 20,
+  "avgMs": 0.5
+ },
+ {
+  "q": "-- 006_init_compliance.sql CREATE TABLE IF NOT EXISTS compliance_checks ( id UUID PRIMARY ",
+  "n": 1,
+  "totalMs": 19,
+  "avgMs": 18.6
+ },
+ {
+  "q": "-- 008_init_audit_logs.sql CREATE TABLE IF NOT EXISTS audit_logs ( id BIGSERIAL PRIMARY KE",
+  "n": 1,
+  "totalMs": 19,
+  "avgMs": 19.4
+ },
+ {
+  "q": "-- 020_policy_assistant.sql -- STORY-017 and STORY-018: the policy assistant answers only ",
+  "n": 1,
+  "totalMs": 17,
+  "avgMs": 17.2
+ },
+ {
+  "q": "SELECT to_value FROM assistant_change_markers WHERE kind = $1 ORDER BY at DESC, id DESC LI",
+  "n": 2,
+  "totalMs": 16,
+  "avgMs": 7.9
+ },
+ {
+  "q": "-- 013_decision_compliance.sql -- STORY-008: every exemption decision (Approved/Denied) is",
+  "n": 1,
+  "totalMs": 13,
+  "avgMs": 13.1
+ },
+ {
+  "q": "-- 015_audit_write_once.sql -- STORY-010: audit entries are write-once, enforced by the da",
+  "n": 1,
+  "totalMs": 13,
+  "avgMs": 13.1
+ },
+ {
+  "q": "-- 022_ai_quality.sql -- STORY-021 and 025: what drift detection and fairness testing keep",
+  "n": 1,
+  "totalMs": 13,
+  "avgMs": 12.6
+ },
+ {
+  "q": "-- 024_service_metrics.sql -- STORY-027: what the service measures about itself, kept in P",
+  "n": 1,
+  "totalMs": 13,
+  "avgMs": 12.9
+ },
+ {
+  "q": "INSERT INTO schema_migrations (filename) VALUES ($1)",
+  "n": 25,
+  "totalMs": 12,
+  "avgMs": 0.5
+ },
+ {
+  "q": "-- 009_hash_ssn.sql -- SSN was stored as raw plaintext. Store a bcrypt hash instead, match",
+  "n": 1,
+  "totalMs": 12,
+  "avgMs": 11.7
+ },
+ {
+  "q": "SELECT id, email, full_name, role FROM users WHERE lower(email) = lower($1) ORDER BY (emai",
+  "n": 7,
+  "totalMs": 12,
+  "avgMs": 1.7
+ },
+ {
+  "q": "-- 001_init_users.sql CREATE TABLE IF NOT EXISTS users ( id UUID PRIMARY KEY DEFAULT gen_r",
+  "n": 1,
+  "totalMs": 11,
+  "avgMs": 10.6
+ },
+ {
+  "q": "UPDATE users SET role = $2 WHERE id = $1 AND role = $3 RETURNING id, email, full_name, rol",
+  "n": 7,
+  "totalMs": 11,
+  "avgMs": 1.5
+ },
+ {
+  "q": "-- 007_init_latency_metrics.sql CREATE TABLE IF NOT EXISTS latency_metrics ( id BIGSERIAL ",
+  "n": 1,
+  "totalMs": 10,
+  "avgMs": 9.7
+ },
+ {
+  "q": "SELECT * FROM assistant_quality_alerts WHERE cleared_at IS NULL OR cleared_at >= NOW() - I",
+  "n": 2,
+  "totalMs": 10,
+  "avgMs": 4.8
+ },
+ {
+  "q": "CREATE TABLE IF NOT EXISTS schema_migrations ( filename VARCHAR(255) PRIMARY KEY, applied_",
+  "n": 1,
+  "totalMs": 9,
+  "avgMs": 8.9
+ },
+ {
+  "q": "INSERT INTO config_state (name, value) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET va",
+  "n": 15,
+  "totalMs": 9,
+  "avgMs": 0.6
+ },
+ {
+  "q": "-- 002_init_mfa_devices.sql CREATE TABLE IF NOT EXISTS mfa_devices ( id UUID PRIMARY KEY D",
+  "n": 1,
+  "totalMs": 8,
+  "avgMs": 7.7
+ },
+ {
+  "q": "-- 003_init_pipeline_metrics.sql CREATE TABLE IF NOT EXISTS pipeline_metrics ( id BIGSERIA",
+  "n": 1,
+  "totalMs": 8,
+  "avgMs": 7.6
+ },
+ {
+  "q": "-- 004_init_exemptions.sql CREATE TABLE IF NOT EXISTS exemptions ( id UUID PRIMARY KEY DEF",
+  "n": 1,
+  "totalMs": 8,
+  "avgMs": 8.1
+ },
+ {
+  "q": "INSERT INTO notifications (user_id, message) SELECT id, $1 FROM users WHERE role = 'admin'",
+  "n": 2,
+  "totalMs": 7,
+  "avgMs": 3.5
+ },
+ {
+  "q": "-- 011_user_roles.sql -- Staff roles gate case management and the reporting/admin endpoint",
+  "n": 1,
+  "totalMs": 6,
+  "avgMs": 5.6
+ },
+ {
+  "q": "-- 019_access_policies.sql -- STORY-016: the versions of the API access policy. The policy",
+  "n": 1,
+  "totalMs": 6,
+  "avgMs": 5.7
+ },
+ {
+  "q": "-- 018_mfa_sign_in.sql -- STORY-003: two-step verification when signing in. -- * last_used",
+  "n": 1,
+  "totalMs": 5,
+  "avgMs": 5.2
+ },
+ {
+  "q": "SELECT id, kind, from_value, to_value, at FROM assistant_change_markers WHERE at >= NOW() ",
+  "n": 2,
+  "totalMs": 5,
+  "avgMs": 2.6
+ },
+ {
+  "q": "-- 016_config_state.sql -- STORY-010: the settings the server last started with, so that a",
+  "n": 1,
+  "totalMs": 4,
+  "avgMs": 4.3
+ },
+ {
+  "q": "-- 010_exemption_inputs.sql -- STORY-006: Type B (income) and Type C (hardship) exemptions",
+  "n": 1,
+  "totalMs": 3,
+  "avgMs": 2.6
+ },
+ {
+  "q": "-- 014_data_freshness.sql -- STORY-009: every tracked write records how long until its cha",
+  "n": 1,
+  "totalMs": 3,
+  "avgMs": 3.2
+ },
+ {
+  "q": "INSERT INTO assistant_change_markers (kind, from_value, to_value, at) VALUES ($1, $2, $3, ",
+  "n": 2,
+  "totalMs": 3,
+  "avgMs": 1.7
+ },
+ {
+  "q": "DELETE FROM route_metrics_minute WHERE minute < NOW() - make_interval(days => $1::int)",
+  "n": 2,
+  "totalMs": 3,
+  "avgMs": 1.3
+ },
+ {
+  "q": "DELETE FROM db_metrics_minute WHERE minute < NOW() - make_interval(days => $1::int)",
+  "n": 2,
+  "totalMs": 3,
+  "avgMs": 1.4
+ },
+ {
+  "q": "SELECT pg_advisory_lock($1)",
+  "n": 1,
+  "totalMs": 2,
+  "avgMs": 1.5
+ },
+ {
+  "q": "SELECT filename FROM schema_migrations",
+  "n": 1,
+  "totalMs": 2,
+  "avgMs": 1.7
+ },
+ {
+  "q": "-- 021_assistant_oversight.sql -- STORY-019, 023 and 024: what the policy assistant's page",
+  "n": 1,
+  "totalMs": 2,
+  "avgMs": 2.2
+ },
+ {
+  "q": "SELECT 1 FROM users WHERE role IN ('case_manager', 'admin') LIMIT 1",
+  "n": 2,
+  "totalMs": 2,
+  "avgMs": 1.2
+ },
+ {
+  "q": "SELECT details->>'commit' AS commit FROM audit_logs WHERE action = $1 ORDER BY id DESC LIM",
+  "n": 1,
+  "totalMs": 2,
+  "avgMs": 1.6
+ },
+ {
+  "q": "UPDATE users SET role = 'admin' WHERE id = $1 AND role = 'case_manager' AND NOT EXISTS (SE",
+  "n": 1,
+  "totalMs": 2,
+  "avgMs": 1.7
+ },
+ {
+  "q": "SELECT id, email, full_name, role, created_at FROM users WHERE role IN ('case_manager', 'l",
+  "n": 1,
+  "totalMs": 2,
+  "avgMs": 2.2
+ },
+ {
+  "q": "-- 017_leadership_role.sql -- STORY-015: leadership (directors) read aggregate dashboards ",
+  "n": 1,
+  "totalMs": 1,
+  "avgMs": 0.8
+ },
+ {
+  "q": "-- 023_audit_trace_id.sql -- STORY-026: an audit entry records the trace id of the request",
+  "n": 1,
+  "totalMs": 1,
+  "avgMs": 1.1
+ },
+ {
+  "q": "-- 025_slo_alerts.sql -- STORY-029: service level objective alerts use the alert table of ",
+  "n": 1,
+  "totalMs": 1,
+  "avgMs": 1
+ },
+ {
+  "q": "UPDATE users SET role = 'case_manager' WHERE role = 'citizen' AND lower(email) = ANY($1) R",
+  "n": 1,
+  "totalMs": 1,
+  "avgMs": 1
+ },
+ {
+  "q": "SELECT version, rules, route_roles, summary, reason, changed_by, changed_by_email, created",
+  "n": 1,
+  "totalMs": 1,
+  "avgMs": 0.9
+ },
+ {
+  "q": "SELECT doc_slug, MAX(version) AS version FROM policy_passages GROUP BY doc_slug",
+  "n": 1,
+  "totalMs": 1,
+  "avgMs": 1.4
+ },
+ {
+  "q": "SELECT pg_advisory_unlock($1)",
+  "n": 1,
+  "totalMs": 0,
+  "avgMs": 0.5
+ },
+ {
+  "q": "SELECT 1 FROM users WHERE role = 'admin' LIMIT 1",
+  "n": 1,
+  "totalMs": 0,
+  "avgMs": 0.3
+ },
+ {
+  "q": "UPDATE users SET role = 'admin' WHERE role = 'case_manager' AND lower(email) = ANY($1) RET",
+  "n": 1,
+  "totalMs": 0,
+  "avgMs": 0.4
+ },
+ {
+  "q": "SELECT name, value FROM config_state",
+  "n": 1,
+  "totalMs": 0,
+  "avgMs": 0.4
+ }
+]

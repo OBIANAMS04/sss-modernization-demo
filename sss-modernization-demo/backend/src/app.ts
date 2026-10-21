@@ -24,7 +24,7 @@ import { clientAddress, requestContextMiddleware } from './utils/requestContext'
 import { traceContextMiddleware } from './observability/traceContext';
 import { requestMetrics } from './observability/requestMetrics';
 import pool from './database/connection';
-import { availability, isDatabaseUnavailable, markDatabaseDown, requireDatabase } from './database/availability';
+import { availability, isDatabaseUnavailable, markDatabaseDown, poolIsSaturated, requireDatabase } from './database/availability';
 
 dotenv.config();
 
@@ -103,9 +103,13 @@ app.get('/health', async (req, res) => {
       ]);
       migrations = { applied: result.rows[0].applied, latest: result.rows[0].latest };
     } catch (error) {
-      database = 'down';
-      // A refused or dropped connection closes the data routes at once; the probe in startup.ts reopens them when the database is back
-      if (isDatabaseUnavailable(error) || (error as Error).message === 'timeout') markDatabaseDown(error);
+      // STORY-033: the check waited for a free pooled connection while every one was busy: the service is overloaded, the database is not down
+      const overloaded = (error as Error).message === 'timeout' && poolIsSaturated();
+      if (!overloaded) {
+        database = 'down';
+        // A refused or dropped connection closes the data routes at once; the probe in startup.ts reopens them when the database is back
+        if (isDatabaseUnavailable(error) || (error as Error).message === 'timeout') markDatabaseDown(error);
+      }
     } finally {
       clearTimeout(timer);
     }

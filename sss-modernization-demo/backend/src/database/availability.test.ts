@@ -1,4 +1,4 @@
-import { availability, beginStartup, completeStartup, isDatabaseUnavailable, markDatabaseDown, markDatabaseUp, requireDatabase, resetAvailability } from './availability';
+import { availability, beginStartup, completeStartup, isDatabaseUnavailable, isPoolExhaustion, markDatabaseDown, markDatabaseUp, requireDatabase, resetAvailability, setSaturationProbe } from './availability';
 
 const pgError = (code: string, message = 'x') => Object.assign(new Error(message), { code });
 
@@ -94,5 +94,23 @@ describe('requireDatabase', () => {
     expect(availability()).toMatchObject({ database: 'down', downSeconds: 42 });
     markDatabaseUp();
     expect(availability().downSeconds).toBeNull();
+  });
+});
+
+describe('pool exhaustion is overload, not an outage (STORY-033)', () => {
+  const timeout = () => new Error('timeout exceeded when trying to connect');
+  afterEach(() => setSaturationProbe(() => false));
+
+  it('is exhaustion only for the pool wait timeout while the pool is full and none is idle', () => {
+    setSaturationProbe(() => true);
+    expect(isPoolExhaustion(timeout())).toBe(true);
+    setSaturationProbe(() => false);
+    expect(isPoolExhaustion(timeout())).toBe(false);
+  });
+
+  it('never treats a refused or reset connection, or an error with a code, as exhaustion', () => {
+    setSaturationProbe(() => true);
+    expect(isPoolExhaustion(Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' }))).toBe(false);
+    expect(isPoolExhaustion(new Error('Connection terminated unexpectedly'))).toBe(false);
   });
 });

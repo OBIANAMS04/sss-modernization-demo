@@ -49,6 +49,29 @@ export function isDatabaseUnavailable(error: unknown, depth = 0): boolean {
   return e.cause !== undefined && isDatabaseUnavailable(e.cause, depth + 1);
 }
 
+let saturationProbe: () => boolean = () => false;
+/** connection.ts registers how to tell that every pooled connection is busy. */
+export function setSaturationProbe(probe: () => boolean): void {
+  saturationProbe = probe;
+}
+
+/**
+ * STORY-033: pg raises "timeout exceeded when trying to connect" both when the database cannot be reached and when a request waited
+ * 10 s for a free pooled connection because all of them were busy. The second is overload, not an outage. A load run found it closing
+ * every data route (a 503 for everyone, for as long as it took the probe to reopen them) because a burst had used up the pool. This is
+ * true for that message while the pool is full and none of it is idle; the request still gets a 503 with Retry-After, but the
+ * database is not marked down. A database that really cannot be reached still shows as refused, reset or terminated connections.
+ */
+/** True while every pooled connection is in use and none is idle. */
+export function poolIsSaturated(): boolean {
+  return saturationProbe();
+}
+
+export function isPoolExhaustion(error: unknown): boolean {
+  const e = error as { code?: unknown; message?: unknown } | undefined;
+  return !!e && typeof e.code !== 'string' && typeof e.message === 'string' && /timeout exceeded when trying to connect/i.test(e.message) && saturationProbe();
+}
+
 interface State {
   /** False until beginStartup() is called, which only the server's entry point does: tests and scripts that import the app are never gated. */
   gated: boolean;
@@ -112,7 +135,10 @@ export function resetAvailability(now: () => number = Date.now): void {
 
 export const RETRY_AFTER_SECONDS = 5;
 
-export function unavailableBody(kind: 'database' | 'starting') {
+export function unavailableBody(kind: 'database' | 'starting' | 'busy') {
+  if (kind === 'busy') {
+    return { error: { code: 'SERVICE_BUSY', message: 'The service is very busy right now. Nothing you sent was saved. Please try again in a few seconds.' } };
+  }
   return {
     error: {
       code: 'SERVICE_UNAVAILABLE',

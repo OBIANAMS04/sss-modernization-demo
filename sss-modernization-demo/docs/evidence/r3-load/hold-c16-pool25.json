@@ -1,0 +1,343 @@
+{
+  "meta": {
+    "label": "hold-c16-pool25",
+    "profile": "hold",
+    "scenario": "mixed",
+    "target": "local",
+    "startedAt": "2026-10-21T18:40:18.811Z",
+    "commit": "local",
+    "autocannon": "8.0.0",
+    "node": "v26.12.0",
+    "machine": {
+      "cpus": 8,
+      "model": "Intel(R) Core(TM) Ultra 7 258V",
+      "totalMemGb": 32
+    },
+    "note": "after STORY-033 fixes incl. pool exhaustion no longer marks the database down; DATABASE_POOL_MAX=25",
+    "poolMax": 25
+  },
+  "liveLogins": null,
+  "phases": [
+    {
+      "tag": "hold-c16",
+      "connections": 16,
+      "split": {
+        "registrant": 5,
+        "case-manager": 3,
+        "assistant": 3,
+        "dashboards": 5
+      },
+      "seconds": 60,
+      "requests": 2598,
+      "rps": 43.3,
+      "errors": 0,
+      "connectionErrors": 0,
+      "rateLimited": 0,
+      "errorRate": 0,
+      "p50": 202,
+      "p95": 1266.1,
+      "p99": 2071.5,
+      "routes": {
+        "GET /cases (staff list)": {
+          "count": 44,
+          "rps": 0.7,
+          "p50": 194.2,
+          "p95": 608.6,
+          "p99": 1058.5,
+          "max": 1058.4872,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 44
+          }
+        },
+        "GET /dashboards/citizen": {
+          "count": 266,
+          "rps": 4.4,
+          "p50": 179.9,
+          "p95": 556.9,
+          "p99": 2465.4,
+          "max": 3307.3339,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 266
+          }
+        },
+        "GET /notifications": {
+          "count": 209,
+          "rps": 3.5,
+          "p50": 149.1,
+          "p95": 454.7,
+          "p99": 520.1,
+          "max": 578.1815,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 209
+          }
+        },
+        "GET /cases/:id": {
+          "count": 44,
+          "rps": 0.7,
+          "p50": 268.5,
+          "p95": 464.8,
+          "p99": 2988.1,
+          "max": 2988.149,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 44
+          }
+        },
+        "GET /dashboards/case-manager": {
+          "count": 209,
+          "rps": 3.5,
+          "p50": 177.2,
+          "p95": 519.6,
+          "p99": 846,
+          "max": 986.8902,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 209
+          }
+        },
+        "GET /cases/stats": {
+          "count": 209,
+          "rps": 3.5,
+          "p50": 182.5,
+          "p95": 411.1,
+          "p99": 894.7,
+          "max": 926.9679,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 209
+          }
+        },
+        "POST /assistant/ask (stub)": {
+          "count": 209,
+          "rps": 3.5,
+          "p50": 575.7,
+          "p95": 1240.4,
+          "p99": 1685.8,
+          "max": 1953.9398,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 209
+          }
+        },
+        "GET /dashboards/admin": {
+          "count": 206,
+          "rps": 3.4,
+          "p50": 170.6,
+          "p95": 565.1,
+          "p99": 695.6,
+          "max": 987.8939,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 206
+          }
+        },
+        "GET /assistant/history": {
+          "count": 209,
+          "rps": 3.5,
+          "p50": 158.8,
+          "p95": 369.6,
+          "p99": 525.4,
+          "max": 919.6506,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 209
+          }
+        },
+        "POST /cases/:id/notes": {
+          "count": 43,
+          "rps": 0.7,
+          "p50": 527.3,
+          "p95": 1241.7,
+          "p99": 1635.3,
+          "max": 1635.2646,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 43
+          }
+        },
+        "GET /dashboards/leadership": {
+          "count": 206,
+          "rps": 3.4,
+          "p50": 164.5,
+          "p95": 391,
+          "p99": 595.6,
+          "max": 757.865,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 206
+          }
+        },
+        "GET /freshness/dashboard": {
+          "count": 204,
+          "rps": 3.4,
+          "p50": 139.9,
+          "p95": 351.9,
+          "p99": 448.7,
+          "max": 1069.6078,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 204
+          }
+        },
+        "POST /auth/register": {
+          "count": 62,
+          "rps": 1,
+          "p50": 1331.1,
+          "p95": 2440.2,
+          "p99": 3096.5,
+          "max": 3096.4929,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 62
+          }
+        },
+        "PUT /cases/:id/assignment": {
+          "count": 42,
+          "rps": 0.7,
+          "p50": 748.5,
+          "p95": 1587.9,
+          "p99": 1979.8,
+          "max": 1979.7637,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 42
+          }
+        },
+        "POST /cases/:id/status (review)": {
+          "count": 41,
+          "rps": 0.7,
+          "p50": 678.1,
+          "p95": 1586.6,
+          "p99": 1729.7,
+          "max": 1729.6704,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 41
+          }
+        },
+        "POST /cases/:id/status (decide)": {
+          "count": 41,
+          "rps": 0.7,
+          "p50": 1349.4,
+          "p95": 2033.2,
+          "p99": 2209.6,
+          "max": 2209.6234,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 41
+          }
+        },
+        "POST /auth/login": {
+          "count": 60,
+          "rps": 1,
+          "p50": 1306.4,
+          "p95": 2240.5,
+          "p99": 2947.8,
+          "max": 2947.7875,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 60
+          }
+        },
+        "GET /users/:id": {
+          "count": 60,
+          "rps": 1,
+          "p50": 199.1,
+          "p95": 432.4,
+          "p99": 920.8,
+          "max": 920.7987,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 60
+          }
+        },
+        "POST /exemptions/check": {
+          "count": 60,
+          "rps": 1,
+          "p50": 472.5,
+          "p95": 1132.7,
+          "p99": 1537.7,
+          "max": 1537.7075,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 60
+          }
+        },
+        "GET /exemptions": {
+          "count": 59,
+          "rps": 1,
+          "p50": 158.7,
+          "p95": 467.2,
+          "p99": 692.4,
+          "max": 692.4047,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 59
+          }
+        },
+        "POST /cases": {
+          "count": 58,
+          "rps": 1,
+          "p50": 533.3,
+          "p95": 1319.1,
+          "p99": 1594.9,
+          "max": 1594.8971999999999,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "201": 58
+          }
+        },
+        "GET /cases (own)": {
+          "count": 57,
+          "rps": 1,
+          "p50": 156.9,
+          "p95": 433.3,
+          "p99": 504.8,
+          "max": 504.8417,
+          "errors": 0,
+          "rateLimited": 0,
+          "statuses": {
+            "200": 57
+          }
+        }
+      },
+      "server": {
+        "samples": 58,
+        "cpuAvgPct": 87.3,
+        "cpuMaxPct": 167.2,
+        "loopMeanMsAvg": 73.7,
+        "loopP99MsMax": 759.17,
+        "loopMaxMs": 759.17,
+        "rssMaxMb": 153,
+        "poolMax": 25,
+        "poolTotalMax": 25,
+        "poolWaitingMax": 10
+      }
+    }
+  ],
+  "breaking": null
+}
