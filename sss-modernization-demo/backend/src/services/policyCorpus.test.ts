@@ -211,7 +211,7 @@ describe('searchPassages', () => {
     expect(found).toEqual([{ id: 'a:b', docSlug: 'a', docTitle: 'A', heading: 'B', position: 1, body: 'Text.', version: 'v', rank: 0.25 }]);
 
     const [sql, params] = query.mock.calls[0];
-    expect(params).toEqual(["What is the income limit? '; DROP TABLE users; --", 5]);
+    expect(params).toEqual(["What is the income limit? '; DROP TABLE users; --", 5, "What is the income limit? '; DROP TABLE users; --"]);
     expect(sql).not.toContain('DROP TABLE');
     expect(sql).toContain('websearch_to_tsquery');
     expect(sql).toContain('ts_rank');
@@ -244,7 +244,15 @@ describe('retrievalText', () => {
   it('searches with the part that asks', async () => {
     query.mockResolvedValueOnce({ rows: [] });
     await searchPassages('My name is Wei Zhang. Who qualifies for the senior exemption?');
-    expect(query.mock.calls[0][1]).toEqual(['Who qualifies for the senior exemption?', 5]);
+    expect(query.mock.calls[0][1]).toEqual(['Who qualifies for the senior exemption?', 5, 'My name is Wei Zhang. Who qualifies for the senior exemption?']);
+  });
+
+  it('falls back to the whole question when the part that asks has no searchable word', async () => {
+    query.mockResolvedValueOnce({ rows: [] });
+    await searchPassages('My application was denied. What can I do?');
+    const [sql, params] = query.mock.calls[0];
+    expect(params).toEqual(['What can I do?', 5, 'My application was denied. What can I do?']);
+    expect(String(sql)).toContain('numnode(asking) = 0 THEN whole');
   });
 });
 
