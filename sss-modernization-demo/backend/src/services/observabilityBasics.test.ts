@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { logLine } from './logger';
-import { routeTemplate, scrubSpan, scrubText } from './scrub';
-import { newTraceId, traceContextMiddleware, traceparent } from './traceContext';
+import { logLine } from '../observability/logger';
+import { routeTemplate, scrubSpan, scrubText } from '../observability/scrub';
+import { newTraceId, traceContextMiddleware, traceparent } from '../observability/traceContext';
 import { getRequestContext, requestContextMiddleware } from '../utils/requestContext';
 
 describe('scrubText (nothing personal in a log line or a span)', () => {

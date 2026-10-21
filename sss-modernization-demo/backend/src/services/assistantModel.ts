@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { AnswerSegment, SegmentCitation, splitSentences } from './groundingCheck';
 import { RetrievedPassage } from './policyCorpus';
+import { noteAiCall, usageFromApi } from '../observability/aiUsage';
 
 // STORY-018: where an answer comes from. Claude through the official SDK (its native citations return the exact policy text behind
 // each statement), a deterministic stand-in for tests, or nothing at all. Nothing in this file touches the database.
@@ -135,6 +136,9 @@ export async function askClaude(
   } catch (error) {
     return unavailable(error);
   }
+
+  // STORY-026 and 027: the call was made and billed whatever it returned, so its tokens are recorded before anything else is decided
+  noteAiCall(response.model || model, usageFromApi(response.usage));
 
   // The stop reason comes before the content: a refusal or a cut-off answer has nothing that can be used
   if (response.stop_reason === 'refusal') {

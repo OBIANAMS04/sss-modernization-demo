@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import pool from '../database/connection';
 import { RateLimitError, ValidationError } from '../utils/errors';
-import { AssistantMode, askClaude, askStub, configuredMode } from './assistantModel';
+import { AssistantMode, ModelOutcome, askClaude, askStub, configuredMode } from './assistantModel';
+import { emptyUsage, inModelSpan, noteAiCall, withAiUsage } from '../observability/aiUsage';
 import { AuditAction, logAuditEvent, redactSsn } from './auditService';
 import { inTransaction } from './caseEvents';
 import { noteChange } from './changeMarkers';
@@ -214,6 +215,13 @@ function withoutAnswer(personal: boolean, mode: AssistantMode, fallback: string,
   return { ...none, mode, status: 'shown', level: 0, grounding: { fallback }, message, showPassages: true };
 }
 
+/** The made-up token counts the test double reports: a quarter of the characters sent, and of the characters returned. */
+function stubUsage(question: string, passages: RetrievedPassage[], outcome: ModelOutcome) {
+  const sent = question.length + passages.reduce((n, p) => n + p.body.length, 0);
+  const returned = outcome.type === 'answer' ? outcome.segments.reduce((n, seg) => n + seg.text.length, 0) : 0;
+  return { inputTokens: Math.ceil(sent / 4), outputTokens: Math.ceil(returned / 4), cacheReadTokens: 0, cacheCreationTokens: 0 };
+}
+
 /** Produces the answer for a reserved question. Never throws for a failure of the model: that falls back to the passages. */
 async function produce(question: string, passages: RetrievedPassage[], reservation: Pick<Reservation, "mode" | "why">): Promise<Produced> {
   const personal = isPersonalQuestion(question);
@@ -225,7 +233,18 @@ async function produce(question: string, passages: RetrievedPassage[], reservati
   // Nothing matched: there is nothing for the model to answer from, so it is not asked
   if (passages.length === 0) return personal ? withoutAnswer(true, 'passages-only', 'no-passages', '') : noAnswer('passages-only', 'no-passages');
 
-  const outcome = reservation.mode === 'stub' ? askStub(question, passages) : await askClaude(question, passages);
+  // STORY-026 and 027: a span around the call (mode, outcome, model, tokens, latency; never the question, the passages or the answer), and the
+  // usage of the call is reported for whoever is collecting it. The stub reports made-up counts so the whole path can be tested without a key.
+  const outcome = await inModelSpan(
+    reservation.mode,
+    async () => {
+      if (reservation.mode !== 'stub') return askClaude(question, passages);
+      const stubbed = askStub(question, passages);
+      noteAiCall('stub', stubUsage(question, passages, stubbed));
+      return stubbed;
+    },
+    (o) => ({ outcome: o.type, model: 'model' in o ? o.model : null })
+  );
   switch (outcome.type) {
     case 'unavailable':
       return withoutAnswer(personal, 'passages-only', `unavailable:${outcome.reason}`, PASSAGES_ONLY_MESSAGES.unavailable);
@@ -303,13 +322,16 @@ export async function askAssistant(user: { id: string; email: string }, rawQuest
   const reservation = await reserveAsk(user.id, question);
 
   try {
-    const { passages, produced } = await answerFor(question, reservation.mode, reservation.why);
+    // STORY-027: the tokens and estimated cost of the model call, stored with the exchange (kept even when the answer is withheld: it was billed)
+    const usage = emptyUsage();
+    const { passages, produced } = await withAiUsage(usage, () => answerFor(question, reservation.mode, reservation.why));
     const latencyMs = Date.now() - started;
 
     await pool.query(
       `UPDATE assistant_interactions
        SET passage_ids = $2, answer = $3, citations = $4::jsonb, model = $5, mode = $6, latency_ms = $7, grounding = $8::jsonb,
-           level = $9, status = $10
+           level = $9, status = $10, ai_calls = $11, input_tokens = $12, output_tokens = $13, cache_read_tokens = $14,
+           cache_creation_tokens = $15, cost_usd = $16
        WHERE trace_id = $1`,
       [
         reservation.traceId,
@@ -322,6 +344,12 @@ export async function askAssistant(user: { id: string; email: string }, rawQuest
         produced.grounding ? JSON.stringify(produced.grounding) : null,
         produced.level,
         produced.status,
+        usage.calls,
+        usage.inputTokens,
+        usage.outputTokens,
+        usage.cacheReadTokens,
+        usage.cacheCreationTokens,
+        usage.costUsd.toFixed(6),
       ]
     );
     // STORY-021: a model that is not the one answered with before is a change worth marking on the trend. Never a reason to fail an answer.

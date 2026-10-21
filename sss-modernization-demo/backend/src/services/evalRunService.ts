@@ -4,6 +4,7 @@ import pool from '../database/connection';
 import { NotFoundError, RateLimitError, ValidationError } from '../utils/errors';
 import { AssistantMode, configuredMode } from './assistantModel';
 import { answerFor } from './assistantService';
+import { AiUsage, emptyUsage, withAiUsage } from '../observability/aiUsage';
 import { AuditAction, logAuditEvent } from './auditService';
 import { inTransaction } from './caseEvents';
 import { noteChange } from './changeMarkers';
@@ -281,17 +282,22 @@ export async function startRun(
   return toRun(row);
 }
 
+const usageParams = (u: AiUsage) => [u.calls, u.inputTokens, u.outputTokens, u.cacheReadTokens, u.cacheCreationTokens, u.costUsd.toFixed(6)];
+
 async function finishRun(id: string, kind: RunKind, actor: { id: string; email: string }, work: RunWork, after: (run: RunRow) => Promise<void>): Promise<void> {
+  // STORY-027: every model call the run makes is added up and stored with it, also when the run fails halfway (those calls were billed)
+  const usage = emptyUsage();
   try {
-    const outcome = await work();
+    const outcome = await withAiUsage(usage, work);
     if (outcome.model) await noteChange('model', outcome.model).catch(() => {});
     const s = outcome.scores;
     const updated = await pool.query(
       `UPDATE assistant_eval_runs
        SET status = 'completed', model = $2, mode = $3, retrieval_hit_rate = $4, fact_accuracy = $5, citation_validity = $6, grounded_rate = $7,
-           passed = $8, summary = $9::jsonb, results = $10::jsonb, finished_at = NOW()
+           passed = $8, summary = $9::jsonb, results = $10::jsonb, finished_at = NOW(),
+           ai_calls = $11, input_tokens = $12, output_tokens = $13, cache_read_tokens = $14, cache_creation_tokens = $15, cost_usd = $16
        WHERE id = $1 RETURNING *`,
-      [id, outcome.model, outcome.mode, s?.retrievalHitRate ?? null, s?.factAccuracy ?? null, s?.citationValidity ?? null, s?.groundedRate ?? null, outcome.passed, JSON.stringify(outcome.summary), JSON.stringify(outcome.results)]
+      [id, outcome.model, outcome.mode, s?.retrievalHitRate ?? null, s?.factAccuracy ?? null, s?.citationValidity ?? null, s?.groundedRate ?? null, outcome.passed, JSON.stringify(outcome.summary), JSON.stringify(outcome.results), ...usageParams(usage)]
     );
     await logAuditEvent(AuditAction.AI_EVAL_RUN, 'assistant', outcome.passed ? 'success' : 'failure', {
       actor: actor.id,
@@ -302,7 +308,11 @@ async function finishRun(id: string, kind: RunKind, actor: { id: string; email: 
     await after(toRun(updated.rows[0]));
   } catch (error) {
     const message = error instanceof Error ? error.message.slice(0, 300) : 'The run failed.';
-    await pool.query(`UPDATE assistant_eval_runs SET status = 'failed', error = $2, finished_at = NOW() WHERE id = $1`, [id, message]).catch(() => {});
+    await pool.query(
+      `UPDATE assistant_eval_runs SET status = 'failed', error = $2, finished_at = NOW(),
+         ai_calls = $3, input_tokens = $4, output_tokens = $5, cache_read_tokens = $6, cache_creation_tokens = $7, cost_usd = $8 WHERE id = $1`,
+      [id, message, ...usageParams(usage)]
+    ).catch(() => {});
     await logAuditEvent(AuditAction.AI_EVAL_RUN, 'assistant', 'failure', {
       actor: actor.id,
       actorEmail: actor.email,
