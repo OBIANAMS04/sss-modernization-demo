@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>STORY-004 checks</title><style>
+  body { margin: 0; padding: 24px 28px; width: 1180px; background: #fcfcfb; color: #0b0b0b; font: 13.5px/1.45 "Segoe UI", system-ui, sans-serif; }
+  h1 { font-size: 21px; margin: 0 0 4px; } .sub { color: #52514e; margin: 0 0 12px; } h2 { font-size: 15px; margin: 14px 0 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; } th, td { border-bottom: 1px solid #e4e3df; padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { color: #52514e; background: #f3f2ef; } code { font-size: 12px; background: #f3f2ef; padding: 0 3px; border-radius: 3px; }
+  pre { background: #f3f2ef; padding: 8px 10px; border-radius: 6px; font-size: 12px; white-space: pre-wrap; margin: 4px 0 10px; }
+  ol { margin: 0; padding-left: 20px; } li { margin: 3px 0; }
+  .banner { background: #fff7d6; border: 1px solid #eda100; padding: 6px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+</style></head><body><div class="banner">Synthetic demo deployment. Not operating in production.</div><h1>STORY-004: AWS GovCloud infrastructure as code, statically checked, not applied</h1><p class="sub">infrastructure/aws-govcloud: VPC across 3 zones, ALB with WAF, ECS Fargate, Aurora PostgreSQL Global Database with RDS Proxy, KMS, Secrets Manager, CloudTrail, GuardDuty, Security Hub, Config, an Object Lock audit bucket; prod (us-gov-west-1) and warm standby (us-gov-east-1). Terraform 1.9.8, AWS provider 5.100.0.</p>
+    <h2>terraform fmt -check -recursive</h2><pre>is 1.17.0. You can update by downloading from https://www.terraform.io/downloads.html
+--- terraform fmt -check -recursive
+fmt exit code: 0</pre>
+    <h2>terraform validate, prod</h2><pre>Success! The configuration is valid.
+
+validate exit code: 0</pre>
+    <h2>terraform validate, standby</h2><pre>Success! The configuration is valid.
+
+validate exit code: 0</pre>
+    <h2>TFLint (recommended preset and AWS ruleset)</h2><pre>+ ruleset.aws (0.50.0)
++ ruleset.terraform (0.15.0-bundled)
+--- tflint --recursive (terraform recommended + aws ruleset)
+tflint exit code: 0</pre>
+    <h2>tfsec</h2><pre>
+  132 passed, 8 potential problem(s) detected.
+
+tfsec exit code: 1</pre><p class="sub">Every tfsec finding is justified in the README (a public load balancer by design; buckets AWS services write to use SSE-S3). No plan or apply was run: it waits on Ram's approval.</p></body></html>

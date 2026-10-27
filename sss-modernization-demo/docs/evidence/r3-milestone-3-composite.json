@@ -1,0 +1,66 @@
+{
+  "out": "r3-m3/r3-milestone-3-screens.jpg",
+  "maxKb": 650,
+  "title": "R3 milestone 3 (STORY-035, 043-046, R0 004): synthetic demo deployment",
+  "columns": 2,
+  "tileWidth": 900,
+  "packs": [
+    "r3-m3"
+  ],
+  "tiles": [
+    {
+      "file": "r3-m3/01-training-modules.png",
+      "label": "035 Training: modules for the role",
+      "top": 0,
+      "height": 900
+    },
+    {
+      "file": "r3-m3/02-training-module-open.png",
+      "label": "035 A module with real screens",
+      "top": 0,
+      "height": 1400
+    },
+    {
+      "file": "r3-m3/03-training-knowledge-check-result.png",
+      "label": "035 Knowledge check, graded on the server",
+      "top": 2640,
+      "height": 1188
+    },
+    {
+      "file": "r3-m3/04-training-leadership.png",
+      "label": "035 Leadership module",
+      "top": 0,
+      "height": 900
+    },
+    {
+      "file": "r3-m3/05-training-team-progress.png",
+      "label": "035 Administrators: team progress",
+      "top": 0,
+      "height": 1400
+    },
+    {
+      "file": "r3-m3/06-readiness-every-story.png",
+      "label": "043-046 Every story and its evidence",
+      "top": 0,
+      "height": 1242
+    },
+    {
+      "file": "r3-m3/07-drills.png",
+      "label": "043-046 Drills: rollback, restore, outage",
+      "top": 0,
+      "height": 490
+    },
+    {
+      "file": "r3-m3/08-open-gaps-and-go-no-go.png",
+      "label": "043-046 Open gaps and go/no-go",
+      "top": 0,
+      "height": 928
+    },
+    {
+      "file": "r3-m3/09-infrastructure-checks.png",
+      "label": "004 GovCloud IaC: checked, not applied",
+      "top": 0,
+      "height": 775
+    }
+  ]
+}

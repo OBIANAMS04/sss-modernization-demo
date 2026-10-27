@@ -1,0 +1,55 @@
+{
+  "id": "r3-m3",
+  "title": "R3 milestone 3 (STORY-035, 043 to 046, R0 004): launch readiness: evidence",
+  "capturedBy": "scripts/evidence/r3-training.mjs (screens 01 to 05, through the real pages of a local stack) and scripts/evidence/r3-milestone-3.mjs (06 to 09, drawn from docs/READINESS-REVIEW.md and infrastructure/aws-govcloud/checks)",
+  "summary": [
+    "Synthetic demo deployment; not operating in production. STORY-004 is written and checked, not applied."
+  ],
+  "shots": [
+    {
+      "file": "01-training-modules.png",
+      "title": "Training: modules for the role",
+      "caption": "A case manager sees the case work module, its time and status."
+    },
+    {
+      "file": "02-training-module-open.png",
+      "title": "Training: a module",
+      "caption": "Short sections with screens of the real pages, then the knowledge check."
+    },
+    {
+      "file": "03-training-knowledge-check-result.png",
+      "title": "Training: graded on the server",
+      "caption": "Three of four right is a pass; every answer is explained."
+    },
+    {
+      "file": "04-training-leadership.png",
+      "title": "Training: leadership",
+      "caption": "Leadership has its own module: reading the dashboard and the override rate."
+    },
+    {
+      "file": "05-training-team-progress.png",
+      "title": "Training: team progress",
+      "caption": "Administrators see every staff and leadership member and their passes."
+    },
+    {
+      "file": "06-readiness-every-story.png",
+      "title": "Every story and its evidence",
+      "caption": "All 46 stories mapped to their evidence."
+    },
+    {
+      "file": "07-drills.png",
+      "title": "Drills",
+      "caption": "Rollback 32 s and forward 58 s; restore in 10.5 s with 0 errors; outage 22 of 22; secrets rotated."
+    },
+    {
+      "file": "08-open-gaps-and-go-no-go.png",
+      "title": "Gaps and go/no-go",
+      "caption": "Each gap with an owner; ten criteria before a production launch."
+    },
+    {
+      "file": "09-infrastructure-checks.png",
+      "title": "Infrastructure checks",
+      "caption": "Formatted, validated for both regions, TFLint clean; not applied."
+    }
+  ]
+}
