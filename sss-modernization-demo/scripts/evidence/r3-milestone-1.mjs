@@ -120,7 +120,7 @@ add('06-production-sizing.png', 'STORY-033: production sizing, every number labe
   `<h1>Production sizing for 10,000 concurrent users</h1><p class="sub">docs/PRODUCTION-SIZING.md. Every number is labelled measured, derived or assumed. A derivation to check with a real load test on the target hosting, not a result.</p>
   <h2>The result (derived)</h2><table><tr><th>Part</th><th>Size</th></tr>
   <tr><td>Application</td><td>about 4.4 cores busy at the peak, run at 50% or less: <strong>8 to 10 one-vCPU processes</strong> across at least 2 availability zones</td></tr>
-  <tr><td>Database</td><td>about 5,000 statements/s, about 20 busy connections at peaks: a pooler, a 4 vCPU / 16 GB writer (assumed) and a read replica for the heavy dashboards, Multi-AZ</td></tr>
+  <tr><td>Database</td><td>about 5,000 statements/s, about 20 busy connections at peaks: a pooler, a 4 vCPU / 32 GiB writer (assumed) and a read replica for the heavy dashboards, Multi-AZ</td></tr>
   <tr><td>Audit log</td><td>about <strong>37 GB a day</strong> before indexes: partition by month</td></tr>
   <tr><td>First risk</td><td>sign-ins on a deadline day: bcrypt grows linearly (50 sign-ins/s is 14.5 cores for hashing alone)</td></tr></table>
   <h2>Assumptions</h2>${mdTableAfter(sizing, '## 1. Assumptions')}<h2>What the runs measured</h2>${mdTableAfter(sizing, '## 2. What the runs measured')}`);

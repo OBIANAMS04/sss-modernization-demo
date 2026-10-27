@@ -61,7 +61,7 @@ service, or a lower-cost hash, which is a security decision and not made here).
 - Pool: the final build opens up to 25 per process (`DATABASE_POOL_MAX`, measured better than 10). With 10 processes that is 250
   connections, more than a small PostgreSQL wants. Use a pooler in front (PgBouncer, or RDS Proxy) in transaction mode, or set
   `DATABASE_POOL_MAX` to 8 to 10 per process: 10 processes x 8 = 80 connections, which the 20 busy ones sit well inside.
-- Database size: a writer with 4 vCPU and 16 GB (for example `db.r6g.xlarge`), plus a read replica for the admin, leadership and
+- Database size: a writer with 4 vCPU and 32 GiB (for example `db.r6g.xlarge`), plus a read replica for the admin, leadership and
   freshness dashboards (they are the heaviest statements and tolerate seconds of lag), Multi-AZ. **Assumed**, not measured: the local
   database was idle for most of every run. Confirm with a run against the real instance.
 - **Audit volume**: every read is audited (STORY-010). 1,000 requests/s x 85% reads x about 0.5 KB per row is about 430 KB/s, about
