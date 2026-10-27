@@ -1,0 +1,120 @@
+
+======================================================
+tfsec is joining the Trivy family
+
+tfsec will continue to remain available 
+for the time being, although our engineering 
+attention will be directed at Trivy going forward.
+
+You can read more here: 
+https://github.com/aquasecurity/tfsec/discussions/1994
+======================================================
+
+Result #1 HIGH Load balancer is exposed publicly. 
+────────────────────────────────────────────────────────────────────────────────
+  C:\Users\obiki\Documents\AINWINTRVWSTFFS!!\SSS-Proposal-Library-Standard-Context\infrastructure\aws-govcloud\modules\compute\alb.tf:171
+   via main.tf:63-97 (module.compute)
+────────────────────────────────────────────────────────────────────────────────
+          ID aws-elb-alb-not-public
+      Impact The load balancer is exposed on the internet
+  Resolution Switch to an internal load balancer or add a tfsec ignore
+
+  More Information
+  - https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/elb/alb-not-public/
+  - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb
+────────────────────────────────────────────────────────────────────────────────
+
+
+Result #2 HIGH Bucket does not encrypt data with a customer managed key. 
+────────────────────────────────────────────────────────────────────────────────
+  C:\Users\obiki\Documents\AINWINTRVWSTFFS!!\SSS-Proposal-Library-Standard-Context\infrastructure\aws-govcloud\modules\compute\alb.tf:42-50
+   via main.tf:63-97 (module.compute)
+────────────────────────────────────────────────────────────────────────────────
+          ID aws-s3-encryption-customer-key
+      Impact Using AWS managed keys does not allow for fine grained control
+  Resolution Enable encryption using customer managed keys
+
+  More Information
+  - https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/s3/encryption-customer-key/
+  - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket#enable-default-server-side-encryption
+────────────────────────────────────────────────────────────────────────────────
+
+
+Result #3 HIGH IAM policy document uses sensitive action 'logs:CreateLogStream' on wildcarded resource '' 
+────────────────────────────────────────────────────────────────────────────────
+  C:\Users\obiki\Documents\AINWINTRVWSTFFS!!\SSS-Proposal-Library-Standard-Context\infrastructure\aws-govcloud\modules\compute\iam.tf:51
+   via main.tf:63-97 (module.compute)
+────────────────────────────────────────────────────────────────────────────────
+          ID aws-iam-no-policy-wildcards
+      Impact Overly permissive policies may grant access to sensitive resources
+  Resolution Specify the exact permissions required, and to which resources they should apply instead of using wildcards.
+
+  More Information
+  - https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/iam/no-policy-wildcards/
+  - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
+────────────────────────────────────────────────────────────────────────────────
+
+
+Result #4 HIGH IAM policy document uses sensitive action 'logs:CreateLogStream' on wildcarded resource '02e6a23f-b06e-4d77-a1fa-7a409e566e68' 
+────────────────────────────────────────────────────────────────────────────────
+  C:\Users\obiki\Documents\AINWINTRVWSTFFS!!\SSS-Proposal-Library-Standard-Context\infrastructure\aws-govcloud\modules\network\main.tf:208
+   via main.tf:34-40 (module.network)
+────────────────────────────────────────────────────────────────────────────────
+          ID aws-iam-no-policy-wildcards
+      Impact Overly permissive policies may grant access to sensitive resources
+  Resolution Specify the exact permissions required, and to which resources they should apply instead of using wildcards.
+
+  More Information
+  - https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/iam/no-policy-wildcards/
+  - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
+────────────────────────────────────────────────────────────────────────────────
+
+
+Result #5 HIGH Bucket does not encrypt data with a customer managed key. 
+────────────────────────────────────────────────────────────────────────────────
+  C:\Users\obiki\Documents\AINWINTRVWSTFFS!!\SSS-Proposal-Library-Standard-Context\infrastructure\aws-govcloud\modules\security\detection.tf:45-53
+   via main.tf:26-32 (module.security)
+────────────────────────────────────────────────────────────────────────────────
+          ID aws-s3-encryption-customer-key
+      Impact Using AWS managed keys does not allow for fine grained control
+  Resolution Enable encryption using customer managed keys
+
+  More Information
+  - https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/s3/encryption-customer-key/
+  - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket#enable-default-server-side-encryption
+────────────────────────────────────────────────────────────────────────────────
+
+
+Result #6 HIGH Bucket does not encrypt data with a customer managed key. 
+────────────────────────────────────────────────────────────────────────────────
+  C:\Users\obiki\Documents\AINWINTRVWSTFFS!!\SSS-Proposal-Library-Standard-Context\infrastructure\aws-govcloud\modules\security\logging.tf:27-35
+   via main.tf:26-32 (module.security)
+────────────────────────────────────────────────────────────────────────────────
+          ID aws-s3-encryption-customer-key
+      Impact Using AWS managed keys does not allow for fine grained control
+  Resolution Enable encryption using customer managed keys
+
+  More Information
+  - https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/s3/encryption-customer-key/
+  - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket#enable-default-server-side-encryption
+────────────────────────────────────────────────────────────────────────────────
+
+
+Result #7 MEDIUM Bucket does not have logging enabled 
+────────────────────────────────────────────────────────────────────────────────
+  C:\Users\obiki\Documents\AINWINTRVWSTFFS!!\SSS-Proposal-Library-Standard-Context\infrastructure\aws-govcloud\modules\security\logging.tf:4-8
+   via main.tf:26-32 (module.security)
+────────────────────────────────────────────────────────────────────────────────
+          ID aws-s3-enable-bucket-logging
+      Impact There is no way to determine the access to this bucket
+  Resolution Add a logging block to the resource to enable access logging
+
+  More Information
+  - https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/s3/enable-bucket-logging/
+  - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket
+────────────────────────────────────────────────────────────────────────────────
+
+
+  110 passed, 7 potential problem(s) detected.
+
+tfsec exit code: 1

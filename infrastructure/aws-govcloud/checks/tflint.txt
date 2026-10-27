@@ -1,0 +1,5 @@
+TFLint version 0.65.0
++ ruleset.aws (0.50.0)
++ ruleset.terraform (0.15.0-bundled)
+--- tflint --recursive (terraform recommended + aws ruleset)
+tflint exit code: 0
