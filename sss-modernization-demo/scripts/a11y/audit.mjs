@@ -100,7 +100,7 @@ async function setup() {
     { role: 'Applicant', path: `/cases/${caseId}`, label: '/cases/:id', session: applicant, reflowShot: true },
     { role: 'Applicant', path: '/assistant', session: applicant },
     { role: 'Applicant', path: '/assistant', label: '/assistant (answered)', session: applicant, after: askQuestion, reflowShot: '04-reflow-320-assistant.png' },
-    ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit', '/assistant', '/assistant/reviews', '/ai-quality', '/observability', '/staff'].map((path) => ({
+    ...['/dashboard', '/cases', `/cases/${caseId}`, '/compliance', '/compliance/audit', '/freshness', '/audit', '/assistant', '/assistant/reviews', '/ai-quality', '/observability', '/staff', '/training'].map((path) => ({
       role: 'Case manager',
       path,
       label: path.startsWith('/cases/') ? '/cases/:id' : path,
@@ -109,6 +109,10 @@ async function setup() {
     ...['/dashboard', '/my-work', '/leadership', '/admin', '/admin/policies', '/ai-quality', '/observability'].map((path) => ({ role: 'Admin', path, session: morgan })),
     // STORY-021: the confirmation that a run calls the model and costs money, open (it is read, not confirmed)
     { role: 'Admin', path: '/ai-quality', label: '/ai-quality (run confirmation)', session: morgan, after: confirmRun },
+    // STORY-035: the training portal: a module open with its knowledge check, and the administrators' team progress
+    { role: 'Case manager', path: '/training', label: '/training (module open)', session: sam, after: openTrainingModule },
+    { role: 'Admin', path: '/training', label: '/training (team progress)', session: morgan },
+    { role: 'Leadership', path: '/training', session: riley },
     { role: 'Leadership', path: '/dashboard', session: riley },
   ];
 }
@@ -172,6 +176,12 @@ async function confirmRun() {
   await sleep(300);
 }
 
+/** STORY-035: /training with the case work module open, its sections, screens and knowledge check showing. */
+async function openTrainingModule() {
+  await page.click('Start Case work', 'button');
+  await until(`!!document.querySelector('#module-case-work fieldset')`, 10_000);
+}
+
 /** STORY-003: /mfa once a setup is started, with the QR code and key showing. */
 async function startMfaSetup() {
   await page.click('Set up an authenticator app');
@@ -197,9 +207,22 @@ async function keyboard(shotFile) {
   const count = await page.evaluate(`(() => {
     const style = (el) => { const c = getComputedStyle(el); return [c.outlineStyle, c.outlineWidth, c.outlineColor, c.boxShadow, c.borderColor, c.backgroundColor, c.color, c.textDecorationLine].join('|'); };
     const shown = (el) => { const r = el.getBoundingClientRect(), c = getComputedStyle(el); return r.width > 0 && r.height > 0 && c.visibility !== 'hidden'; };
-    const els = [...document.querySelectorAll('a[href], button, input:not([type="hidden"]), select, textarea, summary, [tabindex]')]
+    const candidates = [...document.querySelectorAll('a[href], button, input:not([type="hidden"]), select, textarea, summary, [tabindex]')]
       .filter((el) => !el.disabled && el.getAttribute('tabindex') !== '-1' && shown(el));
+    // A group of radio buttons is one Tab stop by design (arrow keys move within it), so a named group counts as one control:
+    // its first radio stands for it, and focus on any radio of the group counts as reaching it (STORY-035 knowledge checks)
+    const groups = new Map();
+    const els = candidates.filter((el) => {
+      if (el.type !== 'radio' || !el.name) return true;
+      if (groups.has(el.name)) return false;
+      groups.set(el.name, el);
+      return true;
+    });
     els.forEach((el, i) => { el.dataset.a11y = i; el.dataset.a11yRest = style(el); });
+    candidates.filter((el) => el.type === 'radio' && el.name && !el.dataset.a11y).forEach((el) => {
+      el.dataset.a11y = groups.get(el.name).dataset.a11y;
+      el.dataset.a11yRest = style(el);
+    });
     window.__a11yAll = els.map((el) => (el.getAttribute('aria-label') || el.innerText || el.value || el.name || el.tagName).trim().slice(0, 40));
     return els.length;
   })()`);
