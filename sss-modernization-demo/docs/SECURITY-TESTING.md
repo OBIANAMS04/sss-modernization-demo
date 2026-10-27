@@ -65,7 +65,8 @@ re-run: `node scripts/e2e/security.mjs` (52 checks; output in `docs/evidence/r3-
 - **Registration says when an address is already registered.** That is ordinary for sign-up and is slowed by the registration limit;
   production can move to "check your email" sign-up, which says nothing.
 - **Framing protection for the site** (`frame-ancestors`, `X-Frame-Options`) works only as a response header, which this host sets in
-  its dashboard (Render: the static site's Settings, Headers). The API already sends both. See the steps in the R3 milestone 2 post.
+  its dashboard (Render: the static site, Headers). Added on 2026-10-26 for every path (`/*`), and checked live: both headers on every
+  page, the live accessibility audit passing with no policy violation. The API already sent both.
 - **Tokens are kept in the browser's localStorage**, so script injected into the site could read them. The site's content security
   policy and React's escaping are the defences; production would use an HttpOnly, SameSite cookie with CSRF protection.
 - **TOTP keys are stored readable** (they must be, to check codes); production encrypts them with a key from a key management service.

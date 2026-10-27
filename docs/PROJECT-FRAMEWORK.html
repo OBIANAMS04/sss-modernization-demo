@@ -503,7 +503,6 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td><span class="pill idle">Low</span></td><td>For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page</td><td>verify-deploy waits until every page path serves the current build; a Render header rule could shorten it</td><td>Obi</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>No load test beyond 128 connections on one laptop and 25 on the live demo, and no soak test; the 10,000-user sizing is derived, not measured</td><td>Run the harness from several machines against a production-like stack</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>A url.parse() deprecation warning is logged at error level on every API start on Render (not reproduced locally)</td><td>Trace it on Render for one start in milestone 3</td><td>Obi</td></tr>
-          <tr><td><span class="pill warn">Medium</span></td><td>The site has no framing protection (frame-ancestors / X-Frame-Options): its host sets headers only in its dashboard</td><td>Add the header rule in Render (steps in the milestone 2 summary)</td><td>Obi</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>No hands-on screen-reader test and no third-party penetration test: conformance and security are our own assessments</td><td>Both before production</td><td>Ali, Ram</td></tr>
         </tbody>
       </table>

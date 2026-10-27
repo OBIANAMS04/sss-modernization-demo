@@ -207,7 +207,6 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 | Norton HTTPS scanning on Obi's laptop corrupts some connectors | Colaberry works via local bridge; others fail | Optional Norton exclusion |
 | No load test beyond 128 connections on one laptop and 25 on the live demo; no soak test | The 10,000-user sizing is derived, not measured | Run the harness from several machines against a production-like stack (docs/PRODUCTION-SIZING.md, section 4) |
 | A `url.parse()` deprecation warning is logged at error level on every API start on Render (not reproduced locally) | Noise in the error logs | Trace it on Render (NODE_OPTIONS=--trace-deprecation for one start) in R3 milestone 3 |
-| The site has no framing protection (frame-ancestors / X-Frame-Options) because its host sets headers only in its dashboard | The demo site could be framed by another page (clickjacking) | Obi: add the header rule in Render (steps in the R3 milestone 2 summary) |
 | No hands-on screen-reader, magnification or speech-input test, and no third-party penetration test | Conformance and security are our own assessments | Before production: an independent penetration test and an assistive-technology test with users (docs/ACCESSIBILITY-CONFORMANCE-REPORT.md) |
 
 ---
