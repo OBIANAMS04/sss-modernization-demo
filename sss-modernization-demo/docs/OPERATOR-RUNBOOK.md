@@ -180,7 +180,7 @@ Verification scripts read `API_URL` and `SITE_URL` to point at another deploymen
 - Backup retention and restore time for the paid database.
 - Whether the database password can be reset in the Render dashboard.
 - That GitHub emails the owner when the uptime issue opens, and that the schedule is running.
-- Whether `JWT_SECRET` and the database password have been rotated since 2026-09-17.
+- (Resolved 2026-10-26: `JWT_SECRET` and the database credentials were rotated; see "Rotation done on 2026-10-26" below.)
 - This runbook was written from the source code at commit `e0f664c` and the project records. It was not checked against a running copy of the service.
 
 ## Security operations (STORY-041)
@@ -199,3 +199,14 @@ Verification scripts read `API_URL` and `SITE_URL` to point at another deploymen
   `X-Frame-Options: DENY` and `Content-Security-Policy: frame-ancestors 'none'`.
 - **Re-run the attack suite** against a local copy after any change to sign-in, sessions or access: `node scripts/e2e/security.mjs`
   (docs/SECURITY-TESTING.md).
+
+## Rotation done on 2026-10-26 (how, for next time)
+
+- **JWT_SECRET:** Environment, Edit, reveal the field, replace it with a random value of at least 48 bytes generated in the browser
+  (never pasted through a chat), mask it again, **Save, rebuild, and deploy**. The startup audit records a `CONFIG_CHANGE` naming
+  `JWT_SECRET` (never the value). Everyone is signed out once.
+- **Database credentials:** database page, Credential Rotation, **New default credential** (named `sss_demo_app_YYYY_MM`); copy its
+  password from Connections into the API's `DATABASE_PASSWORD` and its name into `DATABASE_USER`; save and deploy; confirm the
+  API connects only as the new user (`SELECT usename, count(*) FROM pg_stat_activity GROUP BY usename`) and the old one shows 0
+  connections; then delete the old credential. Render keeps the database's original user as a role (login revoked) because it owns
+  the tables, and new users inherit its privileges through membership, so deleting it loses nothing.
