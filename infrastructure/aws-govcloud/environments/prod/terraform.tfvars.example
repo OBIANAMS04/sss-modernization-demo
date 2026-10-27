@@ -1,0 +1,24 @@
+# EXAMPLE ONLY. Copy to terraform.tfvars (not committed) and replace the placeholders.
+# No account ID, ARN of a real account, address or secret belongs in this file's committed copy.
+owner               = "REPLACE-team-or-person"
+data_classification = "PII"
+
+certificate_arn = "arn:aws-us-gov:acm:us-gov-west-1:000000000000:certificate/REPLACE"
+app_hostname    = "app.REPLACE.example"
+api_hostname    = "api.REPLACE.example"
+alarm_emails    = ["REPLACE@example.invalid"]
+
+# First apply: no tasks until the secrets are set (README, apply runbook, step 8).
+api_desired_count = 0
+api_min_count     = 0
+# Afterwards: api_desired_count = 10, api_min_count = 6 (the defaults).
+
+# Set once the hosted zone exists, and again after the standby is applied.
+manage_dns           = false
+hosted_zone_id       = ""
+standby_alb_dns_name = ""
+standby_alb_zone_id  = ""
+
+# Second apply of the primary, after the standby stack exists: cross-region audit replication.
+audit_replica_bucket_arn  = ""
+audit_replica_kms_key_arn = ""

@@ -1,0 +1,16 @@
+# EXAMPLE ONLY. Copy to terraform.tfvars (not committed) and replace the placeholders.
+owner               = "REPLACE-team-or-person"
+data_classification = "PII"
+
+certificate_arn = "arn:aws-us-gov:acm:us-gov-east-1:000000000000:certificate/REPLACE"
+app_hostname    = "app.REPLACE.example"
+api_hostname    = "api.REPLACE.example"
+alarm_emails    = ["REPLACE@example.invalid"]
+
+# From the primary root's output global_cluster_identifier.
+global_cluster_identifier = "REPLACE-from-primary-output"
+
+# First apply: no tasks until the secrets are set.
+api_desired_count = 0
+api_min_count     = 0
+# Afterwards: api_desired_count = 3, api_min_count = 3 (the defaults, a warm tier).

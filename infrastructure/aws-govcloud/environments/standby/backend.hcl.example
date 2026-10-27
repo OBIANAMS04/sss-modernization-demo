@@ -1,0 +1,9 @@
+# EXAMPLE ONLY. Copy to backend.hcl (not committed) and fill in your own values.
+# Use a different key from the primary's. Keep the state bucket's replica or a second bucket in the
+# other region so state survives a regional loss. Nothing here is a real account, bucket or key.
+bucket         = "REPLACE-with-your-state-bucket-name"
+key            = "sss/prod/us-gov-east-1/terraform.tfstate"
+region         = "us-gov-west-1"
+dynamodb_table = "REPLACE-with-your-lock-table-name"
+encrypt        = true
+kms_key_id     = "alias/REPLACE-with-your-state-key-alias"

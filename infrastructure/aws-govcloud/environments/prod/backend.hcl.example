@@ -1,0 +1,9 @@
+# EXAMPLE ONLY. Copy to backend.hcl (not committed) and fill in your own values.
+# The bucket and the lock table are created by hand once (README, apply runbook, step 3); they are not
+# managed by this configuration. Nothing here is a real account, bucket or key.
+bucket         = "REPLACE-with-your-state-bucket-name"
+key            = "sss/prod/us-gov-west-1/terraform.tfstate"
+region         = "us-gov-west-1"
+dynamodb_table = "REPLACE-with-your-lock-table-name"
+encrypt        = true
+kms_key_id     = "alias/REPLACE-with-your-state-key-alias"
