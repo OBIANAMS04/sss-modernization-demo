@@ -50,6 +50,8 @@ export enum AuditAction {
   // STORY-041: recovery codes made (on turning two-step verification on, or on request), and one used to sign in
   MFA_RECOVERY_CODES_CREATED = 'MFA_RECOVERY_CODES_CREATED',
   MFA_RECOVERY_CODE_USED = 'MFA_RECOVERY_CODE_USED',
+  // STORY-035: a training knowledge-check attempt (module, version, score; never the answers)
+  TRAINING_ATTEMPT = 'TRAINING_ATTEMPT',
   // STORY-003: the password was right and a code was asked for; the sign-in is not complete until MFA_VERIFIED
   MFA_CHALLENGE = 'MFA_CHALLENGE',
 

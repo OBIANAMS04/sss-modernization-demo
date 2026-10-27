@@ -23,6 +23,7 @@ import Assistant from './components/Assistant/Assistant';
 import ReviewQueue from './components/Assistant/ReviewQueue';
 import AiQuality from './components/AiQuality/AiQuality';
 import Observability from './components/Observability/Observability';
+import Training from './components/Training/Training';
 import './App.css';
 
 // A signed-in person is sent on to the dashboard. The check is made each time the route renders, not once when the app
@@ -204,6 +205,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Observability />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/training"
+          element={
+            <ProtectedRoute>
+              <Training />
             </ProtectedRoute>
           }
         />

@@ -131,6 +131,7 @@ describe('role rules', () => {
       'POST /api/ai-quality/runs/:id/baseline',
       'GET /api/observability',
       'POST /api/observability/evaluate',
+      'GET /api/training/progress',
     ]);
     expect(leadershipRoutes.map((r) => r.key)).toEqual(['GET /api/dashboards/leadership']);
   });
@@ -238,6 +239,7 @@ describe('access policy routes', () => {
       'POST /api/compliance/reviews/:id/resolve', // a review, resolved by a second case manager
       'POST /api/notifications/:id/read', // the handler only touches the caller's own notification
       'POST /api/staff/:id/revoke', // staff work
+      'POST /api/training/:moduleId/attempts', // the caller's own attempt at a module of their role
     ]);
     const about = Object.entries(BASELINE_ROUTES)
       .filter(([, entry]) => entry.resource)

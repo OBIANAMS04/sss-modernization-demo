@@ -51,6 +51,11 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   'POST /api/mfa/recovery-codes': 'signed-in',
   'GET /api/mfa/status': 'signed-in',
 
+  // STORY-035: signed in; the service refuses citizens (training is for staff and leadership)
+  'GET /api/training': 'signed-in',
+  'POST /api/training/:moduleId/attempts': 'signed-in',
+  'GET /api/training/progress': 'admin',
+
   'GET /api/exemptions': 'signed-in',
   'POST /api/exemptions/check': 'signed-in',
   'GET /api/exemptions/stats': 'staff',

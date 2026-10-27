@@ -17,6 +17,7 @@ import policyRoutes from './routes/policies';
 import assistantRoutes from './routes/assistant';
 import aiQualityRoutes from './routes/aiQuality';
 import observabilityRoutes from './routes/observability';
+import trainingRoutes from './routes/training';
 import { enforcePolicy } from './middleware/enforcePolicy';
 import { securityHeaders } from './middleware/securityHeaders';
 import { errorHandler } from './middleware/errorHandler';
@@ -80,6 +81,7 @@ app.use('/api/policies', policyRoutes);
 app.use('/api/assistant', assistantRoutes);
 app.use('/api/ai-quality', aiQualityRoutes);
 app.use('/api/observability', observabilityRoutes);
+app.use('/api/training', trainingRoutes);
 
 // Health check. It used to answer "database: checking..." without checking anything; now it reports
 // what is actually true, plus the deployed commit so a deploy can be verified from outside.

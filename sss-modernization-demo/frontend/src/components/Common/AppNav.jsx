@@ -59,6 +59,7 @@ export default function AppNav({ title, subtitle, pageTitle }) {
               </>
             )}
             {isLeadershipUser(user) && <NavLink to="/leadership" className={linkClass}>Leadership</NavLink>}
+            {(isStaffUser(user) || isLeadershipUser(user)) && <NavLink to="/training" className={linkClass}>Training</NavLink>}
             {isAdminUser(user) && <NavLink to="/admin" end className={linkClass}>Admin</NavLink>}
             {isAdminUser(user) && <NavLink to="/admin/policies" className={linkClass}>Access Policies</NavLink>}
             {isAdminUser(user) && <NavLink to="/observability" className={linkClass}>Observability</NavLink>}
