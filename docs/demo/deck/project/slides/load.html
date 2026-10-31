@@ -1,0 +1,13 @@
+<section id="load" data-transition="fade" style="background:#F5F7FA;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 22</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Tested under load</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>Twice the throughput after fixes.</li>
+<li>No failures up to 128 connections.</li>
+<li>Sized for 10,000 users.</li>
+</ul>
+</div>
+<img src="/_blob/858c623241ae6523f33aa1c05a609276" alt="Chart of p95 response time and failed requests from 4 to 128 connections, before and after the performance fixes" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 22, load and performance (STORY-030 to 033). A pinned load harness ran four journeys, registrant, case manager, policy assistant with a stand-in model, and dashboards, from 4 to 128 open connections on a local copy, before and after the fixes. Before, a full database connection pool was mistaken for an outage and 96 to 98% of requests failed at 64 and 128 connections; after the fixes none failed at any step, throughput about doubled and the 95th percentile at 16 connections halved. One light run against the live demo, 25 connections for a minute, kept p95 at 1.24 seconds with no errors. Production sizing for 10,000 concurrent users is derived from these measurements, with every figure labelled measured, derived or assumed; nothing here was run at 10,000 users.</aside>
+</section>

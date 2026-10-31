@@ -119,8 +119,8 @@
     <p class="lede">A working platform for the Selective Service System's registrant services: online accounts, exemption eligibility, case management with appeals, and automatic compliance checks on every decision.</p>
     <div class="facts">
       <span>Demo site <strong><a href="https://sss-demo-frontend.onrender.com">sss-demo-frontend.onrender.com</a></strong></span>
-      <span>Status as of <strong>October 21, 2026</strong></span>
-      <span>Working in the demo <strong>3 of 5 R0 stories, 11 of 11 R1 stories, 11 of 11 R2 stories</strong></span>
+      <span>Status as of <strong>October 31, 2026</strong></span>
+      <span>All 46 stories addressed <strong>45 working in the demo; AWS GovCloud written as code, waiting on approval</strong></span>
     </div>
     <p class="notice">Everything described here is demonstrated on a synthetic demo deployment; none of it is operating in production. Synthetic data only. The exemption types shown (A senior, B income, C hardship) are illustrative rules built to exercise the workflow. They are not Selective Service policy.</p>
   </header>
@@ -220,7 +220,7 @@
 
   <section id="walkthrough" aria-labelledby="walkthrough-h">
     <p class="eyebrow">Demo walkthrough</p>
-    <h2 id="walkthrough-h">Twenty-two scenes, about twenty-five minutes</h2>
+    <h2 id="walkthrough-h">Twenty-seven scenes, about thirty minutes</h2>
     <ol class="scenes">
       <li class="scene">
         <h3>A registrant creates an account</h3>
@@ -404,6 +404,46 @@
         </ul>
         <figure><img src="screens/tour-31-observability.png" width="1280" height="900" alt="Observability page with open alerts, each linked to its runbook entry" loading="lazy"><figcaption>A test run with deliberate server faults: the alerts open with their runbook links, and close on recovery.</figcaption></figure>
       </li>
+      <li class="scene">
+        <h3>Tested under load</h3>
+        <ul>
+          <li>A pinned load harness ran four journeys from 4 to 128 open connections, before and after fixes. Before, a full connection pool was mistaken for an outage and almost every request failed at 64 and 128 connections; after, none failed at any step, and throughput about doubled.</li>
+          <li>One light run against the live demo, 25 connections for a minute, kept 95% of responses under 1.3 seconds with no errors. Production sizing for 10,000 users is derived from these measurements, every number labelled; nothing was run at 10,000 users.</li>
+        </ul>
+        <figure><img src="screens/tour-40-load-before-after.png" width="1240" height="610" alt="Chart of response time and failed requests from 4 to 128 connections, before and after the fixes" loading="lazy"><figcaption>The same harness, machine and hour, before and after the performance fixes.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>It stays up when the database goes away</h3>
+        <ul>
+          <li>If the database is unreachable the API keeps running, answers every data request with a clear "try again" and saves nothing half way, and recovers by itself when the database returns, without a restart (22 of 22 checks).</li>
+          <li>An uptime check outside the hosting platform runs every 30 minutes and opens an issue on failure. The multi-region production design is written and waits on approval.</li>
+        </ul>
+        <figure><img src="screens/tour-41-database-outage.png" width="1240" height="472" alt="Twenty-two of twenty-two outage checks passing" loading="lazy"><figcaption>The outage drill on a local copy: the database stopped before start-up and while serving.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Sign-in hardened and tested</h3>
+        <ul>
+          <li>An attack suite of 52 checks tries sign-in bypass, other people's records, injection and password guessing, and checks the security headers; all pass. Signing out ends the session on the server, sign-in is throttled and every page carries a content security policy.</li>
+          <li>Two-step verification now comes with ten one-time recovery codes for a lost phone, shown once. This is the team's own testing; an independent penetration test is still owed.</li>
+        </ul>
+        <figure><img src="screens/tour-43-recovery-codes.png" width="1280" height="1184" alt="Ten one-time recovery codes shown once, with copy and download buttons" loading="lazy"><figcaption>Recovery codes appear once, when two-step verification is turned on.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Staff are trained in the app</h3>
+        <ul>
+          <li>Case managers, administrators and leadership each get short modules built from screens of the real pages, with a four-question knowledge check; three of four is a pass.</li>
+          <li>The answers stay on the server, which grades and records each attempt, so a pass cannot be faked; administrators see the whole team's progress.</li>
+        </ul>
+        <figure><img src="screens/tour-45-training.png" width="1280" height="900" alt="Training page with the case work module for a case manager" loading="lazy"><figcaption>A case manager's training page.</figcaption></figure>
+      </li>
+      <li class="scene">
+        <h3>Ready to launch, and honest about it</h3>
+        <ul>
+          <li>Every one of the 46 stories is mapped to its evidence. On the live demo the release was rolled back in 32 seconds and forward again in 58 with no data lost, and a backup was restored in 10.5 seconds with no errors, matching live row for row.</li>
+          <li>The verdict: the demo is complete; a production launch is a no-go until ten criteria are met, each with an owner, among them AWS approval, an authority to operate, an independent penetration test and a hands-on assistive-technology test.</li>
+        </ul>
+        <figure><img src="screens/tour-46-drills.png" width="1240" height="490" alt="Drill results: rollback, backup and restore, outage, secret rotation and outside monitoring" loading="lazy"><figcaption>Drills run on the live demo on October 26 and 27.</figcaption></figure>
+      </li>
     </ol>
   </section>
 
@@ -441,6 +481,8 @@
       <li><strong>Watched in operation.</strong> Every request carries a trace id; service objectives are checked every minute, and a breach alerts the administrators with a runbook entry.</li>
       <li><strong>Accessible by design.</strong> Every page is checked against WCAG 2.1 AA (Section 508) for each kind of user: keyboard, screen-reader names and errors, contrast, reflow at 320 pixels, a session warning, and confirmation before an application is sent.</li>
       <li><strong>Write-once audit trail.</strong> Every sign-in, refusal, data read, export, change, role grant, deployment and configuration change is recorded with who, when and from where, alongside every compliance result. The database refuses edits and deletions, entries are kept seven years, and no SSN, password or secret is written to the log.</li>
+      <li><strong>Tested like an attacker would.</strong> A 52-check attack suite runs against every release candidate: sign-in bypass, token tampering, other people's records, injection, guessing. Sign-out ends sessions on the server, sign-in is throttled, and secrets shared during the build were rotated.</li>
+      <li><strong>Built to recover.</strong> The API survives its database going away and recovers by itself; releases roll back in under a minute; backups are restored and checked row for row.</li>
       <li><strong>Verified releases.</strong> After each deploy the team checks the demo deployment automatically: the running version, the database, all protected routes refusing anonymous requests, and every staff route refusing an ordinary registrant. Each story ships with screenshots and a written conclusion.</li>
     </ul>
   </section>
@@ -451,9 +493,9 @@
     <div class="releases">
       <div class="release">
         <h3>R0 · Walking skeleton</h3>
-        <div class="meter" role="img" aria-label="3 of 5 working in the demo"><span style="width:60%"></span></div>
-        <p class="count">3 of 5 in the demo</p>
-        <p>Secure registration and sign-in, profile and compliance check, two-step verification. The data pipeline is partly built; cloud infrastructure waits on AWS approval.</p>
+        <div class="meter" role="img" aria-label="4 of 5 working in the demo, 1 written as code"><span style="width:80%"></span></div>
+        <p class="count">4 of 5 in the demo, 1 written</p>
+        <p>Secure registration and sign-in, profile and compliance check, two-step verification, and the data status card. The AWS GovCloud infrastructure is written as code and checked, waiting on approval to be applied.</p>
       </div>
       <div class="release">
         <h3>R1 · Core services</h3>
@@ -465,13 +507,13 @@
         <h3>R2 · AI and governance</h3>
         <div class="meter" role="img" aria-label="11 of 11 working in the demo"><span style="width:100%"></span></div>
         <p class="count">11 of 11 in the demo (complete)</p>
-        <p>In the demo: policy answers from Claude with cited sources, hallucination and drift monitoring, human-in-the-loop review, override tracking, fairness testing and observability. The real-model evaluation and fairness runs passed on the demo deployment on October 21. Next: R3.</p>
+        <p>In the demo: policy answers from Claude with cited sources, hallucination and drift monitoring, human-in-the-loop review, override tracking, fairness testing and observability. The real-model evaluation and fairness runs passed on the demo deployment on October 21.</p>
       </div>
       <div class="release">
         <h3>R3 · Scale and launch</h3>
-        <div class="meter" role="img" aria-label="Not started"><span style="width:0%"></span></div>
-        <p class="count">Not started</p>
-        <p>Load testing for 10,000 users, sub-2-second responses, multi-region failover, training, runbooks, penetration test, accessibility audit and go-live review.</p>
+        <div class="meter" role="img" aria-label="17 of 17 done"><span style="width:100%"></span></div>
+        <p class="count">17 of 17 done (complete)</p>
+        <p>Load testing and production sizing, surviving a database outage, monitoring from outside, security testing and hardening, staff training, the incident playbook, runbooks and guides, the accessibility conformance report, and a readiness review with live rollback and restore drills. Production go-live is a no-go until ten owned criteria are met.</p>
       </div>
     </div>
     <p>Colaberry's scope assessment placed current readiness at 33 out of 100 on its INPACT scale; the full program targets 86.</p>
@@ -498,6 +540,7 @@
       <li>Access rules that change without a release: Open Policy Agent decides every request (scene 17)</li>
       <li>AI with human control: cited policy answers, the review queue and the override rate (scenes 18 and 19)</li>
       <li>AI watched in operation: drift against a baseline, fairness tests, tracing and alerts (scenes 20 to 22)</li>
+      <li>Scale and launch: load tests, outage survival, hardening, staff training, and the readiness drills (scenes 23 to 27)</li>
       <li>Security and trust: protected SSNs, per-endpoint access, verified releases</li>
       <li>Status and roadmap: what works in the demo today and what comes next</li>
     </ol>

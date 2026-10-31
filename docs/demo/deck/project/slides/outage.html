@@ -1,0 +1,13 @@
+<section id="outage" data-transition="fade" style="background:#F5F7FA;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 23</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Stays up when the database goes</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>Answers "try again", saves nothing.</li>
+<li>Recovers by itself, no restart.</li>
+<li>Checked from outside every 30 minutes.</li>
+</ul>
+</div>
+<img src="/_blob/613695de541af2fba35bfc776ad60130" alt="Twenty-two of twenty-two outage checks passing: the API starts without its database, answers 503 and recovers by itself" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 23, resilience (STORY-034 and 036). If the database becomes unreachable, the API keeps running, answers every data request with a clear 503 and a retry time, and saves nothing half way; when the database returns it recovers by itself without a restart. The drill passes 22 of 22 checks. An uptime check outside the hosting platform runs every 30 minutes and opens an issue on failure. The multi-region production design, AWS GovCloud with database failover between two regions, is written and waits on approval.</aside>
+</section>

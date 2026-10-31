@@ -1,0 +1,13 @@
+<section id="hardening" data-transition="fade" style="background:#F5F7FA;color:#15202F;font-family:'Public Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:row;align-items:center;gap:48px">
+<div style="width:600px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1A4480">Demo · Scene 24</p>
+<h2 style="font-family:'Merriweather', Georgia, serif;font-size:64px;font-weight:700;line-height:1.15;color:#15202F">Sign-in hardened and tested</h2>
+<ul style="font-size:30px;line-height:1.4;color:#45526A">
+<li>Sign-out ends the session.</li>
+<li>Guessing is throttled.</li>
+<li>Recovery codes for a lost phone.</li>
+</ul>
+</div>
+<img src="/_blob/a376babdf70e1268e2669697f0bb528e" alt="Ten one-time recovery codes shown once after turning on two-step verification, with copy and download buttons" style="width:1016px;height:714px;object-fit:contain;background:#FCFDFE;border:1px solid #C3CEDD;border-radius:12px;box-shadow:0px 12px 32px rgba(21,32,47,0.14)">
+<aside>Scene 24, security testing and hardening (STORY-041). An attack suite of 52 checks tries sign-in bypass and token tampering, reading other people's records, SQL and script injection, password guessing, and checks the security headers; all pass. Signing out now ends the session on the server, sign-in and registration are throttled, response time no longer reveals whether an address is registered, and every page carries a content security policy. People who turn on two-step verification get ten one-time recovery codes, shown once. This is the team's own testing; an independent penetration test is still owed before real data.</aside>
+</section>
