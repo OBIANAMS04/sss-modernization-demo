@@ -194,8 +194,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     <div class="summary">
       <div class="cell">
         <span class="label">Proposal</span>
-        <span class="value">3 of 11 complete</span>
-        <span class="note">5 tasks wait on Ali; Task 5 is ready for the demo link</span>
+        <span class="value">Rehearsal, closed</span>
+        <span class="note">Run against a real solicitation to find where the process breaks; never submitted, by design (Ali, Aug 6)</span>
       </div>
       <div class="cell">
         <span class="label">BUILD · R0</span>
@@ -223,8 +223,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
 
   <section id="proposal" aria-labelledby="proposal-h">
     <header>
-      <h2 id="proposal-h">Proposal track</h2>
-      <p class="sub">Eleven tasks from scope to submission. Task 10 is a quality gate that needs every earlier task plus sign-off from Ali and Ram. Submission deadline: not yet recorded.</p>
+      <h2 id="proposal-h">Proposal track (rehearsal, closed)</h2>
+      <p class="sub">The Selective Service proposal was a rehearsal, never submitted and never meant to be (Ali's closeout, 6 August; restated 28 October). The PROPOSAL list reads 11 of 11 because it was closed out as a rehearsal; the missing Submit Offer step was the finding. The Technical Volume's demo-link placeholder needs no fix. The tasks below are kept as they stood.</p>
     </header>
     <div class="table-wrap">
       <table>
@@ -451,6 +451,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td class="num">2026-10-21</td><td>STORY-041: sign-out ends sessions on the server with no extra database round trip; throttling kept in the database; MFA recovery codes; bcrypt 6. Accepted: a 15-minute lockout delay, registration saying an address is taken, tokens in localStorage (production: HttpOnly cookies), one moderate dependency finding in the OPA runtime</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-26</td><td>Secrets shared in chat on Sep 17 rotated: a new session key (generated in the browser, never shown) and a new database user, the old one deactivated with its tables kept; all data intact and live checks passing</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-27</td><td>Training answers stay on the server; GovCloud infrastructure written and checked, not applied; readiness verdict: the demo is complete, production is a no-go until ten criteria are met</td><td>Obi</td></tr>
+          <tr><td class="num">2026-10-28</td><td>The proposal is a rehearsal, never submitted; the upload limit is fixed (10 MB); AWS is Ram's decision; a demo section on the enterprise portal for the demo itself</td><td>Ali</td></tr>
           <tr><td class="num">2026-10-21</td><td>The claude.ai Project reads this framework straight from the GitHub repo, current after every push</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-20</td><td>R2 milestone 2: drift from the demo's own records (no LangSmith); fairness tested counterfactually without collecting protected data; OpenTelemetry built in and Datadog-ready over OTLP. The demo slide deck and briefing are updated at the end of R2</td><td>Obi</td></tr>
           <tr><td class="num">2026-10-20</td><td>The API key lives only in Render's environment and an Anthropic workspace; a key that was shown in a screenshot was revoked and replaced the same day</td><td>Obi</td></tr>
@@ -506,7 +507,6 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
           <tr><td><span class="pill idle">Low</span></td><td>OTLP export was tested against a local collector, not a real Datadog Agent</td><td>Exercise it when a Datadog account is available</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>Free hosting sleeps when idle, and free services can lapse: the free database expired after 30 days and took the API down Oct 17–19</td><td>Database now on a paid plan; open the site a minute before a demo; watch Render emails</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>No frontend unit tests (the UI is checked end to end by the evidence and accessibility scripts)</td><td>The stale backend route suites were retired on Oct 21</td><td>Obi</td></tr>
-          <tr><td><span class="pill idle">Low</span></td><td>Colaberry's upload endpoint refuses files over about 1 MB, although its tools allow 10 MB</td><td>Raised with Ali in the STORY-009 post and with Ali and Ram in the STORY-011 and STORY-012 posts, and repeated in the STORY-003 to 016 milestone post; not yet answered, so every post repeats it; meanwhile each post attaches one composite image and links the full evidence pack</td><td>Ali, Ram (Colaberry)</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>No one has used the app with JAWS, NVDA or VoiceOver yet; automated checks cover only part of WCAG</td><td>Hands-on screen-reader audit and a VPAT/ACR with STORY-042 (R3)</td><td>Obi</td></tr>
           <tr><td><span class="pill idle">Low</span></td><td>For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page</td><td>verify-deploy waits until every page path serves the current build; a Render header rule could shorten it</td><td>Obi</td></tr>
           <tr><td><span class="pill warn">Medium</span></td><td>No load test beyond 128 connections on one laptop and 25 on the live demo, and no soak test; the 10,000-user sizing is derived, not measured</td><td>Run the harness from several machines against a production-like stack</td><td>Obi</td></tr>
@@ -552,7 +552,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
       <li><span class="k">STORY-009 post</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10395976909">STORY-009 Data Freshness Monitoring</a></li>
       <li><span class="k">STORY-009 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-009">Screenshots and checks</a></li>
       <li><span class="k">Demo briefing</span><a href="https://claude.ai/artifact/7uX47ceMBSxM2uVJK8smwo">Purpose, problems solved and walkthrough</a></li>
-      <li><span class="k">Demo slide deck</span><a href="https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W">28 slides with speaker notes, including R2</a></li>
+      <li><span class="k">Demo slide deck</span><a href="https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W">33 slides with speaker notes, through R3</a></li>
       <li><span class="k">STORY-008 evidence</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-008">Screenshots and checks</a></li>
       <li><span class="k">Ali's approval</span><a href="https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10365688982">R0 and R1 review, Oct 2</a></li>
       <li><span class="k">Security rules</span><a href="https://github.com/OBIANAMS04/sss-modernization-demo/blob/master/docs/SECURITY-RULES.md">docs/SECURITY-RULES.md</a></li>

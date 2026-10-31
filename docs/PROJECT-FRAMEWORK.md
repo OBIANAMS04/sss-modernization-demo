@@ -10,34 +10,35 @@
 
 ## 1. What we are doing
 
-Two parallel tracks that meet at submission:
+Two tracks. The proposal was a rehearsal and is closed (see section 2); the BUILD demo is the working system that remains:
 
 | Track | Goal | Where it lives |
 |---|---|---|
-| **Proposal** | 11 tasks producing the RFP response (scope → volumes → forms → review gate → submission) | Basecamp project 47346103; task docs in `SSS-Proposal-Library-Standard-Context/` |
+| **Proposal** (rehearsal, closed) | 11 tasks producing an RFP response, run against a real solicitation to find where the process breaks; never submitted, by design | Basecamp project 47346103; task docs in `SSS-Proposal-Library-Standard-Context/` |
 | **BUILD** | A working demo platform, 46 stories in 4 releases (R0–R3), proving the technical approach | Basecamp BUILD ticket (todolist 10068241172); code in `sss-modernization-demo/` |
 
-The demo site is the bridge between them: the Technical Volume (Proposal Task 5) cites the demo URL, described as a synthetic demo deployment.
+The demo is now the deliverable that remains: Ali set up a demo section for it on the Colaberry enterprise portal (2026-10-28), with six demo-prep steps from 30 October to 6 November.
 
 ---
 
-## 2. Proposal track (11 tasks)
+## 2. Proposal track (rehearsal, closed)
 
-| # | Task | Status | Blocker / next action | Owner |
-|---|---|---|---|---|
-| 1 | Scope Summary (INPACT baseline 33/100) | ✅ Complete | — | Obi |
-| 2 | Bid/No-Bid (BID, high confidence; Echo Health benchmark) | ✅ Complete | — | Obi |
-| 3 | Compliance Matrix (accessibility, security, AI governance, performance, FAR) | ✅ Complete | — | Obi |
-| 4 | SAM.gov Checklist (UEI, CAGE, NAICS 541519, reps & certs, EFT) | 🚩 Blocked | Verify in SAM.gov, post screenshots | Ali |
-| 5 | Technical Volume (7-Layer architecture, demo site) | 🟡 Unblocked | Demo site online since 2026-09-17: insert https://sss-demo-frontend.onrender.com, worded as a synthetic demo deployment | Obi |
-| 6 | Management Volume | 🚩 Blocked | Fill [CONFIRM] key personnel, experience, schedule | Ali |
-| 7 | Past Performance (Echo Health + refs 2 & 3) | 🚩 Blocked | Reference 2 & 3 data; send and collect PPQs | Ali |
-| 8 | Cost/Price Volume | 🚩 Blocked | Finalize CLINs and rates | Ali |
-| 9 | Federal Forms & Certifications | 🚩 Blocked | Verify forms | Ali |
-| 10 | Internal Review Gate (process, created 2026-07-28) | ⏳ Active | Needs Tasks 1–9 done + Ali & Ram sign-off | Ali, Ram |
-| 11 | Submission Guide | ⏳ Waiting | Runs after Task 10 passes | Obi |
+**The Selective Service proposal was a rehearsal, never submitted and never meant to be** (Ali's closeout on the project, 6
+August 2026, restated on the BUILD ticket 2026-10-28). A real package was run against a real solicitation number to find where the
+process breaks before it matters; the missing "Submit Offer" button was the finding, not a blocker. The Basecamp PROPOSAL list reads
+11 of 11 because it was closed out as a rehearsal. The Technical Volume's `[INSERT_DEPLOYED_URL]` placeholder needs no fix;
+`05-technical-volume.html` is attached to its Basecamp ticket (posted 14 July).
 
-Submission deadline: **not recorded yet** (confirm with Ali).
+| # | Task | Outcome |
+|---|---|---|
+| 1 | Scope Summary (INPACT baseline 33/100) | Done |
+| 2 | Bid/No-Bid (BID, high confidence; Echo Health benchmark) | Done |
+| 3 | Compliance Matrix (accessibility, security, AI governance, performance, FAR) | Done |
+| 4 | SAM.gov Checklist | Closed in the rehearsal |
+| 5 | Technical Volume (7-Layer architecture) | Written; closed in the rehearsal (the demo link placeholder stays) |
+| 6 to 9 | Management, Past Performance, Cost/Price, Federal Forms | Closed in the rehearsal |
+| 10 | Internal Review Gate | Closed in the rehearsal |
+| 11 | Submission Guide | Closed; the rehearsal's finding was the missing Submit Offer step |
 
 ---
 
@@ -156,6 +157,7 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-21 | STORY-041: sign-out ends sessions on the server (session id in every token, checked in the per-request role read, no extra round trip); throttling in the database; address limits skip loopback callers (on Render every address comes from Cloudflare); MFA recovery codes; bcrypt 6. Accepted: account lockout as a delay of 15 minutes, registration saying an address is taken, tokens in localStorage (production: HttpOnly cookies), sprintf-js via the OPA runtime | Obi |
 | 2026-10-26 | Secrets exposed in chat on 2026-09-17 rotated: JWT_SECRET replaced with a 64-character random value generated inside the browser (never shown), and the database moved to a new user sss_demo_app_2026_10 through Render credential rotation, the old user deactivated (login revoked, its tables kept). Verified: API connected only as the new user, 30 tables and all data intact, live checks pass. Render dashboard changes are now made by Claude in the Playwright browser after the owner signs in | Obi |
 | 2026-10-27 | STORY-035: training answers stay on the server and are graded there, so a pass cannot be claimed from the browser; a module's version makes a changed module need passing again. STORY-004: written for GovCloud and checked statically; plan and apply wait on Ram. The readiness verdict: the demo is complete, production is a no-go until ten criteria are met | Obi |
+| 2026-10-28 | Ali: the Selective Service proposal is a rehearsal (closed out 6 August), never submitted; Task 5's placeholder needs no fix. The Colaberry upload limit was nginx's 1 MB default in front of the route; fixed and live, attachments take 10 MB. AWS GovCloud is Ram's decision, flagged to him directly. A demo section on the enterprise portal for the demo itself `[gov-2026-10-28-rehearsal-answer-and-upload-fix]` `[demo-section-2026-10-28]` | Ali |
 | 2026-10-19 | The free Render database expired on 2026-10-16 and the API went down; `sss-demo-db` upgraded to the paid Basic plan ($6/month), which kept all data and does not expire | Obi |
 
 ---
@@ -197,7 +199,6 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 
 | Risk / follow-up | Impact | Action |
 |---|---|---|
-| Proposal Tasks 4, 6–9 waiting on Ali; deadline unknown. Basecamp shows the "Selective Service Modernization - PROPOSAL" list as completed (Oct 21), but the tasks there could not be read from here, and the Technical Volume file (Task 5) is not in this repository | Proposal status unclear | Obi to confirm with Ali whether the proposal was submitted, and where the Technical Volume lives if Task 5 is still open |
 | AWS approval (Ram) pending | Blocks STORY-004, real document upload, CloudWatch metrics for STORY-009 and an append-only copy of the audit log for STORY-010 | Ram decision |
 | `npm audit` (2026-10-21, after the STORY-041 pass): runtime findings down to one moderate (`sprintf-js` via the OPA runtime, formats only our own policy strings) | Low | Accepted with the reason in docs/SECURITY-TESTING.md; revisit when OPA updates it |
 | Render free tier sleeps | ~50 s first load | Warm the site before demos, or upgrade |
@@ -206,7 +207,6 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 | Free Render services can lapse (the free database expired after 30 days on 2026-10-16 and took the API down for 3 days) | Demo outage | Database now paid; the deploy check finds an outage; watch Render emails |
 | No frontend unit tests | Regressions caught late | The UI is checked end to end by the evidence and accessibility scripts; the stale backend route suites were retired on 2026-10-21 |
 | Case managers can give case-manager access to others (decided 2026-10-12; the email-list hole is closed) | A case manager could make a second account staff | Every grant is in the audit log with who and why; production should keep grants to an administrator or a second approver |
-| Colaberry's upload endpoint refuses requests over ~1 MB (nginx 413), although its tools say 10 MB | Whole evidence PDFs can't be attached to Basecamp | Raised with Ali in the STORY-009 post and with Ali and Ram in the STORY-011 and STORY-012 posts, and repeated in the STORY-003 to 016 milestone post; not yet answered, so every post repeats it; meanwhile each post attaches one composite image and links the full pack |
 | No one has used the app with JAWS, NVDA or VoiceOver yet | Automated checks cover only part of WCAG | Hands-on screen-reader audit and a VPAT/ACR with STORY-042 (R3) |
 | The audit log's write-once rule is enforced by database triggers, which a database superuser could disable | Not enough on its own for production | Copy every entry to append-only storage (CloudWatch Logs or S3 Object Lock) with STORY-004 |
 | For up to 5 minutes after a deploy, the site's CDN can serve a deep link's previous page | A reviewer opening a deep link right after a deploy can see the previous version | verify-deploy waits until every page path serves the current build; a Render header rule could shorten it |
@@ -242,7 +242,7 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 - Milestone evidence pack (STORY-003 to 016): https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/milestone-003-016
 - Milestone post (Basecamp): https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172#__recording_10404013551
 - Demo briefing (purpose, problems solved, walkthrough; source for the NotebookLM deck): artifact https://claude.ai/artifact/7uX47ceMBSxM2uVJK8smwo · PDF `docs/demo/SSS-Modernization-Demo-Briefing.pdf`
-- Demo slide deck (28 slides with speaker notes, R2 scenes added 2026-10-21; downloads as PowerPoint or PDF): https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W · source `docs/demo/deck/`
+- Demo slide deck (33 slides with speaker notes, R3 scenes added 2026-10-31; downloads as PowerPoint or PDF): https://claude.ai/artifact/EMxgHSsgJxnRw4SHYKpy5W · source `docs/demo/deck/`
 - Render: https://dashboard.render.com
 - Basecamp BUILD ticket: https://app.basecamp.com/3945211/buckets/47346103/todolists/10068241172
 
