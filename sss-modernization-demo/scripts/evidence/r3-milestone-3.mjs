@@ -12,7 +12,7 @@ const out = join(root, 'docs/evidence/r3-m3');
 mkdirSync(out, { recursive: true });
 const review = join(root, 'docs/READINESS-REVIEW.md');
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const fmt = (c) => esc(c).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`(.+?)`/g, '<code>$1</code>');
+const fmt = (c) => esc(c).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`(.+?)`/g, '<code>$1</code>').replace(/~~(.+?)~~/g, '<s>$1</s>');
 
 function mdTable(file, heading) {
   const text = readFileSync(file, 'utf8');
@@ -52,7 +52,7 @@ const checks = join(repo, 'infrastructure/aws-govcloud/checks');
 const pages = [
   ['06-readiness-every-story.png', 'Every story and its evidence', `<h1>STORY-043 to 046: every one of the 46 stories and its evidence</h1><p class="sub">docs/READINESS-REVIEW.md. 45 in the demo and verified there; STORY-004 written as infrastructure code, waiting on approval.</p>${mdTable(review, '## Every story and its evidence')}`],
   ['07-drills.png', 'Drills', `<h1>Drills: rollback, backup and restore, outage, secret rotation, outside monitoring</h1><p class="sub">Run on the live demo on 2026-10-26 and 27 (the outage drill locally).</p>${mdTable(review, '## Drills')}`],
-  ['08-open-gaps-and-go-no-go.png', 'Open gaps and go/no-go', `<h1>Open gaps with owners, and the go/no-go criteria for production</h1><p class="sub">Verdict: the demo build is complete; a production launch is a no-go until these are met.</p>${mdTable(review, '## Open gaps, with owners')}<h2>Go/no-go criteria (all must be true)</h2>${mdList(review, '## Go/no-go criteria')}`],
+  ['08-open-gaps-and-go-no-go.png', 'Open gaps and go/no-go', `<h1>Open gaps with owners, and the go/no-go criteria for production</h1><p class="sub">Verdict: the demo build is complete; a production launch is a no-go until these are met.</p>${mdTable(review, '## Open gaps, with owners')}<h2>Go/no-go criteria (all must be true), with an owner against each</h2>${mdTable(review, '## Go/no-go criteria')}`],
   ['09-infrastructure-checks.png', 'STORY-004 checks', `<h1>STORY-004: AWS GovCloud infrastructure as code, statically checked, not applied</h1><p class="sub">infrastructure/aws-govcloud: VPC across 3 zones, ALB with WAF, ECS Fargate, Aurora PostgreSQL Global Database with RDS Proxy, KMS, Secrets Manager, CloudTrail, GuardDuty, Security Hub, Config, an Object Lock audit bucket; prod (us-gov-west-1) and warm standby (us-gov-east-1). Terraform 1.9.8, AWS provider 5.100.0.</p>
     <h2>terraform fmt -check -recursive</h2><pre>${esc(tail(join(checks, 'terraform-fmt.txt'), 3))}</pre>
     <h2>terraform validate, prod</h2><pre>${esc(tail(join(checks, 'terraform-validate-prod.txt'), 3))}</pre>
