@@ -68,7 +68,7 @@ Production targets are in `../FAILOVER.md` (to be confirmed with the agency: rec
 
 | Gap | Why it matters | Owner | Next step |
 |---|---|---|---|
-| AWS GovCloud not approved | Everything production-grade (multi-region, WAF, KMS, the audit copy) is in code but not running | Ram | Approve; then the apply runbook in `infrastructure/aws-govcloud/README.md` |
+| AWS GovCloud not approved | Everything production-grade (multi-region, WAF, KMS, the audit copy) is in code but not running | Ram | Approve; then the apply runbook in `infrastructure/aws-govcloud/README.md`. Flagged to Ram directly, as Ali asked (2026-10-28) |
 | No independent penetration test | Our 52-check attack suite is our own testing | Ali, Ram (procurement) | Engage a tester on the AWS environment before real data |
 | No hands-on screen-reader, magnification or speech-input test | The conformance report marks it owed | Obi, with users | Test with JAWS, NVDA, VoiceOver, TalkBack and people who use them |
 | No authority to operate, no real data | The demo holds synthetic data only | The agency, Ali | Security assessment and ATO on the AWS environment |
@@ -78,21 +78,25 @@ Production targets are in `../FAILOVER.md` (to be confirmed with the agency: rec
 | Load at production scale not measured | Sizing is derived, not measured | Obi | Run the harness from several machines on AWS |
 | Tokens in localStorage; TOTP keys readable at rest | Accepted for the demo | Obi | HttpOnly cookies with CSRF protection; encrypt keys with KMS |
 | OTLP export to Datadog not exercised | Configuration only | Obi | Exercise with a Datadog account |
-| Colaberry upload limit (about 1 MB, documented 10 MB) | Evidence packs cannot be attached whole | Ali, Ram | Raise the limit; asked in every post |
-| Proposal Task 5 (Technical Volume demo link) | The volume's placeholder needs the demo address, unless already submitted | Ali | Say where the volume is and whether it was submitted |
+| ~~Colaberry upload limit~~ **Resolved 2026-10-28** | nginx in front of the upload route refused anything over its 1 MB default | Ali | Fixed and live: attachments take the full 10 MB |
+| ~~Proposal Task 5~~ **Resolved 2026-10-28** | The Selective Service track is a rehearsal: the proposal was never submitted and was never going to be (Ali's closeout, 6 August); the demo-link placeholder needs no fix | Ali | None. The demo continues as the rehearsal's working system |
 
 ## Go/no-go criteria for a production launch
 
-All must be true:
+All must be true. "Decides" clears or approves the item; "Does the work" carries it out. Ali asked for an owner against each
+(2026-10-28) so he can clear the ones that are his.
 
-1. AWS GovCloud approved and applied from `infrastructure/aws-govcloud/`; the first `terraform plan` reviewed by two people.
-2. An authority to operate granted for the AWS environment.
-3. An independent penetration test with every high and critical finding fixed and retested.
-4. The hands-on assistive-technology test done and the conformance report updated from it.
-5. Every story's check passing on the AWS environment: unit tests, all end-to-end suites, the attack suite and the accessibility
-   audit with no content security policy violation.
-6. A load test on AWS at the expected peak (sizing: 1,000 requests/s) with p95 under 2 s and errors under 1%.
-7. A failover drill between the two regions meeting the agreed targets (proposed: recovery time under 15 minutes, recovery point under 1 minute), and a restore drill from backup.
-8. Secrets in AWS Secrets Manager, rotated, with no secret ever in source, chat or logs.
-9. The audit log copied to append-only storage, and the production-mode setting independent of the hosting platform.
-10. The incident playbook rehearsed once with the people on call, and staff training passed by every case manager and administrator.
+| # | Criterion | Decides | Does the work |
+|---|---|---|---|
+| 1 | AWS GovCloud approved and applied from `infrastructure/aws-govcloud/`; the first `terraform plan` reviewed by two people | **Ram** | Obi (apply runbook), a second reviewer named by Ram |
+| 2 | An authority to operate granted for the AWS environment | **The agency's authorizing official**, sponsored by **Ali** | Obi (the security package from this repository) |
+| 3 | An independent penetration test with every high and critical finding fixed and retested | **Ali** (engage and fund the tester) | The tester; Obi fixes and retests |
+| 4 | The hands-on assistive-technology test done and the conformance report updated from it | **Ali** (approve participants) | Obi (arrange the sessions, update the report) |
+| 5 | Every story's check passing on the AWS environment: unit tests, all end-to-end suites, the attack suite and the accessibility audit with no content security policy violation | Obi | Obi |
+| 6 | A load test on AWS at the expected peak (sizing: 1,000 requests/s) with p95 under 2 s and errors under 1% | Obi | Obi |
+| 7 | Recovery targets agreed with the agency (proposed: recovery time under 15 minutes, recovery point under 1 minute), then a failover drill between the two regions meeting them, and a restore drill from backup | **Ali** (agree the targets with the agency) | Obi (the drills) |
+| 8 | Secrets in AWS Secrets Manager, rotated, with no secret ever in source, chat or logs | Obi | Obi (needs Ram's AWS access) |
+| 9 | The audit log copied to append-only storage, and the production-mode setting independent of the hosting platform | Obi | Obi |
+| 10 | The incident playbook rehearsed once with the people on call, and staff training passed by every case manager and administrator | **Ali** (name the on-call people and the staff) | Obi (runs the rehearsal; the training portal records passes) |
+
+Ali's: 2, 3, 4, 7 and 10 (with the agency for 2 and 7). Ram's: 1. The rest are the build team's.
