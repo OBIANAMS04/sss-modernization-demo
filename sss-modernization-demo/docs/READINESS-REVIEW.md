@@ -78,7 +78,7 @@ Production targets are in `../FAILOVER.md` (to be confirmed with the agency: rec
 | Load at production scale not measured | Sizing is derived, not measured | Obi | Run the harness from several machines on AWS |
 | Tokens in localStorage; TOTP keys readable at rest | Accepted for the demo | Obi | HttpOnly cookies with CSRF protection; encrypt keys with KMS |
 | OTLP export to Datadog not exercised | Configuration only | Obi | Exercise with a Datadog account |
-| Colaberry upload limit: **fixed for the platform 2026-10-28; the agent-tool route still refuses** | nginx in front of the upload route refused anything over its 1 MB default. On 2026-10-31 a 2.7 MB PDF sent through the agent tools (advisor.colaberry.ai/mcp/v1) was still refused with HTTP 413 by nginx/1.24.0 | Ali | Raise the limit on the agent-tool route as well; reported back on the BUILD ticket |
+| ~~Colaberry upload limit~~ **Resolved 2026-11-02** | nginx in front of the upload routes used its 1 MB default; the agent route (advisor.colaberry.ai/mcp/v1) had no client_max_body_size at all | Ali | Set to 25 MB on 2026-11-02 and verified both ways by Ali; on 2026-11-05 the 2.7 MB briefing PDF attached through the agent route |
 | ~~Proposal Task 5~~ **Resolved 2026-10-28** | The Selective Service track is a rehearsal: the proposal was never submitted and was never going to be (Ali's closeout, 6 August); the demo-link placeholder needs no fix | Ali | None. The demo continues as the rehearsal's working system |
 
 ## Go/no-go criteria for a production launch
