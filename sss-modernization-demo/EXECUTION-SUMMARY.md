@@ -1,3 +1,8 @@
+> Generated 7 August 2026, before this build began. It describes a planned system, not the one that was built, and
+> several of its claims are wrong: this project has no Elasticsearch, no Redis, no ECS and no RDS, and no production
+> deployment was ever approved. For what was actually built and verified, see
+> sss-modernization-demo/docs/READINESS-REVIEW.md. Kept unedited as a record of what was assumed at the start.
+
 # BUILD Workstream Execution Summary
 
 **Date**: 2026-08-03  
