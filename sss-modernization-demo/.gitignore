@@ -17,5 +17,5 @@ terraform/terraform.tfvars
 *.tfstate
 *.tfstate.backup
 
-# Evidence PDFs are rebuilt by scripts/evidence/report.mjs from the committed screenshots
-docs/evidence/**/*.pdf
+# Evidence PDFs are committed (2026-11-06): the live demo is being taken down, so the packs must stand on their own
+# (they can still be rebuilt by scripts/evidence/report.mjs from the committed screenshots)
