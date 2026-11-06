@@ -3,11 +3,12 @@
 # API's /health and the site's /version.json. A failure opens one issue labelled "uptime" (GitHub emails the repository's owner); later
 # failures comment on it; the first success closes it. It uses only the runner's own curl and gh with the built-in token: no secrets,
 # no third-party actions. The free instance sleeps when idle, so each check allows a cold start (about a minute) and tries twice.
-name: Uptime check
+#
+# RETIRED 2026-11-06: the Render demo was taken down (decision-2026-11-05-sss-winddown), so the schedule is removed and the
+# check no longer runs by itself. It ran every 30 minutes from 2026-10-21 until then; the record is in the Actions history.
+name: Uptime check (retired)
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 permissions:
