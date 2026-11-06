@@ -6,9 +6,10 @@ Demonstrated on a synthetic demo deployment; not operating in production. Review
 > down and written up as a case study. AWS GovCloud (STORY-004) is **closed, not pending**: no two-region federal
 > environment will be stood up for a rehearsal with no client, no authority to operate and no real data. The ten go/no-go
 > criteria below are **no longer a live checklist**, and Ali's five (2, 3, 4, 7, 10) are parked. This review stays as the
-> record of what a real production launch would require. The Render demo deployment is being taken down; the evidence
-> packs, screenshots and drill results are in this repository, and the build still runs locally from a clean checkout
-> with synthetic data (see `RUN-LOCALLY.md`).
+> record of what a real production launch would require. The Render demo deployment was **taken down on 2026-11-06**
+> (database, API and site deleted; workspace on the free Hobby plan; the only charge left is $1.12 the database accrued
+> on 1 to 6 November: `evidence/winddown/`). The evidence packs, screenshots and drill results are in this repository,
+> and the build still runs locally from a clean checkout with synthetic data (see `RUN-LOCALLY.md`).
 
 ## Verdict
 
