@@ -2,10 +2,18 @@
 
 Demonstrated on a synthetic demo deployment; not operating in production. Review date: 2026-10-27.
 
+> **Status since 2026-11-05 (Ali, decision-2026-11-05-sss-winddown).** The project is a rehearsal and is being wound
+> down and written up as a case study. AWS GovCloud (STORY-004) is **closed, not pending**: no two-region federal
+> environment will be stood up for a rehearsal with no client, no authority to operate and no real data. The ten go/no-go
+> criteria below are **no longer a live checklist**, and Ali's five (2, 3, 4, 7, 10) are parked. This review stays as the
+> record of what a real production launch would require. The Render demo deployment is being taken down; the evidence
+> packs, screenshots and drill results are in this repository, and the build still runs locally from a clean checkout
+> with synthetic data (see `RUN-LOCALLY.md`).
+
 ## Verdict
 
 - **The demo build is complete.** 45 of the 46 stories are working on the demo deployment and verified there; the 46th
-  (STORY-004, AWS GovCloud) is written as infrastructure code and statically checked, waiting on approval to apply.
+  (STORY-004, AWS GovCloud) is written as infrastructure code and statically checked, and will not be applied (AWS GovCloud closed 2026-11-05).
 - **A production launch is a no-go today.** The gaps in "Open gaps" below are each owned and none is hidden; the go/no-go
   criteria at the end say what has to be true first. Most of them depend on decisions outside the build team (AWS approval,
   an authority to operate, an independent penetration test, real data).
@@ -68,7 +76,7 @@ Production targets are in `../FAILOVER.md` (to be confirmed with the agency: rec
 
 | Gap | Why it matters | Owner | Next step |
 |---|---|---|---|
-| AWS GovCloud not approved | Everything production-grade (multi-region, WAF, KMS, the audit copy) is in code but not running | Ram | Approve; then the apply runbook in `infrastructure/aws-govcloud/README.md`. Flagged to Ram directly, as Ali asked (2026-10-28) |
+| AWS GovCloud: **closed 2026-11-05** | Everything production-grade (multi-region, WAF, KMS, the audit copy) is in code but not running | Ali | Closed, not pending: not stood up for a rehearsal (about $5,850 a month). The code and its checks stay in `infrastructure/aws-govcloud/` as the record |
 | No independent penetration test | Our 52-check attack suite is our own testing | Ali, Ram (procurement) | Engage a tester on the AWS environment before real data |
 | No hands-on screen-reader, magnification or speech-input test | The conformance report marks it owed | Obi, with users | Test with JAWS, NVDA, VoiceOver, TalkBack and people who use them |
 | No authority to operate, no real data | The demo holds synthetic data only | The agency, Ali | Security assessment and ATO on the AWS environment |
@@ -100,3 +108,6 @@ All must be true. "Decides" clears or approves the item; "Does the work" carries
 | 10 | The incident playbook rehearsed once with the people on call, and staff training passed by every case manager and administrator | **Ali** (name the on-call people and the staff) | Obi (runs the rehearsal; the training portal records passes) |
 
 Ali's: 2, 3, 4, 7 and 10 (with the agency for 2 and 7). Ram's: 1. The rest are the build team's.
+
+**Parked 2026-11-05.** None of these will be worked: they describe a federal production launch that is not happening on
+this project (Ali, decision-2026-11-05-sss-winddown). Criterion 1 is closed with AWS GovCloud; Ali's five are parked.
