@@ -2,7 +2,12 @@
 
 **Client opportunity:** U.S. Selective Service System (SSS) business-systems modernization (RFP)
 **Bidder:** Colaberry · **Owner:** Obi Anamelechi Kingsley · **Decision makers:** Ali Muwwakkil (Managing Director), Ram Katamaraja
-**Last updated:** 2026-10-21 · Updated after every milestone (see "How this document is maintained")
+**Last updated:** 2026-11-06 · Updated after every milestone (see "How this document is maintained")
+
+> **Wound down 2026-11-06 (Ali, `[decision-2026-11-05-sss-winddown]`).** The project was a rehearsal. The Render demo is
+> deleted and the running cost is zero; the repository stays public and runs locally from a clean checkout with synthetic
+> data (`sss-modernization-demo/docs/RUN-LOCALLY.md`); AWS GovCloud is closed; the go/no-go criteria are parked. The work
+> becomes a case study, and attention moves to the new Gov Contracts project.
 
 > "In the demo" means working on the synthetic demo deployment. Nothing here is operating in production (Ali, 2026-10-07).
 
@@ -46,7 +51,7 @@ process breaks before it matters; the missing "Submit Offer" button was the find
 
 | Release | Stories | Status |
 |---|---|---|
-| **R0 Walking Skeleton** | 001 Registration & login · 002 Profile & compliance · 003 Two-step sign-in (MFA) · 004 Cloud infra (AWS, L5) · 005 Data pipeline (L2) | 001 ✅ in the demo (+ Ali's guards) · 002 ✅ in the demo · 003 ✅ 2026-10-14 in the demo (two-step sign-in) · 004 ✅ 2026-10-27 written as infrastructure code for AWS GovCloud and statically checked (`infrastructure/aws-govcloud/`), **not applied: waits on Ram's approval** (the demo runs on Render) · 005 ✅ 2026-10-21 in the demo (data status on the citizen dashboard, read straight from the database; no pipeline or Redis code had existed) |
+| **R0 Walking Skeleton** | 001 Registration & login · 002 Profile & compliance · 003 Two-step sign-in (MFA) · 004 Cloud infra (AWS, L5) · 005 Data pipeline (L2) | 001 ✅ in the demo (+ Ali's guards) · 002 ✅ in the demo · 003 ✅ 2026-10-14 in the demo (two-step sign-in) · 004 ✅ 2026-10-27 written as infrastructure code for AWS GovCloud and statically checked (`infrastructure/aws-govcloud/`), **not applied: AWS GovCloud closed 2026-11-05** (the demo ran on Render until 2026-11-06) · 005 ✅ 2026-10-21 in the demo (data status on the citizen dashboard, read straight from the database; no pipeline or Redis code had existed) |
 | **R1 Core** | 006 Exemption eligibility · 007 Case management · 008 Compliance validation · 009 Data freshness · 010 Audit logging · 011 Section 508 · 012–015 Role dashboards · 016 API access policies (OPA) | 006 ✅ · 007 ✅ (both approved by Ali, 2026-10-02) · 008 ✅ 2026-10-06 (reviewed by Ali 2026-10-07) · 009 ✅ and 010 ✅ 2026-10-12 (both accepted by Ali, 2026-10-12) · 011 ✅ 2026-10-12 (posted) · 012 ✅ 2026-10-12 (posted) · 013 ✅, 014 ✅, 015 ✅ and 016 ✅ 2026-10-14 (posted). **R1 is complete: 11 of 11 in the demo.** |
 | **R2 AI & Governance** | 017–020 RAG policy Q&A · 021 drift · 022 hallucination monitoring · 023 HITL ladder · 024 override tracking · 025 bias testing · 026–029 observability | **Milestone 1 ✅ 2026-10-19: 017, 018, 019, 020, 022, 023, 024**, Claude answers live since 2026-10-20 (real-model evaluation 100% on all four measures). **Milestone 2 ✅ 2026-10-21: 021, 025, 026, 027, 028, 029. R2 is complete: 11 of 11 in the demo**; real-model evaluation 100% on all four measures (baseline) and fairness 60 of 60 pairs, Oct 21; posted `#__recording_10426289975` |
 | **R3 Scale & Launch** | 030–032 load testing · 033 performance · 034 failover · 035 training · 036 monitoring · 037 incident playbook · 038–040 docs · 041 pen test · 042 accessibility audit · 043–046 go-live review | **R3 complete 2026-10-27: 17 of 17** (plan and our acceptance criteria: docs/R3-PLAN.md). **Milestone 1 ✅ 2026-10-21: 030, 031, 032, 033, 034, 036 and R0 005** (load testing, performance fixes, production sizing, database-outage survival, an uptime check outside Render); posted `#__recording_10429322876`. **Milestone 2 ✅ 2026-10-21: 037, 038, 039, 040, 041, 042** (incident playbook, runbook and guides, security testing and hardening, the accessibility conformance report); posted `#__recording_10429772066`. **Milestone 3 ✅ 2026-10-27: 035, 043, 044, 045, 046 and R0 004** (staff training portal, go-live readiness review with rollback and backup-restore drills, GovCloud infrastructure code); posted `#__recording_10446079764`. **All 46 BUILD stories addressed; production go-live is a no-go until the readiness review's criteria are met** (docs/READINESS-REVIEW.md) |
@@ -113,9 +118,9 @@ Captured from the demo application running the deployed code, with synthetic dat
 
 | Layer | Choice |
 |---|---|
-| Frontend | React 18 + Vite + Tailwind v4 → Render static site `sss-demo-frontend` |
-| Backend | Node + Express + TypeScript → Render web service `sss-demo-backend` (free tier, sleeps when idle); `ANTHROPIC_API_KEY` turns on AI answers (`AI_MODEL`, default `claude-opus-5-5`) |
-| Database | Render PostgreSQL `sss-demo-db` (Oregon), paid Basic plan ($6/month) since 2026-10-19; migrations 001–028 apply automatically on startup; connection pool 25 per process (`DATABASE_POOL_MAX`) |
+| Frontend | React 18 + Vite + Tailwind v4 → Render static site `sss-demo-frontend` (deleted 2026-11-06) |
+| Backend | Node + Express + TypeScript → Render web service `sss-demo-backend` (deleted 2026-11-06; was free tier); `ANTHROPIC_API_KEY` turns on AI answers (`AI_MODEL`, default `claude-opus-5-5`) |
+| Database | Render PostgreSQL `sss-demo-db` (Oregon), paid Basic plan ($6/month) from 2026-10-19 until deleted on 2026-11-06; locally PostgreSQL 14+; migrations 001–028 apply automatically on startup; connection pool 25 per process (`DATABASE_POOL_MAX`) |
 | Source | https://github.com/OBIANAMS04/sss-modernization-demo (Render auto-deploys on push to master) |
 | Access table | 71 routes, each with its access rule; a test fails the build if a route has none. Open Policy Agent (Rego policy compiled to WebAssembly, in the API) decides every request before any route runs and can only narrow what the code allows |
 | Workflow | Claude commits and pushes each change; Render deploys; Claude verifies the demo deployment itself and posts the conclusion with screenshots to the BUILD ticket (one post per milestone, one composite image of several screens per post) |
@@ -159,6 +164,8 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-27 | STORY-035: training answers stay on the server and are graded there, so a pass cannot be claimed from the browser; a module's version makes a changed module need passing again. STORY-004: written for GovCloud and checked statically; plan and apply wait on Ram. The readiness verdict: the demo is complete, production is a no-go until ten criteria are met | Obi |
 | 2026-10-28 | Ali: the Selective Service proposal is a rehearsal (closed out 6 August), never submitted; Task 5's placeholder needs no fix. The Colaberry upload limit was nginx's 1 MB default in front of the route; fixed for the platform (10 MB), though on 2026-10-31 the agent-tool route still refused 2.7 MB with HTTP 413 (reported back). AWS GovCloud is Ram's decision, flagged to him directly. A demo section on the enterprise portal for the demo itself `[gov-2026-10-28-rehearsal-answer-and-upload-fix]` `[demo-section-2026-10-28]` | Ali |
 | 2026-10-19 | The free Render database expired on 2026-10-16 and the API went down; `sss-demo-db` upgraded to the paid Basic plan ($6/month), which kept all data and does not expire | Obi |
+| 2026-11-05 | The four day-one documents (README, PROJECT-COMPLETION-REPORT, EXECUTION-SUMMARY, LESSONS-LEARNED-AND-ROADMAP, generated 7 August before the build) get a header saying they describe a planned system and several claims are wrong; the text below stays unedited as evidence for the case study `[decision-2026-11-05-sss-dayone-docs]` | Ali |
+| 2026-11-05 | Wind the demo down: commit everything a reader needs, delete the Render services and database, cost to zero, repository stays public and runnable locally. AWS GovCloud closed, not pending. Go/no-go criteria no longer a live checklist; Ali's five parked. Stop looking for the project on the portal (later found under Project Studio → Your builds). The work becomes a case study; next is the Gov Contracts project `[decision-2026-11-05-sss-winddown]` | Ali |
 
 ---
 
@@ -188,6 +195,7 @@ Captured from the demo application running the deployed code, with synthetic dat
 | 2026-10-21 | **R2 milestone 2 in the demo: STORY-021, 025, 026, 027, 028, 029; R2 complete (11 of 11).** Verified on the demo deployment (commit 34b2393): 66 routes in the access table, 25 migrations, all 35 protected GET routes refuse requests without a token, every staff route refuses a signed-in citizen, trace ids on every response, server memory about 110 MB of 512 MB. Locally: 1,645 unit tests, 592 end-to-end API checks in 13 suites, 38 accessibility checks. Our own review: the search fix for counterfactual fairness (52 to 60 of 60 pairs, keeping the appeal case); malformed ids on the audit log were a 500 and are now a 400; refusals were logged as errors and are now warnings. The first real-model runs failed (grounded 84.8%; same level in 41 of 60 pairs) because the model sometimes opened with an uncited sentence of its own; the system prompt now forbids it, and the fairness criterion became the outcome the person gets, with level agreement read against a repeat (docs/R2-MILESTONE-2-PLAN.md). Re-run Oct 21: evaluation 100% on all four measures (marked as the baseline), fairness 60 of 60 pairs; posted with screenshots `#__recording_10426289975` |
 | 2026-10-21 | **R3 milestone 1 in the demo: STORY-030, 031, 032, 033, 034, 036 and R0 STORY-005.** Verified on the demo deployment (commit f23de97): 67 routes in the access table, 26 migrations, all 36 protected GET routes refuse requests without a token, every staff route refuses a signed-in citizen, live accessibility audit passes. Locally: 1,697 unit tests in 43 suites, 14 end-to-end suites, the outage check 22 of 22. Our own review: a full connection pool closed every route as if the database were down (now a "very busy" 503 for that request only); an end-to-end check depended on suite order; the dashboard's release list still said R2 was next. Posted with screenshots `#__recording_10429322876` |
 | 2026-10-21 | **R3 milestone 2 in the demo: STORY-037, 038, 039, 040, 041, 042.** Verified on the demo deployment (commit ba6257c): 27 migrations, 68 routes in the access table, all 36 protected GET routes refuse requests without a token, security headers and the site's content security policy live, live accessibility audit and live citizen check pass; the outside uptime check's first scheduled run passed (20:50 UTC). Locally: 1,708 unit tests, the attack suite 52 of 52, 15 end-to-end suites, 39 accessibility checks with 0 policy violations. Our own review found and fixed: tokens valid after sign-out, unlimited guessing, a timing difference that told registered addresses apart, 500s for malformed bodies and for objects at sign-in (the latter in this story's own code before it shipped). Posted with screenshots `#__recording_10429772066` |
+| 2026-11-06 | **Wound down; the Render demo deleted, cost zero.** Day-one header on four documents (83d0838). Before the teardown: the 11 evidence PDFs committed (they had been git-ignored); nine day-one files moved out of a folder nested five levels inside itself, which broke a Windows clone (a0c89a8); the build verified from a fresh GitHub clone (1,737 unit tests; 28 migrations on an empty database; 175 end-to-end checks loading synthetic data; the site signed in) and written up as docs/RUN-LOCALLY.md; the uptime schedule retired. Then `sss-demo-db`, `sss-demo-backend` and `sss-demo-frontend` deleted; Render reports none left; workspace on the free Hobby plan; one final charge of $1.12 (the database, 1 to 6 November). Posted `#__recording_10483175015`, `#__recording_10483297814` |
 | 2026-11-05 | Upload limit fixed for the agent route too (Ali set nginx client_max_body_size to 25 MB on 2026-11-02; the 2.7 MB briefing PDF attached through it, `#__recording_10479019270`). The repo is attached to the portal project. Open: the portal page Obi sees, and whether to rename the portal project from "(rehearsal demo)" |
 | 2026-10-31 | **BUILD closed out.** Ali's answers taken in (the proposal was a rehearsal; the upload fix; AWS to Ram). The ten go/no-go criteria sent with an owner against each (Ali's: 2, 3, 4, 7, 10; Ram's: 1); AWS flagged to Ram directly; the GitHub repo sent for the portal project. Deck v23 (33 slides) and briefing v8 with PDF updated for R3. The agent-tool upload route still refused a 2.7 MB file (HTTP 413), reported. Posted `#__recording_10462976750` |
 | 2026-10-27 | **R3 milestone 3: STORY-035, 043, 044, 045, 046 and R0 STORY-004; R3 complete, all 46 BUILD stories addressed.** Verified on the demo deployment (commit ba10b59): 28 migrations, 71 routes in the access table, all 38 protected GET routes refuse requests without a token. Locally: 1,737 unit tests, 16 end-to-end suites, 43 accessibility checks with no policy violation. Drills on the live demo: rollback 32 s, forward 58 s; export restored in 10.5 s with 0 errors. The Render-only url.parse warning stopped after the bcrypt 6 upgrade (none in three traced restarts). Posted with screenshots `#__recording_10446079764` |
@@ -199,18 +207,20 @@ Basecamp posts: R0 final `#__recording_10312647276` · guards `#__recording_1035
 
 ## 7. What remains after the BUILD
 
-The build is closed out: all 46 stories are addressed and the production go/no-go list has owners. What remains is the demo itself:
-Ali set up a demo section on the Colaberry enterprise portal (https://enterprise.colaberry.ai/portal/login, signed in with the
-Yahoo address by a link sent there), project "Selective Service System Modernization (rehearsal demo)", with six demo-prep steps
-from 30 October to 6 November (Project Introduction, Working-System Demo, AI Visual Presentation, Stakeholder Update, Final
-Showcase, Demo Day). Recordings are handed in as links (Drive or OneDrive "anyone with the link", or YouTube Unlisted). The deck
-and the briefing are the material for those steps.
+The project is wound down (2026-11-06). Nothing on it is being worked. What stays:
+- The public repository, as the case study's source: the readiness review, the evidence packs, the drills and the four
+  day-one documents under Ali's header. It runs locally from a clean checkout with synthetic data (docs/RUN-LOCALLY.md).
+- The portal card "Selective Service System Modernization (rehearsal demo)" (Campus → Project Studio → Your builds: Demo
+  Prep, 0 of 6 tasks, "Not syncing to GitHub"). Asked Ali on 2026-11-06 whether to remove it; leave it until he says.
+- The deck and the briefing artifacts. They describe the demo as it ran on Render; the live links in them no longer answer.
+
+Next: the new Gov Contracts project, on the portal from the start.
 
 ## 7b. Risks and follow-ups
 
 | Risk / follow-up | Impact | Action |
 |---|---|---|
-| AWS approval (Ram) pending | Blocks STORY-004, real document upload, CloudWatch metrics for STORY-009 and an append-only copy of the audit log for STORY-010 | Ram decision |
+| AWS GovCloud closed (Ali, 2026-11-05): not pending | STORY-004 stays written and checked, never applied; real document upload, CloudWatch metrics and the append-only audit copy are not built | None: the readiness review records what a launch would need |
 | `npm audit` (2026-10-21, after the STORY-041 pass): runtime findings down to one moderate (`sprintf-js` via the OPA runtime, formats only our own policy strings) | Low | Accepted with the reason in docs/SECURITY-TESTING.md; revisit when OPA updates it |
 | Render free tier sleeps | ~50 s first load | Warm the site before demos, or upgrade |
 | The Anthropic workspace has $5 of credit and auto-reload is off | AI answers stop when it runs out (the assistant then shows passages and says it is unavailable) | Watch the balance at platform.claude.com/settings/billing; the demo caps AI answers at 300 a day |
@@ -230,7 +240,7 @@ and the briefing are the material for those steps.
 ---
 
 ## 8. Links
-- Demo site: https://sss-demo-frontend.onrender.com · API health: https://sss-demo-backend.onrender.com/health
+- Demo site and API: deleted 2026-11-06 (they ran at sss-demo-frontend.onrender.com and sss-demo-backend.onrender.com). Run it locally: https://github.com/OBIANAMS04/sss-modernization-demo/blob/master/sss-modernization-demo/docs/RUN-LOCALLY.md
 - GitHub: https://github.com/OBIANAMS04/sss-modernization-demo
 - STORY-008 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-008
 - STORY-009 evidence pack: https://github.com/OBIANAMS04/sss-modernization-demo/tree/master/sss-modernization-demo/docs/evidence/story-009
