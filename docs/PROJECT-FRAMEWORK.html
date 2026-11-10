@@ -597,6 +597,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
 .tour-launch:hover { filter: brightness(1.08); }
 .tour-launch:focus-visible, .tour-card button:focus-visible { outline: 3px solid var(--tour-ink); outline-offset: 3px; }
 .tour-launch[hidden], .tour-layer[hidden] { display: none !important; }
+[data-tour] { scroll-margin-top: 72px; }
 .tour-layer { position: fixed; inset: 0; z-index: 60; }
 .tour-hole { position: fixed; border-radius: 8px; box-shadow: 0 0 0 9999px var(--tour-shade); outline: 3px solid var(--tour-red); pointer-events: none; }
 .tour-card { position: fixed; width: min(360px, calc(100vw - 32px)); background: var(--tour-card); color: var(--tour-ink); border-radius: 12px; padding: 16px 18px;
@@ -635,13 +636,17 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
   const place = () => {
     const el = list[i];
     if (!el) return;
-    const r = el.getBoundingClientRect(), pad = 6;
-    Object.assign(hole.style, { top: `${r.top - pad}px`, left: `${r.left - pad}px`, width: `${r.width + pad * 2}px`, height: `${Math.min(r.height, innerHeight * 0.7) + pad * 2}px` });
+    // Highlight only the part of the element that is on screen, and keep the card inside the screen.
+    const r = el.getBoundingClientRect(), pad = 6, edge = 12;
+    const top = Math.max(r.top, edge), bottom = Math.min(r.bottom, innerHeight - edge);
+    Object.assign(hole.style, { top: `${top - pad}px`, left: `${Math.max(r.left, edge) - pad}px`, width: `${Math.min(r.width, innerWidth - 2 * edge) + pad * 2}px`, height: `${Math.max(bottom - top, 24) + pad * 2}px` });
     const c = cardEl.getBoundingClientRect();
-    const below = r.top + Math.min(r.height, innerHeight * 0.7) + 16;
-    const top = below + c.height < innerHeight - 16 ? below : Math.max(16, r.top - c.height - 16);
-    cardEl.style.top = `${Math.min(top, innerHeight - c.height - 16)}px`;
-    cardEl.style.left = `${Math.max(16, Math.min(r.left, innerWidth - c.width - 16))}px`;
+    const fitsBelow = bottom + 16 + c.height <= innerHeight - edge;
+    const fitsAbove = top - 16 - c.height >= edge;
+    let y = fitsBelow ? bottom + 16 : fitsAbove ? top - 16 - c.height : innerHeight - c.height - edge;
+    y = Math.max(edge, Math.min(y, innerHeight - c.height - edge));
+    cardEl.style.top = `${y}px`;
+    cardEl.style.left = `${Math.max(edge, Math.min(r.left, innerWidth - c.width - edge))}px`;
   };
   const show = (n) => {
     i = Math.max(0, Math.min(n, list.length - 1));
@@ -651,7 +656,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
     $('tour-count').textContent = `${i + 1} of ${list.length}`;
     $('tour-back').disabled = i === 0;
     $('tour-next').textContent = i === list.length - 1 ? 'Finish' : 'Next';
-    el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     setTimeout(place, 260);
     place();
     $('tour-next').focus();
