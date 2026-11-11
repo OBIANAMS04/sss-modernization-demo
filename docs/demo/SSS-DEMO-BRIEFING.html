@@ -552,9 +552,13 @@
 </main>
 
 <!-- Guided tour. Standing rule (Obi, 2026-11-10): every framework page, artifact and presentation carries a red
-     "Take the guided tour" button with a play icon (rule updated 2026-11-11). Paste this block at the end of a page, then mark each stop with
+     "Take the guided tour" button with a play icon (rule updated 2026-11-11: play icon, plus a male voice narrator). Paste this block at the end of a page, then mark each stop with
      data-tour="Step text" (and optionally data-tour-title="Short title") on the element to point at.
-     Steps run in document order. No libraries; works in light and dark; keyboard: Enter/arrows to move, Esc to close. -->
+     Steps run in document order. No libraries; works in light and dark; keyboard: Enter/arrows to move, Esc to close.
+     Male voice narrator (Obi, 2026-11-11): every stop is read aloud with the browser Web Speech API (speechSynthesis), no libraries
+     or audio files. A "Voice on / Voice off" toggle sits in the card (remembered in localStorage); captions always stay on screen.
+     Voice choice: English voices only, preferring names like David/Mark/Guy/Daniel/Alex/Fred/George/James/Ryan/Male (never
+     Zira/Susan/Hazel/Aria/Jenny etc.), en-US first; if none, the default English voice at pitch 0.8. -->
 <style>
 :root { --tour-red: #c8102e; --tour-red-ink: #ffffff; --tour-card: #ffffff; --tour-ink: #1b1d21; --tour-muted: #5a606b; --tour-shade: rgba(10, 12, 16, 0.55); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --tour-red: #ff5a6e; --tour-red-ink: #1a0a0d; --tour-card: #1f2329; --tour-ink: #eceef2; --tour-muted: #a3aab6; --tour-shade: rgba(0, 0, 0, 0.65); } }
@@ -578,6 +582,9 @@
 .tour-nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
 .tour-nav div { display: flex; gap: 8px; }
 .tour-card button { font: 600 14px/1 system-ui, "Segoe UI", sans-serif; border-radius: 8px; padding: 9px 14px; min-height: 38px; cursor: pointer; border: 1px solid var(--tour-muted); background: transparent; color: var(--tour-ink); }
+.tour-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tour-card button.tour-voice { min-height: 30px; padding: 6px 10px; font-size: 12px; }
+.tour-card button.tour-voice[aria-pressed="true"] { border-color: var(--tour-red); }
 .tour-card button.tour-next { background: var(--tour-red); color: var(--tour-red-ink); border-color: var(--tour-red); }
 @media (prefers-reduced-motion: no-preference) { .tour-hole, .tour-card { transition: all 0.2s ease; } }
 </style>
@@ -588,7 +595,7 @@
     <h3 id="tour-title"></h3>
     <p id="tour-text"></p>
     <div class="tour-nav">
-      <span class="tour-count" id="tour-count"></span>
+      <span class="tour-left"><span class="tour-count" id="tour-count"></span><button type="button" class="tour-voice" id="tour-voice" aria-pressed="true">Voice on</button></span>
       <div>
         <button type="button" id="tour-back">Back</button>
         <button type="button" class="tour-next" id="tour-next">Next</button>
@@ -603,6 +610,43 @@
   const layer = $('tour-layer'), hole = $('tour-hole'), cardEl = $('tour-card'), launch = $('tour-launch');
   const steps = () => [...document.querySelectorAll('[data-tour]')].filter((el) => el.getClientRects().length);
   let list = [], i = 0;
+  // Male voice narrator (Web Speech API). If speechSynthesis is missing the toggle is hidden and nothing else changes.
+  const synth = window.speechSynthesis, canSpeak = !!synth && typeof SpeechSynthesisUtterance !== 'undefined';
+  const MALE = /(male|david|mark|guy|daniel|alex|fred|george|james|ryan|christopher|eric|brian|roger|thomas|arthur|aaron|tom)/i;
+  const FEMALE = /female|zira|susan|hazel|samantha|victoria|karen|aria|jenny|libby|sonia|emma|michelle|catherine/i;
+  let voice = null, lowPitch = true, voiceOn = true;
+  try { voiceOn = localStorage.getItem('tour-voice') !== 'off'; } catch (e) {}
+  const pickVoice = () => {
+    const en = (synth.getVoices() || []).filter((v) => /^en([-_]|$)/i.test(v.lang));
+    const males = en.filter((v) => MALE.test(v.name) && !FEMALE.test(v.name));
+    const us = (a) => a.find((v) => /^en[-_]US/i.test(v.lang)) || a[0];
+    const notFemale = en.filter((v) => !FEMALE.test(v.name));
+    voice = us(males) || us(notFemale.filter((v) => v.default)) || us(notFemale) || us(en) || null;
+    lowPitch = !males.length;
+  };
+  const stopSpeech = () => { if (canSpeak) { try { synth.cancel(); } catch (e) {} } };
+  const speak = (text) => {
+    if (!canSpeak || !voiceOn) return;
+    try {
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
+      u.rate = 1; u.pitch = lowPitch ? 0.8 : 1;
+      synth.speak(u);
+    } catch (e) {}
+  };
+  const voiceBtn = $('tour-voice');
+  const paintVoice = () => { voiceBtn.textContent = voiceOn ? 'Voice on' : 'Voice off'; voiceBtn.setAttribute('aria-pressed', String(voiceOn)); };
+  if (canSpeak) {
+    pickVoice();
+    if (synth.addEventListener) synth.addEventListener('voiceschanged', pickVoice); else synth.onvoiceschanged = pickVoice;
+    paintVoice();
+    voiceBtn.addEventListener('click', () => {
+      voiceOn = !voiceOn; paintVoice();
+      try { localStorage.setItem('tour-voice', voiceOn ? 'on' : 'off'); } catch (e) {}
+      if (voiceOn) speak(`${$('tour-title').textContent}. ${$('tour-text').textContent}`); else stopSpeech();
+    });
+  } else voiceBtn.hidden = true;
   const place = () => {
     const el = list[i];
     if (!el) return;
@@ -629,9 +673,10 @@
     el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     setTimeout(place, 260);
     place();
+    speak(`${$('tour-title').textContent}. ${el.dataset.tour}`);
     $('tour-next').focus();
   };
-  const close = () => { layer.hidden = true; launch.hidden = false; launch.focus(); };
+  const close = () => { stopSpeech(); layer.hidden = true; launch.hidden = false; launch.focus(); };
   launch.addEventListener('click', () => {
     list = steps();
     if (!list.length) return;
