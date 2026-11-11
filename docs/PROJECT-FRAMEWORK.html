@@ -584,7 +584,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
 </div>
 
 <!-- Guided tour. Standing rule (Obi, 2026-11-10): every framework page, artifact and presentation carries a red
-     "Take the guided tour" button. Paste this block at the end of a page, then mark each stop with
+     "Take the guided tour" button with a play icon (rule updated 2026-11-11). Paste this block at the end of a page, then mark each stop with
      data-tour="Step text" (and optionally data-tour-title="Short title") on the element to point at.
      Steps run in document order. No libraries; works in light and dark; keyboard: Enter/arrows to move, Esc to close. -->
 <style>
@@ -595,6 +595,8 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
   font: 700 15px/1 system-ui, "Segoe UI", sans-serif; color: var(--tour-red-ink); background: var(--tour-red); border: 0; border-radius: 999px;
   padding: 13px 20px; min-height: 44px; cursor: pointer; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22); }
 .tour-launch:hover { filter: brightness(1.08); }
+.tour-launch { display: inline-flex; align-items: center; gap: 9px; }
+.tour-play { width: 16px; height: 16px; flex: none; }
 .tour-launch:focus-visible, .tour-card button:focus-visible { outline: 3px solid var(--tour-ink); outline-offset: 3px; }
 .tour-launch[hidden], .tour-layer[hidden] { display: none !important; }
 [data-tour] { scroll-margin-top: 72px; }
@@ -611,7 +613,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
 .tour-card button.tour-next { background: var(--tour-red); color: var(--tour-red-ink); border-color: var(--tour-red); }
 @media (prefers-reduced-motion: no-preference) { .tour-hole, .tour-card { transition: all 0.2s ease; } }
 </style>
-<button type="button" class="tour-launch" id="tour-launch" aria-haspopup="dialog">Take the guided tour</button>
+<button type="button" class="tour-launch" id="tour-launch" aria-haspopup="dialog"><svg class="tour-play" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4.5 2.6v10.8L13.6 8z" fill="currentColor"></path></svg>Take the guided tour</button>
 <div class="tour-layer" id="tour-layer" hidden>
   <div class="tour-hole" id="tour-hole"></div>
   <div class="tour-card" id="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title" aria-describedby="tour-text">
