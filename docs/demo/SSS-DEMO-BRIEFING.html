@@ -560,19 +560,22 @@
      data-tour-title="Short title") and its dialogue in data-tour-script="OBI: line || OGE: line || OBI: line" (2 to 4 short
      lines, OBI first; the first stop opens "Hi, I am OBI."). Without data-tour-script, OBI reads the data-tour text. Stops run
      in document order. No libraries; light and dark; safe in a sandboxed iframe (no alert/confirm, storage in try/catch).
-     Voices (Web Speech API): OBI = first natural/online male (Andrew, Guy, Christopher, Eric, Davis, Brian, Roger, Steffan,
-     Ryan, Thomas), else Google UK English Male, else Microsoft David/Mark, else any English voice not on the female list;
-     pitch 0.82 (0.75 if not natural), rate 0.95. Oge = a different voice (Jenny/Aria/Ava/Emma natural, else Google US
-     English, else Zira), pitch 1.0, rate 1.0; with only one voice she uses it at pitch 1.15. Voice on/off is remembered.
+     Voices (Web Speech API; 2026-11-14 Obi: deeper, human-sounding, Oge said natively): OBI = first neural male (Abeo,
+     Nigerian English, then Christopher, Guy, Andrew, Davis, Brian, Eric, Roger, Steffan, Ryan, Thomas), else Google UK English
+     Male, else Microsoft David/Mark; pitch 0.88 and rate 0.93 (0.8 and 0.92 for built-in voices). Oge = Ezinne (Nigerian
+     English), else Ava/Jenny/Aria/Emma neural, else Google US English, else Zira, pitch 1.0, rate 1.0. Neural voices come
+     with Microsoft Edge; when the browser has none, the panel says so. Names are spoken natively: Obi "OH-bee", Oge
+     "OH-geh" (hard g; spoken text says Ogheh). Voice on/off is remembered.
      Layout: the panel docks to the left (clamp(260px, 26vw, 360px)) and html.tour-on pads the page so it reflows beside it;
      under 700px it is a strip at the top that pushes the page down. Inside the panel everything is one vertical column in
      normal flow: a two-line header, the title, the gauge, the dialogue (current line, then the transcript) which takes the
      remaining height and scrolls inside itself, and a control bar at the bottom that wraps onto two rows when narrow. Nothing
      is absolutely positioned, so the buttons can never sit on top of the text at any browser zoom.
      Pacing: one clock per line drives the gauge and the pointer. It follows the voice's 'boundary' events when they arrive,
-     else a word-timing estimate (2.6 words a second at rate 0.95, re-measured from each spoken line). The pointer glides to
-     the line's target and clicks as the line starts, then walks the line's items and sweeps along each one as the words go
-     by, so it never stands still while someone is talking. The gauge reaches 100% only on the last line's 'end'; voice off,
+     else a word-timing estimate (2.6 words a second at rate 0.95, re-measured from each spoken line). The pointer goes where
+     the words point: each line is matched to the boxes on the page that it names (shared words, rarer words weigh more;
+     spoken numbers match digits), and the pointer leaves for each box about 0.45 s before the voice reaches its word, clicks
+     as it lands, and sweeps along it. A line that names nothing on the page keeps the pointer where it is, drifting. The gauge reaches 100% only on the last line's 'end'; voice off,
      it runs at 15 characters a second. Pause freezes both. Keys: Left/Right move, Space pauses, Esc closes. -->
 <style>
 /* tour-launch: page only (start) */
@@ -631,6 +634,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
 .tour-panel button.tour-voice[aria-pressed="true"] { border-color: var(--tp-red); }
 .tour-panel button:focus-visible { outline: 3px solid var(--tp-ink); outline-offset: 2px; }
 .tour-panel.is-paused .tour-gauge i { opacity: 0.55; }
+.tour-hint { margin: 10px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--tp-muted); }
 @media (min-width: 700px) and (max-height: 560px) { .tour-desc { display: none !important; } .tour-panel h2.tour-title { -webkit-line-clamp: 2; } .tour-panel { gap: 8px; } }
 /* Narrow screens: a compact strip at the top; the page is pushed down by its measured height. */
 @media (max-width: 699.98px) {
@@ -665,6 +669,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     <p class="tour-caption" id="tour-caption" aria-live="polite"><b class="tour-who is-obi" id="tour-who">OBI</b><span id="tour-line"></span></p>
     <ol class="tour-script" id="tour-script" aria-label="What OBI and Oge say here"></ol>
     <p class="tour-keys">Left and right arrows move, Space pauses, Esc closes.</p>
+    <p class="tour-hint" id="tour-hint" hidden>These are your browser's built-in voices. For natural, human-sounding voices, open this page in Microsoft Edge.</p>
   </div>
   <div class="tour-ctrl" id="tour-ctrl">
     <button type="button" id="tour-back">Back</button>
@@ -695,12 +700,14 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
   // ---- Voices: OBI leads (male, natural, low), Oge answers (a different, preferably natural voice).
   const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
   const canSpeak = !!synth && typeof window.SpeechSynthesisUtterance === 'function';
-  const MALE = ['andrew', 'guy', 'christopher', 'eric', 'davis', 'brian', 'roger', 'steffan', 'ryan', 'thomas'];
-  const OGE_NAMES = ['jenny', 'aria', 'ava', 'emma'];
-  const FEMALE = /\b(zira|susan|hazel|samantha|victoria|karen|aria|jenny|libby|sonia|emma|michelle|catherine|ava|emily|female)\b/i;
+  // Neural ("Natural"/"Online") voices sound human; Microsoft Edge has them, Chrome on Windows does not. First choice is
+  // the Nigerian English pair, Abeo for OBI and Ezinne for Oge; then deep US baritones for OBI.
+  const MALE = ['abeo', 'christopher', 'guy', 'andrew', 'davis', 'brian', 'eric', 'roger', 'steffan', 'ryan', 'thomas'];
+  const OGE_NAMES = ['ezinne', 'ava', 'jenny', 'aria', 'emma'];
+  const FEMALE = /\b(ezinne|zira|susan|hazel|samantha|victoria|karen|aria|jenny|libby|sonia|emma|michelle|catherine|ava|emily|female)\b/i;
   const NATURAL = /natural|online/i;
   const named = (v, n) => new RegExp('\\b' + n + '\\b', 'i').test(v.name || '');
-  let cast = { obi: null, oge: null, obiPitch: 0.75, ogePitch: 1.15 };
+  let cast = { obi: null, oge: null, natural: false, obiPitch: 0.8, ogePitch: 1.15, obiRate: 0.92 };
   function pickVoices() {
     let all = [];
     try { all = (synth && synth.getVoices()) || []; } catch (e) { all = []; }
@@ -710,12 +717,19 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     for (const n of MALE) { obi = pool.find((v) => NATURAL.test(v.name) && named(v, n)); if (obi) { natural = true; break; } }
     obi = obi || pool.find((v) => /google uk english male/i.test(v.name)) || pool.find((v) => /microsoft (david|mark)\b/i.test(v.name))
       || pool.find((v) => !FEMALE.test(v.name)) || pool[0] || null;
-    let oge = null;
-    for (const n of OGE_NAMES) { oge = pool.find((v) => v !== obi && NATURAL.test(v.name) && named(v, n)); if (oge) break; }
+    let oge = null, ogeNatural = false;
+    for (const n of OGE_NAMES) { oge = pool.find((v) => v !== obi && NATURAL.test(v.name) && named(v, n)); if (oge) { ogeNatural = true; break; } }
     oge = oge || pool.find((v) => v !== obi && /google us english/i.test(v.name)) || pool.find((v) => v !== obi && /zira/i.test(v.name))
       || pool.find((v) => v !== obi && FEMALE.test(v.name)) || pool.find((v) => v !== obi) || obi;
-    cast = { obi, oge, obiPitch: natural ? 0.82 : 0.75, ogePitch: oge === obi ? 1.15 : 1.0 };
+    // Deeper for OBI without sounding processed: neural voices take a small drop, built-in ones a larger one.
+    cast = { obi, oge, natural: natural && ogeNatural, obiPitch: natural ? 0.88 : 0.8, ogePitch: oge === obi ? 1.15 : 1.0, obiRate: natural ? 0.93 : 0.92 };
+    const hint = $('tour-hint');
+    if (hint) hint.hidden = !canSpeak || !all.length || cast.natural;
   }
+  // Say the names as they are said natively: Obi is "OH-bee"; Oge (Igbo, "time") is "OH-geh" with a hard g, which
+  // English voices read correctly from "Ogheh". Each swap keeps one word for one word, so word counts stay aligned.
+  const SAY = [[/\bOBI\b/g, 'Obi'], [/\bOGE\b|\bOge\b/g, 'Ogheh'], [/\bTxDOT\b/g, 'Tex-Dot']];
+  const speakable = (s) => SAY.reduce((t, r) => t.replace(r[0], r[1]), String(s || ''));
   if (canSpeak) {
     pickVoices();
     try { if (synth.addEventListener) synth.addEventListener('voiceschanged', pickVoices); else synth.onvoiceschanged = pickVoices; } catch (e) {}
@@ -831,12 +845,16 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     tickPace(now);
     if (!L.subs.length) return;
     const live = running && !paused && phase === 'line' && L.mode !== 'idle';
-    // Which of the line's items the voice has reached, and how far along it.
+    // Which word the voice has reached; the pointer leaves for the next named box about 0.45 s early, so it lands
+    // (and clicks) as the word is spoken, then sweeps along the box until the next one is named.
     let u = lastU;
     if (live) {
-      const k = L.subs.length, f = L.p * k, j = Math.min(k - 1, Math.floor(f));
-      u = Math.min(1, f - j);
-      if (j !== L.sub) { L.sub = j; anchor = L.subs[j]; glide = { x: cx, y: cy, t0: now }; if (j > 0 && !isTop()) reveal(anchor); }
+      const wi = L.p * L.words, lead = 0.45 * wpr * L.rate;
+      let j = 0;
+      for (let k = 1; k < L.subs.length; k++) if (L.subs[k].at <= wi + lead) j = k;
+      const at = L.subs[j].at, nx = j + 1 < L.subs.length ? L.subs[j + 1].at : L.words;
+      u = Math.max(0, Math.min(1, (wi - at) / Math.max(1, nx - at)));
+      if (j !== L.sub) { L.sub = j; anchor = L.subs[j].el; glide = { x: cx, y: cy, t0: now, click: true }; if (!isTop()) reveal(anchor); }
       lastU = u;
     }
     if (!anchor || !anchor.isConnected) return;
@@ -846,7 +864,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     if (glide && !reduce()) {
       const k = Math.min(1, (now - glide.t0) / GLIDE), e = ease(k);
       cx = glide.x + (p[0] - glide.x) * e; cy = glide.y + (p[1] - glide.y) * e;
-      if (k >= 1) glide = null;
+      if (k >= 1) { const c = glide.click; glide = null; if (c) click(); }
     } else if (reduce()) { cx = p[0]; cy = p[1]; glide = null; }
     else { cx += (p[0] - cx) * 0.35; cy += (p[1] - cy) * 0.35; }
     const a = area();
@@ -864,28 +882,126 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     cursor.classList.remove('is-click'); void cursor.offsetWidth; cursor.classList.add('is-click');
     cursor.dataset.clicks = String((+cursor.dataset.clicks || 0) + 1);
   }
-  const ITEMS = 'li, tbody tr, figure, button, .tile, .step, .cell, .card, [class*="card"], article, dl > div';
-  function itemsIn(el) {
-    let els = Array.prototype.filter.call(el.querySelectorAll(ITEMS), (e) => e.getClientRects().length && !panel.contains(e));
-    els = els.filter((e) => !els.some((o) => o !== e && e.contains(o)));
-    if (isTop()) {
-      // On the top strip, never scroll the target up under the strip: only point at items already in view.
-      const a = area();
-      return els.filter((e) => { const r = e.getBoundingClientRect(); return r.top >= a.t && r.top < a.b - 40; }).slice(0, 12);
-    }
-    const top = el.getBoundingClientRect().top, limit = top + Math.max(innerHeight * 1.2, 600);
-    const near = els.filter((e) => e.getBoundingClientRect().top < limit);
-    return (near.length ? near : els.slice(0, 6)).slice(0, 12);
+  // ---- What each line talks about (2026-11-14 fix: the pointer used to share out the stop's boxes in page order,
+  // whatever was being said). Now each line is matched to the boxes it names, by the words they share, rarer words
+  // counting more ("sixteen of sixteen" -> the 16 / 16 tile; "Riley passes the check" -> the row about Riley). The plan
+  // is a list of {at: word index, el}: the pointer moves to el just before the voice reaches word `at`. A line that
+  // names nothing on the page, such as a question, keeps the pointer where it is.
+  const UNIT = 'li, tbody tr, figure, .tile, .step, .cell, .card, [class*="card"], article, dl > div, p, h1, h2, h3, h4, h5, td, th, dt, dd, figcaption, blockquote, label, button';
+  const STOP = new Set(('a an the and or but of to in on at by for from with as is are was were be been being it its this that these those there here ' +
+    'we you i our your their they he she his her them me my so do does did not no yes than then too very can will would just also into over under about ' +
+    'what which who whom how when where why all any each every has have had if hi am let now get gets got say says said tell okay oh well right really ' +
+    'thing things way much more most some only even still yet ok sure exactly so lot').split(' '));
+  const ONES = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13,
+    fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, first: 1, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7,
+    eighth: 8, ninth: 9, tenth: 10, eleventh: 11, twelfth: 12, fifteenth: 15, sixteenth: 16, twentieth: 20 };
+  const TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+  const MONTHS = { january: 'jan', february: 'feb', march: 'mar', april: 'apr', june: 'jun', july: 'jul', august: 'aug', september: 'sep', october: 'oct', november: 'nov', december: 'dec' };
+  function stem(w) {
+    w = w.replace(/['’]s$/, '');
+    if (MONTHS[w]) return MONTHS[w];
+    if (/^\d+$/.test(w)) return String(parseInt(w, 10));
+    if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + 'y';
+    if (w.length > 4 && /(ss|x|ch|sh)es$/.test(w)) return w.slice(0, -2);
+    if (w.length > 6 && /ing$/.test(w)) w = w.slice(0, -3);
+    else if (w.length > 5 && /ed$/.test(w)) w = w.slice(0, -2);
+    else if (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) w = w.slice(0, -1);
+    if (/([b-df-hj-km-np-tv-z])\1$/.test(w) && !/(ss|ll)$/.test(w)) w = w.slice(0, -1);
+    if (w.length > 4 && /e$/.test(w)) w = w.slice(0, -1);
+    return w;
   }
-  // The items a line walks through: the heading for the opening line, then an even share of the stop's items.
+  // Words to tokens, each tagged with the index of the spoken word it came from; "eight hundred" -> 800, "STORY-011" -> story, 11.
+  function tokens(text) {
+    const out = [];
+    let num = null, numPos = 0;
+    const flush = () => { if (num) { out.push({ pos: numPos, tok: String(num.total + num.cur) }); num = null; } };
+    (String(text || '').match(/\S+/g) || []).forEach((w, pos) => {
+      w.toLowerCase().split(/[^a-z0-9'’]+/).forEach((p) => {
+        p = p.replace(/^['’]+|['’]+$/g, '');
+        if (!p) return;
+        if (p in ONES || p in TENS || p === 'hundred' || p === 'thousand') {
+          if (!num) { num = { total: 0, cur: 0 }; numPos = pos; }
+          if (p === 'hundred') num.cur = (num.cur || 1) * 100;
+          else if (p === 'thousand') { num.total += (num.cur || 1) * 1000; num.cur = 0; }
+          else num.cur += p in ONES ? ONES[p] : TENS[p];
+          return;
+        }
+        if (p === 'and' && num) return;
+        flush();
+        const mr = /^([mr])(\d{1,2})$/.exec(p);
+        if (mr) { out.push({ pos, tok: mr[1] === 'm' ? 'milestone' : 'release' }, { pos, tok: String(+mr[2]) }); return; }
+        if (STOP.has(p)) return;
+        const t = stem(p);
+        if (t.length > 1 || /\d/.test(t)) out.push({ pos, tok: t });
+      });
+    });
+    flush();
+    return out;
+  }
   function headOf(el) { const h = el.querySelector('h1, h2, h3'); return h && h.getClientRects().length ? h : el; }
-  function subsFor(n) {
-    if (n === 0) return [headOf(target)];
-    if (!items) items = itemsIn(target);
-    const K = items.length, m = Math.max(1, lines.length - 1);
-    if (!K) return [target];
-    const a = Math.floor((n - 1) * K / m), b = Math.max(a + 1, Math.floor(n * K / m));
-    return items.slice(a, Math.min(b, a + 4));
+  // The boxes worth pointing at inside a stop, with their words. Never a box that fills most of the stop.
+  function unitsOf(root) {
+    const rr = root.getBoundingClientRect(), big = rr.width * rr.height * 0.6;
+    // Plus plain boxes with no class to go by (a stat such as <div><span>Stories verified</span><span>16 of 16</span></div>):
+    // any div holding only short inline text.
+    const plain = Array.prototype.filter.call(root.querySelectorAll('div'), (d) => !d.querySelector('div, p, ul, ol, table, section, h1, h2, h3, figure') && clean(d.textContent).length <= 300);
+    let els = Array.prototype.filter.call(root.querySelectorAll(UNIT), (e) => !plain.includes(e)).concat(plain)
+      .filter((e) => !panel.contains(e) && e.getClientRects().length && e.closest('[hidden]') === null);
+    els = els.filter((e) => { const r = e.getBoundingClientRect(); return r.width * r.height < big && r.width > 4 && r.height > 4; });
+    if (isTop()) {
+      // On the top strip, never scroll the stop up under the strip: only point at boxes already in view.
+      const a = area();
+      els = els.filter((e) => { const r = e.getBoundingClientRect(); return r.top >= a.t && r.top < a.b - 40; });
+    }
+    const units = els.map((el) => {
+      const alts = Array.prototype.map.call(el.querySelectorAll('img[alt]'), (i) => i.alt).join(' ');
+      // innerText keeps the space between "800" and "points" when they are separate elements; textContent runs them together.
+      const toks = tokens(clean(el.innerText || el.textContent) + ' ' + alts + ' ' + (el.getAttribute('aria-label') || ''));
+      const set = new Set(toks.map((t) => t.tok));
+      return { el, set, norm: 1 / (1 + 0.15 * Math.log2(1 + toks.length / 12)) };
+    }).filter((u) => u.set.size);
+    const df = new Map();
+    units.forEach((u) => u.set.forEach((t) => df.set(t, (df.get(t) || 0) + 1)));
+    units.df = df;
+    return units;
+  }
+  function planFor(n) {
+    const head = headOf(target);
+    const start = n === 0 || !anchor || !anchor.isConnected || !target.contains(anchor) ? head : anchor;
+    if (!items) items = unitsOf(target);
+    const toks = tokens(lines[n].text), N = items.length;
+    if (!N || !toks.length) return [{ at: 0, el: start }];
+    const idf = (t) => Math.log(1 + N / items.df.get(t));
+    let scored = items.map((u) => {
+      let s = 0, pos = Infinity, any = Infinity;
+      const seen = new Set();
+      toks.forEach((x) => {
+        if (!u.set.has(x.tok)) return;
+        const w = idf(x.tok);
+        any = Math.min(any, x.pos);
+        if (w >= 1) pos = Math.min(pos, x.pos);
+        if (!seen.has(x.tok)) { seen.add(x.tok); s += w; }
+      });
+      return { el: u.el, s: s * u.norm, pos: pos < Infinity ? pos : any };
+    }).filter((x) => x.s > 0);
+    if (!scored.length) return [{ at: 0, el: start }];
+    const best = Math.max.apply(null, scored.map((x) => x.s));
+    let q = scored.filter((x) => x.s >= Math.max(1.5, best * 0.45));
+    // Prefer the tighter box when it carries most of the match; otherwise the box that holds all of it.
+    q = q.filter((x) => !q.some((y) => y !== x && x.el.contains(y.el) && y.s >= 0.7 * x.s));
+    q = q.filter((x) => !q.some((y) => y !== x && y.el.contains(x.el)));
+    q.sort((a, b) => a.pos - b.pos || b.s - a.s);
+    // At most four moves a line, at least three words apart (else the stronger match wins), never back to a box already shown.
+    const plan = [];
+    q.forEach((x) => {
+      if (plan.length >= 4 || plan.some((p) => p.el === x.el)) return;
+      const last = plan[plan.length - 1];
+      if (last && x.pos - last.at < 3) { if (x.s > last.s) { last.el = x.el; last.s = x.s; } return; }
+      plan.push({ at: x.pos, el: x.el, s: x.s });
+    });
+    if (!plan.length) return [{ at: 0, el: start }];
+    if (plan[0].at > 1 && plan[0].el !== start) plan.unshift({ at: 0, el: start }); else plan[0].at = 0;
+    return plan;
   }
   function reveal(el) {
     const a = area(), r = el.getBoundingClientRect();
@@ -937,8 +1053,8 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     target = adapter.bring(stop, k);
     target.classList.add('tour-target');
     items = null; lineIdx = 0; phase = 'line';
-    L = { mode: 'idle', words: 1, len: 1, text: '', rate: 1, t0: 0, spoke: 0, started: false, bw: -1, bt: 0, dur: 1, p: 0, subs: [headOf(target)], sub: 0 };
-    anchor = L.subs[0]; lastU = 0; glide = { x: cx, y: cy, t0: performance.now() };
+    L = { mode: 'idle', words: 1, len: 1, text: '', rate: 1, t0: 0, spoke: 0, started: false, bw: -1, bt: 0, dur: 1, p: 0, subs: [{ at: 0, el: headOf(target) }], sub: 0 };
+    anchor = L.subs[0].el; lastU = 0; glide = { x: cx, y: cy, t0: performance.now() };
     try { target.scrollIntoView({ block: 'start', behavior: reduce() ? 'auto' : 'smooth' }); } catch (e) { target.scrollIntoView(); }
     const t = tok;
     if (!paused) later(() => settle(t, () => playLine(0)), reduce() ? 200 : START_DELAY);
@@ -962,10 +1078,10 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     lineIdx = n; phase = 'line';
     const line = lines[n];
     renderLine(n);
-    L = { mode: 'idle', words: wordCount(line.text), len: line.text.length, text: line.text, rate: 1, t0: 0, spoke: 0, started: false, bw: -1, bt: 0, dur: 1, p: 0, subs: subsFor(n), sub: 0 };
+    L = { mode: 'idle', words: wordCount(line.text), len: line.text.length, text: line.text, rate: 1, t0: 0, spoke: 0, started: false, bw: -1, bt: 0, dur: 1, p: 0, subs: planFor(n), sub: 0 };
     lastU = 0; g.final = false;
-    // Glide (under 400 ms) to the line's first item; the click comes when the voice starts.
-    L.sub = 0; anchor = L.subs[0]; glide = { x: cx, y: cy, t0: performance.now() };
+    // Glide (under 400 ms) to what the line names first; the click comes when the voice starts.
+    L.sub = 0; anchor = L.subs[0].el; glide = { x: cx, y: cy, t0: performance.now() };
     if (!isTop() && n > 0) reveal(anchor);
     if (voiceOn && canSpeak && !speechBroken) speakLine(t, n, line); else timerLine(t, n, line);
   }
@@ -976,12 +1092,13 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
   }
   function speakLine(t, n, line) {
     let u;
-    try { u = new SpeechSynthesisUtterance(line.text); } catch (e) { timerLine(t, n, line); return; }
+    const said = speakable(line.text);
+    try { u = new SpeechSynthesisUtterance(said); } catch (e) { timerLine(t, n, line); return; }
     pickVoices();
     const oge = line.who === 'OGE', v = oge ? cast.oge : cast.obi;
     if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
     u.pitch = oge ? cast.ogePitch : cast.obiPitch;
-    u.rate = oge ? 1.0 : 0.95;
+    u.rate = oge ? 1.0 : cast.obiRate;
     L.rate = u.rate;
     const begin = () => {
       if (L.started) return;
@@ -993,8 +1110,8 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     u.onboundary = (e) => {
       if (t !== tok) return;
       begin();
-      const ci = Math.max(0, Math.min(line.text.length, e.charIndex || 0));
-      L.bw = Math.max(L.bw, wordCount(line.text.slice(0, ci)));
+      const ci = Math.max(0, Math.min(said.length, e.charIndex || 0));
+      L.bw = Math.max(L.bw, wordCount(said.slice(0, ci)));
       L.bt = performance.now();
     };
     u.onend = () => {
@@ -1114,6 +1231,8 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
   window.addEventListener('keyup', (e) => { if (running && (e.key === ' ' || e.key === 'Spacebar') && !typing(e.target)) { e.preventDefault(); e.stopPropagation(); } }, true);
   addEventListener('resize', syncStrip);
   if (mode === 'deck') window.__deckOnShow = (n) => { if (running && !bringing && n !== idx) startStop(n); };
-  window.__tour = { start, end, go: (k) => { if (running) go(k); }, state: () => ({ running, paused, idx, lineIdx, phase, count: list.length, lines: lines.length, p: L.p, sub: L.sub, subs: L.subs.length, wps: wpr * 0.95, voice: cast.obi && cast.obi.name, oge: cast.oge && cast.oge.name, obiPitch: cast.obiPitch, ogePitch: cast.ogePitch }) };
+  window.__tour = { start, end, go: (k) => { if (running) go(k); }, state: () => ({ running, paused, idx, lineIdx, phase, count: list.length, lines: lines.length, p: L.p, sub: L.sub, subs: L.subs.length, wps: wpr * 0.95, voice: cast.obi && cast.obi.name, oge: cast.oge && cast.oge.name, obiPitch: cast.obiPitch, ogePitch: cast.ogePitch, natural: cast.natural, anchor: anchor ? clean(anchor.textContent).slice(0, 80) : '' }),
+    // For checks: what each line of the current stop points at, and when.
+    plan: () => lines.map((l, n) => ({ who: l.who, text: l.text, said: speakable(l.text), plan: planFor(n).map((p) => ({ at: p.at, el: clean(p.el.textContent).slice(0, 70) || p.el.tagName })) })) };
 })();
 </script>
