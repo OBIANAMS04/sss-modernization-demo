@@ -719,7 +719,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
   const launch = $('tour-launch'), cursor = $('tour-cursor'), gauge = $('tour-gauge'), fill = $('tour-fill');
   const capWho = $('tour-who'), capLine = $('tour-line'), scriptList = $('tour-script'), dialog = $('tour-dialog');
   const btnBack = $('tour-back'), btnPause = $('tour-pause'), btnNext = $('tour-next'), btnClose = $('tour-close'), btnVoice = $('tour-voice');
-  const PAUSE_AFTER = 600, READ_CPS = 15, START_DELAY = 650, GLIDE = 380;
+  const PAUSE_AFTER = 600, READ_CPS = 15, START_DELAY = 350, GLIDE = 380;
   const mq = (q) => { try { return matchMedia(q).matches; } catch (e) { return false; } };
   const reduce = () => mq('(prefers-reduced-motion: reduce)');
   const isTop = () => mq('(max-width: 699.98px)');
@@ -874,7 +874,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     if (!anchor || !anchor.isConnected) return;
     const p = pointOn(anchor, u);
     // A small drift while someone is talking, so the pointer is never frozen even when the estimate runs ahead.
-    if (live && !reduce()) { p[0] += 2.5 * Math.sin(now / 520); p[1] += 1.5 * Math.cos(now / 690); }
+    if (running && !paused && !reduce()) { p[0] += 4 * Math.sin(now / 480); p[1] += 2.5 * Math.cos(now / 640); } // also while the first line is about to start
     if (glide && !reduce()) {
       const k = Math.min(1, (now - glide.t0) / GLIDE), e = ease(k);
       cx = glide.x + (p[0] - glide.x) * e; cy = glide.y + (p[1] - glide.y) * e;
@@ -984,7 +984,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
       const key = Math.round(window.scrollY) + ':' + (target ? Math.round(target.getBoundingClientRect().top) : 0);
       still = key === last ? still + 1 : 0;
       last = key;
-      if (still >= 6 || performance.now() - t0 > 2500) fn(); else requestAnimationFrame(step);
+      if (still >= 4 || performance.now() - t0 > 900) fn(); else requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
   }
