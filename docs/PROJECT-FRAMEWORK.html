@@ -608,7 +608,13 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--rule);
      the words point: each line is matched to the boxes on the page that it names (shared words, rarer words weigh more;
      spoken numbers match digits), and the pointer leaves for each box about 0.45 s before the voice reaches its word, clicks
      as it lands, and sweeps along it. A line that names nothing on the page keeps the pointer where it is, drifting. The gauge reaches 100% only on the last line's 'end'; voice off,
-     it runs at 15 characters a second. Pause freezes both. Keys: Left/Right move, Space pauses, Esc closes. -->
+     it runs at 15 characters a second. Pause freezes both. Keys: Left/Right move, Space pauses, Esc closes.
+     2026-11-24 standing rule (Obi): no moving pointer. SPOT-ZOOM follows the words instead: when the voice reaches a box
+     the line names, the page zooms in on that box (up to 1.35x, kept whole and inside the content area) and an amber ring
+     marks it; the next named box takes over, and the zoom eases out between stops. FOOTNOTE CAPTIONS: the line being said
+     is shown across the bottom of the content area with an OBI / Oge badge; the footnote grows to fit the whole sentence,
+     however many lines, and the page is padded by its height so nothing is ever hidden under it. Oge is always a female
+     voice: if a browser offers no female voice at all, Oge takes OBI's voice at a raised pitch, never another male voice. -->
 <style>
 /* tour-launch: page only (start) */
 .tour-launch { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 50;
@@ -690,6 +696,20 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
 @keyframes tp-ripple { from { transform: scale(0.2); opacity: 0.95; } to { transform: scale(1.3); opacity: 0; } }
 @keyframes tp-fade { from { opacity: 0.9; } to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .tour-ripple { animation: tp-fade 0.7s linear forwards; transform: none; } .tour-cursor.is-click svg { animation: none; } }
+/* 2026-11-24: spot-zoom replaces the pointer; footnote captions grow to fit the sentence. */
+.tour-cursor, .tour-ripple { display: none !important; }
+.tour-zoomed { transform-origin: 0 0 !important; transition: transform 0.6s ease !important; }
+.tour-spot { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 2147482999; border: 4px solid #f2a900; border-radius: 10px; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 9999px rgba(11, 31, 58, 0.14), 0 0 18px rgba(242, 169, 0, 0.85); transition: left 0.6s ease, top 0.6s ease, width 0.6s ease, height 0.6s ease, opacity 0.3s ease; }
+.tour-foot { position: fixed; left: var(--tp-w); right: 0; bottom: 0; z-index: 2147483001; display: flex; gap: 12px; align-items: flex-start; box-sizing: border-box; margin: 0;
+  padding: 10px 18px calc(10px + env(safe-area-inset-bottom, 0px)); background: #0b1f3a; color: #f4f6fb; border-top: 3px solid #f2a900; font: 500 17px/1.45 system-ui, "Segoe UI", Roboto, sans-serif; }
+.tour-foot[hidden] { display: none; }
+.tour-foot b { flex: none; min-width: 44px; text-align: center; padding: 3px 9px; border-radius: 999px; background: #e5242b; color: #fff; font: 800 13px/1.5 system-ui, "Segoe UI", sans-serif; letter-spacing: 0.04em; }
+.tour-foot b.is-oge { background: #f2a900; color: #0b1f3a; }
+.tour-foot span { flex: 1; min-width: 0; overflow-wrap: anywhere; white-space: normal; }
+html.tour-on { padding-bottom: var(--tour-foot, 0px) !important; scroll-padding-bottom: calc(var(--tour-foot, 0px) + 12px); }
+@media (max-width: 699.98px) { .tour-foot { left: 0; font-size: 15px; padding: 8px 12px; } }
+@media (prefers-reduced-motion: reduce) { .tour-zoomed, .tour-spot { transition: none !important; } }
 </style>
 <button type="button" class="tour-launch" id="tour-launch" aria-haspopup="dialog"><svg class="tour-play" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4.5 2.6v10.8L13.6 8z" fill="currentColor"></path></svg>Take the guided tour</button>
 <aside class="tour-panel" id="tour-panel" data-mode="page" role="dialog" aria-modal="false" aria-labelledby="tour-title" hidden>
@@ -752,9 +772,11 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     let oge = null, ogeNatural = false;
     for (const n of OGE_NAMES) { oge = pool.find((v) => v !== obi && NATURAL.test(v.name) && named(v, n)); if (oge) { ogeNatural = true; break; } }
     oge = oge || pool.find((v) => v !== obi && /google us english/i.test(v.name)) || pool.find((v) => v !== obi && /zira/i.test(v.name))
-      || pool.find((v) => v !== obi && FEMALE.test(v.name)) || pool.find((v) => v !== obi) || obi;
+      || pool.find((v) => v !== obi && FEMALE.test(v.name)) || obi;
+    // Oge is always a female voice (standing rule 2026-11-24): with no female voice in the browser she takes OBI's voice
+    // at a raised pitch rather than another male voice.
     // Deeper for OBI without sounding processed: neural voices take a small drop, built-in ones a larger one.
-    cast = { obi, oge, natural: natural && ogeNatural, obiPitch: natural ? 0.88 : 0.8, ogePitch: oge === obi ? 1.15 : 1.0, obiRate: natural ? 0.93 : 0.92 };
+    cast = { obi, oge, natural: natural && ogeNatural, obiPitch: natural ? 0.88 : 0.8, ogePitch: oge === obi ? 1.45 : 1.0, obiRate: natural ? 0.93 : 0.92 };
     const hint = $('tour-hint');
     if (hint) hint.hidden = !canSpeak || !all.length || cast.natural;
   }
@@ -857,7 +879,8 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
   // ---- Content area (everything right of the docked panel, or below the top strip) and the synced pointer.
   function area() {
     const r = panel.getBoundingClientRect(), w = html.clientWidth || innerWidth, h = innerHeight;
-    return isTop() ? { l: 0, t: Math.max(0, r.bottom), r: w, b: h } : { l: Math.max(0, r.right), t: 0, r: w, b: h };
+    const fb = foot && !foot.hidden ? foot.getBoundingClientRect().height : 0;
+    return isTop() ? { l: 0, t: Math.max(0, r.bottom), r: w, b: h - fb } : { l: Math.max(0, r.right), t: 0, r: w, b: h - fb };
   }
   // A point on el: u (0..1) sweeps along the element as its words are spoken, like a finger following the text.
   function pointOn(el, u) {
@@ -869,6 +892,46 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     y = Math.max(a.t + 8, Math.min(y, a.b - 34));
     return [x, y];
   }
+  // ---- Spot-zoom (2026-11-24). The page's own top-level boxes are scaled about one point so the named box fills the
+  // content area (at most 1.35x), and a ring marks it. Positions are worked out from layout, not from the zoomed view,
+  // so a zoom that is still easing does not skew the next one.
+  const foot = document.createElement('p'), footWho = document.createElement('b'), footLine = document.createElement('span');
+  foot.className = 'tour-foot'; foot.hidden = true; foot.setAttribute('aria-hidden', 'true'); foot.append(footWho, footLine);
+  const ring = document.createElement('div'); ring.className = 'tour-spot'; ring.setAttribute('aria-hidden', 'true');
+  document.body.append(foot, ring);
+  try { new ResizeObserver(() => { if (running) html.style.setProperty('--tour-foot', Math.ceil(foot.getBoundingClientRect().height) + 'px'); }).observe(foot); } catch (e) {}
+  let spotted = null, zoomRoots = [], spotTimer = 0;
+  const OWN = (e) => e === panel || e === launch || e === cursor || e === foot || e === ring || /^(SCRIPT|STYLE|TEMPLATE|LINK|META|NOSCRIPT)$/.test(e.tagName);
+  function rootsFor() {
+    return Array.prototype.filter.call(document.body.children, (e) => !OWN(e) && e.offsetParent !== null && getComputedStyle(e).position !== 'fixed');
+  }
+  function unspot() {
+    zoomRoots.forEach((e) => { e.style.transform = ''; e.classList.remove('tour-zoomed'); });
+    zoomRoots = []; spotted = null; ring.style.opacity = '0';
+  }
+  function spot(el) {
+    spotted = el;
+    if (!el || !el.isConnected) { unspot(); return; }
+    const roots = rootsFor(), root = roots.find((r) => r.contains(el));
+    if (!root) { ring.style.opacity = '0'; return; }
+    // Layout position of a top-level box in the viewport. With a static body, offsetLeft/Top are document coordinates.
+    const br = document.body.getBoundingClientRect(), staticBody = getComputedStyle(document.body).position === "static";
+    const lay = (r) => (staticBody ? { x: r.offsetLeft - scrollX, y: r.offsetTop - scrollY } : { x: br.left + document.body.clientLeft + r.offsetLeft, y: br.top + document.body.clientTop + r.offsetTop });
+    const rr = root.getBoundingClientRect(), s = rr.width / Math.max(1, root.offsetWidth) || 1, L0 = lay(root), er = el.getBoundingClientRect();
+    const p = { x: L0.x + (er.left - rr.left) / s, y: L0.y + (er.top - rr.top) / s, w: er.width / s, h: er.height / s };
+    const a = area(), aw = a.r - a.l, ah = a.b - a.t;
+    const k = reduce() ? 1 : Math.max(1, Math.min(1.35, (aw * 0.8) / Math.max(1, p.w), (ah * 0.72) / Math.max(1, p.h)));
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const T = { x: clamp((a.l + a.r) / 2 - k * (p.x + p.w / 2), a.r - k * a.r, a.l - k * a.l), y: clamp((a.t + a.b) / 2 - k * (p.y + p.h / 2), a.b - k * a.b, a.t - k * a.t) };
+    zoomRoots.filter((e) => !roots.includes(e)).forEach((e) => { e.style.transform = ''; e.classList.remove('tour-zoomed'); });
+    zoomRoots = roots;
+    roots.forEach((e) => { const o = lay(e); e.classList.add('tour-zoomed'); e.style.transform = k === 1 ? '' : 'translate(' + (T.x - o.x * (1 - k)).toFixed(1) + 'px, ' + (T.y - o.y * (1 - k)).toFixed(1) + 'px) scale(' + k.toFixed(3) + ')'; });
+    const pad = 6, X = k === 1 ? p.x : T.x + k * p.x, Y = k === 1 ? p.y : T.y + k * p.y;
+    Object.assign(ring.style, { left: (X - pad) + 'px', top: (Y - pad) + 'px', width: (p.w * k + pad * 2) + 'px', height: (p.h * k + pad * 2) + 'px', opacity: '1' });
+    ring.dataset.spots = String((+ring.dataset.spots || 0) + 1);
+  }
+  addEventListener('scroll', () => { if (!running || !spotted) return; clearTimeout(spotTimer); spotTimer = setTimeout(() => spot(spotted), 160); }, { passive: true });
+  addEventListener('resize', () => { if (running && spotted) spot(spotted); });
   let cx = 0, cy = 0, raf = 0, glide = null, lastU = 0;
   const ease = (k) => 1 - Math.pow(1 - k, 3);
   function frame(now) {
@@ -890,6 +953,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
       lastU = u;
     }
     if (!anchor || !anchor.isConnected) return;
+    if (live && anchor !== spotted) spot(anchor);
     const p = pointOn(anchor, u);
     // A small drift while someone is talking, so the pointer is never frozen even when the estimate runs ahead.
     if (running && !paused && !reduce()) { p[0] += 4 * Math.sin(now / 480); p[1] += 2.5 * Math.cos(now / 640); } // also while the first line is about to start
@@ -1062,6 +1126,8 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
   }
   function renderLine(n) {
     const l = lines[n];
+    footWho.textContent = l.who === 'OGE' ? 'Oge' : 'OBI'; footWho.className = 'is-' + l.who.toLowerCase();
+    footLine.textContent = l.text; foot.hidden = false;
     capWho.textContent = label(l.who);
     capWho.className = 'tour-who is-' + l.who.toLowerCase();
     capLine.textContent = l.text;
@@ -1082,6 +1148,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     renderStop(stop);
     renderLine(0);
     if (target) target.classList.remove('tour-target');
+    unspot();
     target = adapter.bring(stop, k);
     target.classList.add('tour-target');
     items = null; lineIdx = 0; phase = 'line';
@@ -1232,6 +1299,7 @@ html.tour-on .tour-target { outline: 3px solid var(--tp-red) !important; outline
     if (ro) ro.disconnect();
     html.classList.remove('tour-on');
     html.style.removeProperty('--tour-strip');
+    unspot(); foot.hidden = true; html.style.removeProperty('--tour-foot');
     if (target) target.classList.remove('tour-target');
     target = null; anchor = null; items = null; L.subs = []; glide = null;
     panel.hidden = true; cursor.hidden = true;
