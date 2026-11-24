@@ -26,8 +26,8 @@ Colaberry's attention now moves to the Crash Records project. Thank you.
 
 ## PREP-4 rehearsal note
 
-**Honest label: this was rehearsed with the portal's AI mentor and synthetic narration. It was not rehearsed with a
-real person, and no person gave feedback on it.**
+**Honest label: this was rehearsed as a synthetic run-through (OBI and Oge, synthetic voices) and reviewed by watching
+it back. It was not rehearsed with a real person, and no person gave feedback on it.**
 
 What I rehearsed: the stakeholder update to Ali for the Selective Service rehearsal, in about two and a half minutes:
 what moved (the hosted demo wound down on 6 November 2026, running cost zero, the build proved from a clean clone), what
